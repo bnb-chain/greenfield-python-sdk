@@ -1,0 +1,58 @@
+[tool.poetry]
+name = "greenfield-python-sdk"
+version = "0.1.0"
+description = "A Greenfield python SDK"
+authors = ["BNB Chain"]
+readme = "README.md"
+packages = [{include = "greenfield_python_sdk"}]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+betterproto = {git = "https://github.com/danielgtaylor/python-betterproto", rev = "e7f07fa2a113bcaef42571b4a67b3ddfbe0ab935"}
+grpcio-tools = "1.56.2"
+httpx = "^0.24.1"
+jinja2 = "^3.1.2"
+pydantic = "^2.0"
+grpclib = "^0.4.5"
+secp256k1 = "^0.14.0"
+ecdsa = "^0.18.0"
+bech32 = "^1.2.0"
+mnemonic = "^0.20"
+hdwallets = "^0.1.2"
+aiohttp = "^3.8.4"
+safe-pysha3 = "^1.0.4"
+pycryptodome = "^3.17"
+coincurve = "^18.0.0"
+alt-betterproto = "^2.0.1"
+eth-keys = "^0.4.0"
+web3 = "^6.5.0"
+xmltodict = "^0.13.0"
+reedsolo = "^1.7.0"
+python-dotenv = "^1.0.0"
+pytest-timeout = "^2.1.0"
+pydantic-settings = "^2.0.1"
+
+[tool.poetry.group.dev.dependencies]
+mypy = "*"
+black = "*"
+isort = "*"
+flake8 = "*"
+pytest = "*"
+pytest-cov = "*"
+pytest-asyncio = "*"
+coverage = "^7.2.2"
+pytest-mock = "^3.11.1"
+
+[tool.pytest.ini_options]
+markers = [
+    "unit: marks tests as unitary",
+    "e2e: marks tests as end to end",
+]
+[tool.isort]
+profile = "black"
+line_length = 120
+
+
+[build-system]
+requires = ["poetry"]
+build-backend = "poetry.masonry.api"

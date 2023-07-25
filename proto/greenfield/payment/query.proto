@@ -1,0 +1,188 @@
+syntax = "proto3";
+
+package greenfield.payment;
+
+import "cosmos/base/query/v1beta1/pagination.proto";
+import "cosmos_proto/cosmos.proto";
+import "gogoproto/gogo.proto";
+import "google/api/annotations.proto";
+import "greenfield/payment/auto_settle_record.proto";
+import "greenfield/payment/params.proto";
+import "greenfield/payment/payment_account.proto";
+import "greenfield/payment/payment_account_count.proto";
+import "greenfield/payment/stream_record.proto";
+
+// this line is used by starport scaffolding # 1
+
+option go_package = "github.com/bnb-chain/greenfield/x/payment/types";
+
+// Query defines the gRPC querier service.
+service Query {
+  // Parameters queries the parameters of the module.
+  rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {
+    option (google.api.http).get = "/greenfield/payment/params";
+  }
+
+  // Queries a StreamRecord by index.
+  rpc StreamRecord(QueryGetStreamRecordRequest) returns (QueryGetStreamRecordResponse) {
+    option (google.api.http).get = "/greenfield/payment/stream_record/{account}";
+  }
+
+  // Queries a list of StreamRecord items.
+  rpc StreamRecordAll(QueryAllStreamRecordRequest) returns (QueryAllStreamRecordResponse) {
+    option (google.api.http).get = "/greenfield/payment/stream_record";
+  }
+
+  // Queries a PaymentAccountCount by index.
+  rpc PaymentAccountCount(QueryGetPaymentAccountCountRequest) returns (QueryGetPaymentAccountCountResponse) {
+    option (google.api.http).get = "/greenfield/payment/payment_account_count/{owner}";
+  }
+
+  // Queries a list of PaymentAccountCount items.
+  rpc PaymentAccountCountAll(QueryAllPaymentAccountCountRequest) returns (QueryAllPaymentAccountCountResponse) {
+    option (google.api.http).get = "/greenfield/payment/payment_account_count";
+  }
+
+  // Queries a PaymentAccount by index.
+  rpc PaymentAccount(QueryGetPaymentAccountRequest) returns (QueryGetPaymentAccountResponse) {
+    option (google.api.http).get = "/greenfield/payment/payment_account/{addr}";
+  }
+
+  // Queries a list of PaymentAccount items.
+  rpc PaymentAccountAll(QueryAllPaymentAccountRequest) returns (QueryAllPaymentAccountResponse) {
+    option (google.api.http).get = "/greenfield/payment/payment_account";
+  }
+
+  // Queries a list of DynamicBalance items.
+  rpc DynamicBalance(QueryDynamicBalanceRequest) returns (QueryDynamicBalanceResponse) {
+    option (google.api.http).get = "/greenfield/payment/dynamic_balance/{account}";
+  }
+
+  // Queries a list of GetPaymentAccountsByOwner items.
+  rpc GetPaymentAccountsByOwner(QueryGetPaymentAccountsByOwnerRequest) returns (QueryGetPaymentAccountsByOwnerResponse) {
+    option (google.api.http).get = "/greenfield/payment/get_payment_accounts_by_owner/{owner}";
+  }
+
+  // Queries a list of AutoSettleRecord items.
+  rpc AutoSettleRecordAll(QueryAllAutoSettleRecordRequest) returns (QueryAllAutoSettleRecordResponse) {
+    option (google.api.http).get = "/greenfield/payment/auto_settle_record";
+  }
+}
+
+// QueryParamsRequest is request type for the Query/Params RPC method.
+message QueryParamsRequest {}
+
+// QueryParamsResponse is response type for the Query/Params RPC method.
+message QueryParamsResponse {
+  // params holds all the parameters of this module.
+  Params params = 1 [(gogoproto.nullable) = false];
+}
+
+message QueryGetStreamRecordRequest {
+  string account = 1;
+}
+
+message QueryGetStreamRecordResponse {
+  StreamRecord stream_record = 1 [(gogoproto.nullable) = false];
+}
+
+message QueryAllStreamRecordRequest {
+  cosmos.base.query.v1beta1.PageRequest pagination = 1;
+}
+
+message QueryAllStreamRecordResponse {
+  repeated StreamRecord stream_record = 1 [(gogoproto.nullable) = false];
+  cosmos.base.query.v1beta1.PageResponse pagination = 2;
+}
+
+message QueryGetPaymentAccountCountRequest {
+  string owner = 1;
+}
+
+message QueryGetPaymentAccountCountResponse {
+  PaymentAccountCount payment_account_count = 1 [(gogoproto.nullable) = false];
+}
+
+message QueryAllPaymentAccountCountRequest {
+  cosmos.base.query.v1beta1.PageRequest pagination = 1;
+}
+
+message QueryAllPaymentAccountCountResponse {
+  repeated PaymentAccountCount payment_account_count = 1 [(gogoproto.nullable) = false];
+  cosmos.base.query.v1beta1.PageResponse pagination = 2;
+}
+
+message QueryGetPaymentAccountRequest {
+  string addr = 1;
+}
+
+message QueryGetPaymentAccountResponse {
+  PaymentAccount payment_account = 1 [(gogoproto.nullable) = false];
+}
+
+message QueryAllPaymentAccountRequest {
+  cosmos.base.query.v1beta1.PageRequest pagination = 1;
+}
+
+message QueryAllPaymentAccountResponse {
+  repeated PaymentAccount payment_account = 1 [(gogoproto.nullable) = false];
+  cosmos.base.query.v1beta1.PageResponse pagination = 2;
+}
+
+message QueryDynamicBalanceRequest {
+  string account = 1;
+}
+
+message QueryDynamicBalanceResponse {
+  // dynamic balance is static balance + flowDelta
+  string dynamic_balance = 1 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false
+  ];
+  // the stream record of the given account, if it does not exist, it will be default values
+  StreamRecord stream_record = 2 [(gogoproto.nullable) = false];
+  // the timestamp of the current block
+  int64 current_timestamp = 3;
+  // bank_balance is the BNB balance of the bank module
+  string bank_balance = 4 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false
+  ];
+  // available_balance is bank balance + static balance
+  string available_balance = 5 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false
+  ];
+  // locked_fee is buffer balance + locked balance
+  string locked_fee = 6 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false
+  ];
+  // change_rate is the netflow rate of the given account
+  string change_rate = 7 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false
+  ];
+}
+
+message QueryGetPaymentAccountsByOwnerRequest {
+  string owner = 1;
+}
+
+message QueryGetPaymentAccountsByOwnerResponse {
+  repeated string paymentAccounts = 1;
+}
+
+message QueryAllAutoSettleRecordRequest {
+  cosmos.base.query.v1beta1.PageRequest pagination = 1;
+}
+
+message QueryAllAutoSettleRecordResponse {
+  repeated AutoSettleRecord auto_settle_record = 1 [(gogoproto.nullable) = false];
+  cosmos.base.query.v1beta1.PageResponse pagination = 2;
+}

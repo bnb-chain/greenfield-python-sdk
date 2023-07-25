@@ -1,0 +1,46 @@
+syntax = "proto3";
+package cosmos.upgrade.v1beta1;
+
+import "gogoproto/gogo.proto";
+import "amino/amino.proto";
+
+option go_package                      = "github.com/cosmos/cosmos-sdk/x/upgrade/types";
+option (gogoproto.goproto_getters_all) = false;
+
+// Plan specifies information about a planned upgrade and when it should occur.
+message Plan {
+  option (amino.name)                 = "cosmos-sdk/Plan";
+  option (gogoproto.equal)            = true;
+  option (gogoproto.goproto_stringer) = false;
+
+  // Sets the name for the upgrade. This name will be used by the upgraded
+  // version of the software to apply any special "on-upgrade" commands during
+  // the first BeginBlock method after the upgrade is applied. It is also used
+  // to detect whether a software version can handle a given upgrade. If no
+  // upgrade handler with this name has been set in the software, it will be
+  // assumed that the software is out-of-date when the upgrade Time or Height is
+  // reached and the software will exit.
+  string name = 1;
+
+  // The height at which the upgrade must be performed.
+  // Only used if Time is not set.
+  int64 height = 2;
+
+  // Any application specific upgrade info to be included on-chain
+  // such as a git commit that validators could automatically upgrade to
+  string info = 3;
+}
+
+// ModuleVersion specifies a module and its consensus version.
+//
+// Since: cosmos-sdk 0.43
+message ModuleVersion {
+  option (gogoproto.equal)            = true;
+  option (gogoproto.goproto_stringer) = true;
+
+  // name of the app module
+  string name = 1;
+
+  // consensus version of the app module
+  uint64 version = 2;
+}

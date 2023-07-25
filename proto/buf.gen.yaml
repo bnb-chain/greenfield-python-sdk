@@ -1,0 +1,6 @@
+version: v1
+plugins:
+  - name: python_betterproto
+    out: ../greenfield_python_sdk/protos
+    opt: 
+      - pydantic_dataclasses

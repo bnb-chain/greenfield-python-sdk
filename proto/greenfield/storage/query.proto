@@ -1,0 +1,270 @@
+syntax = "proto3";
+
+package greenfield.storage;
+
+import "cosmos/base/query/v1beta1/pagination.proto";
+import "cosmos_proto/cosmos.proto";
+import "gogoproto/gogo.proto";
+import "google/api/annotations.proto";
+import "greenfield/permission/common.proto";
+import "greenfield/permission/types.proto";
+import "greenfield/storage/params.proto";
+import "greenfield/storage/types.proto";
+
+// this line is used by starport scaffolding # 1
+
+option go_package = "github.com/bnb-chain/greenfield/x/storage/types";
+
+// Query defines the gRPC querier service.
+service Query {
+  // Parameters queries the parameters of the module.
+  rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {
+    option (google.api.http).get = "/greenfield/storage/params";
+  }
+
+  // Parameters queries the parameters of the module.
+  rpc QueryParamsByTimestamp(QueryParamsByTimestampRequest) returns (QueryParamsByTimestampResponse) {
+    option (google.api.http).get = "/greenfield/storage/params/{timestamp}";
+  }
+
+  // Queries a bucket with specify name.
+  rpc HeadBucket(QueryHeadBucketRequest) returns (QueryHeadBucketResponse) {
+    option (google.api.http).get = "/greenfield/storage/head_bucket/{bucket_name}";
+  }
+
+  // Queries a bucket by id
+  rpc HeadBucketById(QueryHeadBucketByIdRequest) returns (QueryHeadBucketResponse) {
+    option (google.api.http).get = "/greenfield/storage/head_bucket_by_id/{bucket_id}";
+  }
+
+  // Queries a bucket with EIP712 standard metadata info
+  rpc HeadBucketNFT(QueryNFTRequest) returns (QueryBucketNFTResponse) {
+    option (google.api.http).get = "/greenfield/storage/head_bucket_nft/{token_id}";
+  }
+
+  // Queries a object with specify name.
+  rpc HeadObject(QueryHeadObjectRequest) returns (QueryHeadObjectResponse) {
+    option (google.api.http).get = "/greenfield/storage/head_object/{bucket_name}/{object_name}";
+  }
+
+  // Queries an object by id
+  rpc HeadObjectById(QueryHeadObjectByIdRequest) returns (QueryHeadObjectResponse) {
+    option (google.api.http).get = "/greenfield/storage/head_object_by_id/{object_id}";
+  }
+
+  // Queries a object with EIP712 standard metadata info
+  rpc HeadObjectNFT(QueryNFTRequest) returns (QueryObjectNFTResponse) {
+    option (google.api.http).get = "/greenfield/storage/head_object_nft/{token_id}";
+  }
+
+  // Queries a list of bucket items.
+  rpc ListBuckets(QueryListBucketsRequest) returns (QueryListBucketsResponse) {
+    option (google.api.http).get = "/greenfield/storage/list_buckets";
+  }
+
+  // Queries a list of object items under the bucket.
+  rpc ListObjects(QueryListObjectsRequest) returns (QueryListObjectsResponse) {
+    option (google.api.http).get = "/greenfield/storage/list_objects/{bucket_name}";
+  }
+
+  // Queries a list of object items under the bucket.
+  rpc ListObjectsByBucketId(QueryListObjectsByBucketIdRequest) returns (QueryListObjectsResponse) {
+    option (google.api.http).get = "/greenfield/storage/list_objects_by_bucket_id/{bucket_id}";
+  }
+
+  // Queries a group with EIP712 standard metadata info
+  rpc HeadGroupNFT(QueryNFTRequest) returns (QueryGroupNFTResponse) {
+    option (google.api.http).get = "/greenfield/storage/head_group_nft/{token_id}";
+  }
+
+  // Queries a policy which grants permission to account
+  rpc QueryPolicyForAccount(QueryPolicyForAccountRequest) returns (QueryPolicyForAccountResponse) {
+    option (google.api.http).get = "/greenfield/storage/policy_for_account/{resource}/{principal_address}";
+  }
+
+  // Queries a list of VerifyPermission items.
+  rpc VerifyPermission(QueryVerifyPermissionRequest) returns (QueryVerifyPermissionResponse) {
+    option (google.api.http).get = "/greenfield/storage/verify_permission/{operator}/{bucket_name}/{action_type}";
+  }
+
+  // Queries a group with specify owner and name .
+  rpc HeadGroup(QueryHeadGroupRequest) returns (QueryHeadGroupResponse) {
+    option (google.api.http).get = "/greenfield/storage/head_group/{group_owner}/{group_name}";
+  }
+
+  // Queries a list of ListGroup items.
+  rpc ListGroup(QueryListGroupRequest) returns (QueryListGroupResponse) {
+    option (google.api.http).get = "/greenfield/storage/list_group/{group_owner}";
+  }
+
+  // Queries a list of HeadGroupMember items.
+  rpc HeadGroupMember(QueryHeadGroupMemberRequest) returns (QueryHeadGroupMemberResponse) {
+    option (google.api.http).get = "/greenfield/storage/head_group_member";
+  }
+
+  // Queries a policy that grants permission to a group
+  rpc QueryPolicyForGroup(QueryPolicyForGroupRequest) returns (QueryPolicyForGroupResponse) {
+    option (google.api.http).get = "/greenfield/storage/policy_for_group/{resource}/{principal_group_id}";
+  }
+
+  // Queries a policy by policy id
+  rpc QueryPolicyById(QueryPolicyByIdRequest) returns (QueryPolicyByIdResponse) {
+    option (google.api.http).get = "/greenfield/storage/policy_by_id/{policy_id}";
+  }
+
+  // this line is used by starport scaffolding # 2
+}
+
+// QueryParamsRequest is request type for the Query/Params RPC method.
+message QueryParamsRequest {}
+
+// QueryParamsResponse is response type for the Query/Params RPC method.
+message QueryParamsResponse {
+  // params holds all the parameters of this module.
+  Params params = 1 [(gogoproto.nullable) = false];
+}
+
+// QueryVersionedParamsRequest is request type for the Query/Params RPC method with timestamp.
+message QueryParamsByTimestampRequest {
+  // the timestamp of the block time you want to query
+  int64 timestamp = 1;
+}
+
+// QueryVersionedParamsResponse is response type for the Query/Params RPC method with timestamp.
+message QueryParamsByTimestampResponse {
+  // params holds all the parameters of this module.
+  Params params = 1 [(gogoproto.nullable) = false];
+}
+
+message QueryHeadBucketRequest {
+  string bucket_name = 1;
+}
+
+message QueryHeadBucketByIdRequest {
+  string bucket_id = 1;
+}
+
+message QueryHeadBucketResponse {
+  BucketInfo bucket_info = 1;
+}
+
+message QueryHeadObjectRequest {
+  string bucket_name = 1;
+  string object_name = 2;
+}
+
+message QueryHeadObjectByIdRequest {
+  string object_id = 1;
+}
+
+message QueryHeadObjectResponse {
+  ObjectInfo object_info = 1;
+}
+
+message QueryListBucketsRequest {
+  cosmos.base.query.v1beta1.PageRequest pagination = 1;
+}
+
+message QueryListBucketsResponse {
+  repeated BucketInfo bucket_infos = 1;
+  cosmos.base.query.v1beta1.PageResponse pagination = 2;
+}
+
+message QueryListObjectsRequest {
+  cosmos.base.query.v1beta1.PageRequest pagination = 1;
+  string bucket_name = 2;
+}
+
+message QueryListObjectsByBucketIdRequest {
+  cosmos.base.query.v1beta1.PageRequest pagination = 1;
+  string bucket_id = 2;
+}
+
+message QueryListObjectsResponse {
+  repeated ObjectInfo object_infos = 1;
+  cosmos.base.query.v1beta1.PageResponse pagination = 2;
+}
+
+message QueryNFTRequest {
+  string token_id = 1;
+}
+
+message QueryBucketNFTResponse {
+  BucketMetaData meta_data = 1;
+}
+
+message QueryObjectNFTResponse {
+  ObjectMetaData meta_data = 1;
+}
+
+message QueryGroupNFTResponse {
+  GroupMetaData meta_data = 1;
+}
+
+message QueryPolicyForAccountRequest {
+  string resource = 1;
+  string principal_address = 2 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+}
+
+message QueryPolicyForAccountResponse {
+  permission.Policy policy = 1;
+}
+
+message QueryVerifyPermissionRequest {
+  string operator = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  string bucket_name = 2;
+  string object_name = 3;
+  permission.ActionType action_type = 4;
+}
+
+message QueryVerifyPermissionResponse {
+  permission.Effect effect = 1;
+}
+
+message QueryHeadGroupRequest {
+  string group_owner = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  string group_name = 2;
+}
+
+message QueryHeadGroupResponse {
+  GroupInfo group_info = 1;
+}
+
+message QueryListGroupRequest {
+  cosmos.base.query.v1beta1.PageRequest pagination = 1;
+  string group_owner = 2 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+}
+
+message QueryListGroupResponse {
+  cosmos.base.query.v1beta1.PageResponse pagination = 1;
+  repeated GroupInfo group_infos = 2;
+}
+
+message QueryHeadGroupMemberRequest {
+  string member = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  string group_owner = 2 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  string group_name = 3;
+}
+
+message QueryHeadGroupMemberResponse {
+  permission.GroupMember group_member = 1;
+}
+
+message QueryPolicyForGroupRequest {
+  string resource = 1;
+  string principal_group_id = 2;
+}
+
+message QueryPolicyForGroupResponse {
+  permission.Policy policy = 1;
+}
+
+message QueryPolicyByIdRequest {
+  string policy_id = 1;
+}
+
+message QueryPolicyByIdResponse {
+  permission.Policy policy = 1;
+}
+
+// this line is used by starport scaffolding # 3

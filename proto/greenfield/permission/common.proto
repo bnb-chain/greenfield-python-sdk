@@ -1,0 +1,81 @@
+syntax = "proto3";
+package greenfield.permission;
+
+import "cosmos_proto/cosmos.proto";
+import "gogoproto/gogo.proto";
+import "google/protobuf/timestamp.proto";
+import "greenfield/common/wrapper.proto";
+
+option go_package = "github.com/bnb-chain/greenfield/x/permission/types";
+
+// ActionType defines the operations you can execute in greenfield storage network
+enum ActionType {
+  option (gogoproto.goproto_enum_prefix) = false;
+
+  ACTION_UNSPECIFIED = 0;
+  ACTION_UPDATE_BUCKET_INFO = 1;
+  ACTION_DELETE_BUCKET = 2;
+
+  ACTION_CREATE_OBJECT = 3;
+  ACTION_DELETE_OBJECT = 4;
+  ACTION_COPY_OBJECT = 5;
+  ACTION_GET_OBJECT = 6;
+  ACTION_EXECUTE_OBJECT = 7;
+  ACTION_LIST_OBJECT = 8;
+
+  ACTION_UPDATE_GROUP_MEMBER = 9;
+  ACTION_DELETE_GROUP = 10;
+
+  ACTION_UPDATE_OBJECT_INFO = 11;
+
+  ACTION_UPDATE_GROUP_EXTRA = 12;
+
+  ACTION_TYPE_ALL = 99;
+}
+
+// Effect define the effect of the operation permission, include Allow or deny
+enum Effect {
+  option (gogoproto.goproto_enum_prefix) = false;
+
+  EFFECT_UNSPECIFIED = 0;
+  EFFECT_ALLOW = 1;
+  EFFECT_DENY = 2;
+}
+
+message Statement {
+  // effect define the impact of permissions, which can be Allow/Deny
+  Effect effect = 1;
+  // action_type define the operation type you can act. greenfield defines a set of permission
+  // that you can specify in a permissionInfo. see ActionType enum for detail.
+  repeated ActionType actions = 2;
+  // CAN ONLY USED IN bucket level. Support fuzzy match and limit to 5.
+  // The sub-resource name must comply with the standard specified in the greenfield/types/grn.go file for Greenfield resource names.
+  // If the sub-resources include 'grn:o:{bucket_name}/*' in the statement, it indicates that specific permissions is granted to all objects within the specified bucket.
+  // If the sub-resources include 'grn:o:{bucket_name}/test_*' in the statement, it indicates that specific permissions is granted to all objects with the `test_` prefix within the specified bucket.
+  // If the sub-resources is empty, when you need to operate(excluding CreateObject) a specified subresource, it will be denied because it cannot match any subresource.
+  repeated string resources = 3;
+  // expiration_time defines how long the permission is valid. If not explicitly specified, it means it will not expire.
+  google.protobuf.Timestamp expiration_time = 4 [
+    (gogoproto.stdtime) = true,
+    (gogoproto.nullable) = true
+  ];
+  // limit_size defines the total data size that is allowed to operate. If not explicitly specified, it means it will not limit.
+  common.UInt64Value limit_size = 5 [(gogoproto.nullable) = true];
+}
+
+// PrincipalType refers to the identity type of system users or entities.
+// In Greenfield, it usually refers to accounts or groups.
+enum PrincipalType {
+  option (gogoproto.goproto_enum_prefix) = false;
+  PRINCIPAL_TYPE_UNSPECIFIED = 0;
+  PRINCIPAL_TYPE_GNFD_ACCOUNT = 1;
+  PRINCIPAL_TYPE_GNFD_GROUP = 2;
+}
+
+// Principal define the roles that can grant permissions. Currently, it can be account or group.
+message Principal {
+  PrincipalType type = 1;
+  // When the type is an account, its value is sdk.AccAddress().String();
+  // when the type is a group, its value is math.Uint().String()
+  string value = 2;
+}

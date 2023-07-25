@@ -1,0 +1,94 @@
+syntax = "proto3";
+
+package greenfield.sp;
+
+import "cosmos/base/query/v1beta1/pagination.proto";
+import "cosmos_proto/cosmos.proto";
+import "gogoproto/gogo.proto";
+import "google/api/annotations.proto";
+import "greenfield/sp/params.proto";
+import "greenfield/sp/types.proto";
+
+// this line is used by starport scaffolding # 1
+
+option go_package = "github.com/bnb-chain/greenfield/x/sp/types";
+
+// Query defines the gRPC querier service.
+service Query {
+  // Parameters queries the parameters of the module.
+  rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {
+    option (google.api.http).get = "/greenfield/sp/params";
+  }
+
+  // this line is used by starport scaffolding # 2
+
+  // Queries a list of GetStorageProviders items.
+  rpc StorageProviders(QueryStorageProvidersRequest) returns (QueryStorageProvidersResponse) {
+    option (google.api.http).get = "/greenfield/storage_providers";
+  }
+
+  // get storage price of specific sp and time
+  rpc QueryGetSpStoragePriceByTime(QueryGetSpStoragePriceByTimeRequest) returns (QueryGetSpStoragePriceByTimeResponse) {
+    option (google.api.http).get = "/greenfield/sp/get_sp_storage_price_by_time/{sp_addr}/{timestamp}";
+  }
+
+  // get secondary store price by time
+  rpc QueryGetSecondarySpStorePriceByTime(QueryGetSecondarySpStorePriceByTimeRequest) returns (QueryGetSecondarySpStorePriceByTimeResponse) {
+    option (google.api.http).get = "/greenfield/sp/get_secondary_sp_store_price_by_time/{timestamp}";
+  }
+
+  // Queries a storage provider with specify address
+  rpc StorageProvider(QueryStorageProviderRequest) returns (QueryStorageProviderResponse) {
+    option (google.api.http).get = "/greenfield/storage_provider/{spAddress}";
+  }
+}
+
+// QueryParamsRequest is request type for the Query/Params RPC method.
+message QueryParamsRequest {}
+
+// QueryParamsResponse is response type for the Query/Params RPC method.
+message QueryParamsResponse {
+  // params holds all the parameters of this module.
+  Params params = 1 [(gogoproto.nullable) = false];
+}
+
+// this line is used by starport scaffolding # 3
+message QueryStorageProvidersRequest {
+  // pagination defines an optional pagination for the request.
+  cosmos.base.query.v1beta1.PageRequest pagination = 1;
+}
+
+message QueryStorageProvidersResponse {
+  repeated StorageProvider sps = 1;
+
+  // pagination defines the pagination in the response.
+  cosmos.base.query.v1beta1.PageResponse pagination = 2;
+}
+
+message QueryGetSpStoragePriceByTimeRequest {
+  // operator address of sp
+  string sp_addr = 1;
+  // unix timestamp in seconds. If it's 0, it will return the latest price.
+  int64 timestamp = 2;
+}
+
+message QueryGetSpStoragePriceByTimeResponse {
+  SpStoragePrice sp_storage_price = 1 [(gogoproto.nullable) = false];
+}
+
+message QueryGetSecondarySpStorePriceByTimeRequest {
+  // unix timestamp in seconds. If it's 0, it will return the latest price.
+  int64 timestamp = 1;
+}
+
+message QueryGetSecondarySpStorePriceByTimeResponse {
+  SecondarySpStorePrice secondary_sp_store_price = 1 [(gogoproto.nullable) = false];
+}
+
+message QueryStorageProviderRequest {
+  string spAddress = 1;
+}
+
+message QueryStorageProviderResponse {
+  StorageProvider storageProvider = 1;
+}

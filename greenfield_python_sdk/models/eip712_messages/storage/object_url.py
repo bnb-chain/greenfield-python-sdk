@@ -1,0 +1,5 @@
+CREATE_OBJECT = "/greenfield.storage.MsgCreateObject"
+DELETE_OBJECT = "/greenfield.storage.MsgDeleteObject"
+CANCEL_CREATE_OBJECT = "/greenfield.storage.MsgCancelCreateObject"
+SEAL_OBJECT = "/greenfield.storage.MsgSealObject"
+UPDATE_OBJECT_INFO = "/greenfield.storage.MsgUpdateObjectInfo"

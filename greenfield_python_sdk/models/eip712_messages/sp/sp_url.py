@@ -1,0 +1,5 @@
+COSMOS_GRANT = "/cosmos.authz.v1beta1.MsgGrant"
+CREATE_STORAGE_PROVIDER = "/greenfield.sp.MsgCreateStorageProvider"
+GRANT_DEPOSIT = "/greenfield.sp.DepositAuthorization"
+SUBMIT_PROPOSAL = "/cosmos.gov.v1.MsgSubmitProposal"
+UPDATE_SP_STORAGE_PRICE = "/greenfield.sp.MsgUpdateSpStoragePrice"

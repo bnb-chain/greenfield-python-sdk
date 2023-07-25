@@ -1,0 +1,89 @@
+syntax = "proto3";
+package greenfield.sp;
+
+import "cosmos/base/v1beta1/coin.proto";
+import "cosmos_proto/cosmos.proto";
+import "gogoproto/gogo.proto";
+import "greenfield/sp/types.proto";
+
+option go_package = "github.com/bnb-chain/greenfield/x/sp/types";
+
+// EventCreateStorageProvider is emitted when there is a storage provider created
+message EventCreateStorageProvider {
+  // sp_address is the operator address of the storage provider
+  string sp_address = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  // funding_address is the funding account address of the storage provider
+  string funding_address = 2 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  // seal_address is the account address for SealObject Tx
+  string seal_address = 3 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  // approval_address is the account address for approve create bucket/object signature
+  string approval_address = 4 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  // gc_address defines one of the storage provider's accounts which is used for gc purpose
+  string gc_address = 5 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  // endpoint is the domain name address used by SP to provide storage services
+  string endpoint = 6;
+  // total_deposit is the token coin that the storage provider deposit to the storage module
+  cosmos.base.v1beta1.Coin total_deposit = 7;
+  // status defines the status of the storage provider
+  Status status = 8;
+  // description defines the description terms for the storage provider
+  Description description = 9 [(gogoproto.nullable) = false];
+}
+
+// EventEditStorageProvider is emitted when SP's metadata is edited.
+message EventEditStorageProvider {
+  // sp_address is the operator address of the storage provider
+  string sp_address = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  // endpoint is the service endpoint of the storage provider
+  string endpoint = 2;
+  // description defines the description terms for the storage provider
+  Description description = 3 [(gogoproto.nullable) = false];
+  // seal_address is the account address for SealObject Tx
+  string seal_address = 4 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  // approval_address is the account address for approve create bucket/object signature
+  string approval_address = 5 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  // gc_address defines one of the storage provider's accounts which is used for gc purpose
+  string gc_address = 6 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+}
+
+// EventDeposit is emitted when sp deposit tokens.
+message EventDeposit {
+  // funding_address is the funding account address of the storage provider
+  string funding_address = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  // deposit is the token coin deposited this message
+  string deposit = 2;
+  // total_deposit is the total token coins this storage provider deposited
+  string total_deposit = 3;
+}
+
+message EventSpStoragePriceUpdate {
+  // sp address
+  string sp_address = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  // update time, in unix timestamp
+  int64 update_time_sec = 2;
+  // read price, in bnb wei per charge byte
+  string read_price = 3 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.nullable) = false
+  ];
+  // free read quota, in byte
+  uint64 free_read_quota = 4;
+  // store price, in bnb wei per charge byte
+  string store_price = 5 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.nullable) = false
+  ];
+}
+
+message EventSecondarySpStorePriceUpdate {
+  // update time, in unix timestamp
+  int64 update_time_sec = 1;
+  // store price, in bnb wei per charge byte
+  string store_price = 2 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.nullable) = false
+  ];
+}
