@@ -3,7 +3,7 @@
 # plugin: python-betterproto
 # This file has been @generated
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Dict, Optional
+from typing import TYPE_CHECKING, Dict, List, Optional
 
 import betterproto
 import grpclib
@@ -21,6 +21,20 @@ class Params(betterproto.Message):
 
     init_module_balance: str = betterproto.string_field(1)
     """initial balance to mint for crosschain module when the chain starts"""
+
+
+@dataclass(eq=False, repr=False)
+class ChannelPermission(betterproto.Message):
+    """ChannelPermission defines the fields of the channel permission"""
+
+    dest_chain_id: int = betterproto.uint32_field(1)
+    """destination chain id"""
+
+    channel_id: int = betterproto.uint32_field(2)
+    """channel id"""
+
+    permission: int = betterproto.uint32_field(3)
+    """permission status, 1 for allow, 0 for forbidden"""
 
 
 @dataclass(eq=False, repr=False)
@@ -173,6 +187,32 @@ class MsgUpdateParamsResponse(betterproto.Message):
     pass
 
 
+@dataclass(eq=False, repr=False)
+class MsgUpdateChannelPermissions(betterproto.Message):
+    """
+    MsgUpdateChannelPermissions is the Msg/MsgUpdateChannelPermissions request type.
+    """
+
+    authority: str = betterproto.string_field(1)
+    """
+    authority is the address that controls the module (defaults to x/gov unless
+    overwritten).
+    """
+
+    channel_permissions: List["ChannelPermission"] = betterproto.message_field(2)
+    """channel_permissions defines the channel permissions to update"""
+
+
+@dataclass(eq=False, repr=False)
+class MsgUpdateChannelPermissionsResponse(betterproto.Message):
+    """
+    MsgUpdateChannelPermissionsResponse defines the response structure for executing a
+    MsgUpdateChannelPermissions message.
+    """
+
+    pass
+
+
 class QueryStub(betterproto.ServiceStub):
     async def params(
         self,
@@ -261,6 +301,23 @@ class MsgStub(betterproto.ServiceStub):
             metadata=metadata,
         )
 
+    async def update_channel_permissions(
+        self,
+        msg_update_channel_permissions: "MsgUpdateChannelPermissions",
+        *,
+        timeout: Optional[float] = None,
+        deadline: Optional["Deadline"] = None,
+        metadata: Optional["MetadataLike"] = None
+    ) -> "MsgUpdateChannelPermissionsResponse":
+        return await self._unary_unary(
+            "/cosmos.crosschain.v1.Msg/UpdateChannelPermissions",
+            msg_update_channel_permissions,
+            MsgUpdateChannelPermissionsResponse,
+            timeout=timeout,
+            deadline=deadline,
+            metadata=metadata,
+        )
+
 
 class QueryBase(ServiceBase):
     async def params(self, query_params_request: "QueryParamsRequest") -> "QueryParamsResponse":
@@ -343,11 +400,24 @@ class MsgBase(ServiceBase):
     async def update_params(self, msg_update_params: "MsgUpdateParams") -> "MsgUpdateParamsResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
+    async def update_channel_permissions(
+        self, msg_update_channel_permissions: "MsgUpdateChannelPermissions"
+    ) -> "MsgUpdateChannelPermissionsResponse":
+        raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
+
     async def __rpc_update_params(
         self, stream: "grpclib.server.Stream[MsgUpdateParams, MsgUpdateParamsResponse]"
     ) -> None:
         request = await stream.recv_message()
         response = await self.update_params(request)
+        await stream.send_message(response)
+
+    async def __rpc_update_channel_permissions(
+        self,
+        stream: "grpclib.server.Stream[MsgUpdateChannelPermissions, MsgUpdateChannelPermissionsResponse]",
+    ) -> None:
+        request = await stream.recv_message()
+        response = await self.update_channel_permissions(request)
         await stream.send_message(response)
 
     def __mapping__(self) -> Dict[str, grpclib.const.Handler]:
@@ -357,5 +427,11 @@ class MsgBase(ServiceBase):
                 grpclib.const.Cardinality.UNARY_UNARY,
                 MsgUpdateParams,
                 MsgUpdateParamsResponse,
+            ),
+            "/cosmos.crosschain.v1.Msg/UpdateChannelPermissions": grpclib.const.Handler(
+                self.__rpc_update_channel_permissions,
+                grpclib.const.Cardinality.UNARY_UNARY,
+                MsgUpdateChannelPermissions,
+                MsgUpdateChannelPermissionsResponse,
             ),
         }

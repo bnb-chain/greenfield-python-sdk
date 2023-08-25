@@ -5,6 +5,8 @@
 notification and not ready for production use. The code and security audit have not been fully completed and not ready
 for any bug bounty. We advise you to be careful and experiment on the network at your own risk. Stay safe out there.**
 
+**Parts of the codebase might be broken or not up to date**
+
 ## Introduction
 
 Greenfield Python SDK is a Python package for interacting with the Greenfield API. 
@@ -13,14 +15,14 @@ It provides an asynchronous client that can be used to interact with the Greenfi
 
 ## Installation
 
-First you will need to `generate a shared library`  library to be able to use the object module.
+First you will need to `generate a shared library` to be able to use the object module.
 
 The format is (`.so` or `.dll`), depending of the SO that you have.
 
-To generate it go to the [greenfield-go-libraries](https://github.com/BitDJ/greenfield-go-libraries) repository 
+To generate it go to the [data-redundancy-generator-bridge](https://github.com/bnb-chain/data-redundancy-generator-bridge) repository and follow the steps in the README.md file.
 
-Now you will need to clone the SDK. You can also download it instead.
 
+After that you will need to clone the greenfield-python-sdk. You can also download it instead.
 
 ```bash
 git clone https://github.com/bnb-chain/greenfield-python-sdk
@@ -40,11 +42,11 @@ pip install .
 ```python
 import asyncio
 
-from greenfield_python_sdk.config import NetworkConfiguration, KeyManager
+from greenfield_python_sdk.config import NetworkConfiguration, NetworkTestnet, KeyManager
 from greenfield_python_sdk.greenfield_client import GreenfieldClient
 
 async def main():
-    network_configuration = NetworkConfiguration()
+    network_configuration = NetworkConfiguration(**NetworkTestnet().model_dump())
     key_manager = KeyManager(private_key="key")
     
     async with GreenfieldClient(network_configuration=network_configuration, key_manager=key_manager) as client:
@@ -84,7 +86,7 @@ if __name__ == "__main__":
 To use the Greenfield Python SDK, you need to have the following:
 
 - Python 3.9 or later
-- Please include the `generated shared library` (`.so` or `.dll`) from the [greenfield-go-libraries](https://github.com/BitDJ/greenfield-go-libraries) repository into the `greenfield_python_sdk/go_library` folder. These files are necessary for adding an object to a storage provider.
+- Please include the `generated shared library` (`.so` or `.dll`) from the [data-redundancy-generator-bridge](https://github.com/bnb-chain/data-redundancy-generator-bridge) repository into the `greenfield_python_sdk/go_library` folder. These files are necessary for adding an object to a storage provider.
 
 
 ## Testing
@@ -172,7 +174,7 @@ Move those into the `proto` folder and then run the following command:
 make build
 ```
 
-And finally, update the `greenfield_python_sdk/__greenfield_version__.py` file with the new Greenfield version.
+And finally, update the `greenfield_python_sdk/config.py` file with the new Greenfield version. `GREENFIELD_VERSION`
 
 ## Reference
 

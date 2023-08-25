@@ -1,10 +1,17 @@
+import asyncio
 import random
 import string
 from datetime import datetime, timedelta
 
 import pytest
 
-from greenfield_python_sdk import GreenfieldClient, KeyManager, NetworkConfiguration, get_account_configuration
+from greenfield_python_sdk import (
+    GreenfieldClient,
+    KeyManager,
+    NetworkConfiguration,
+    NetworkTestnet,
+    get_account_configuration,
+)
 from greenfield_python_sdk.models.bucket import (
     CreateBucketOptions,
     ListBucketInfo,
@@ -14,8 +21,15 @@ from greenfield_python_sdk.models.bucket import (
     UpdateBucketOptions,
     VisibilityType,
 )
-from greenfield_python_sdk.models.request import Principal, PutPolicyOption
-from greenfield_python_sdk.protos.greenfield.permission import ActionType, Effect, Policy, PrincipalType, Statement
+from greenfield_python_sdk.models.request import PutPolicyOption
+from greenfield_python_sdk.protos.greenfield.permission import (
+    ActionType,
+    Effect,
+    Policy,
+    Principal,
+    PrincipalType,
+    Statement,
+)
 from greenfield_python_sdk.protos.greenfield.sp import QueryStorageProvidersRequest
 from greenfield_python_sdk.protos.greenfield.storage import BucketInfo
 
@@ -23,7 +37,7 @@ pytestmark = [pytest.mark.asyncio, pytest.mark.e2e]
 
 
 # Initialize the configuration, key manager
-network_configuration = NetworkConfiguration()
+network_configuration = NetworkConfiguration(**NetworkTestnet().model_dump())
 principal_key_manager = KeyManager()
 
 
@@ -37,10 +51,11 @@ async def test_create_bucket():
         bucket_name = "".join(random.choices(string.ascii_lowercase + string.digits, k=random.randint(5, 11)))
         await client.async_init()
 
-        sps = (await client.blockchain_client.sp.get_storage_providers(QueryStorageProvidersRequest())).sps
+        sp = await client.blockchain_client.sp.get_first_in_service_storage_provider()
+
         tx_hash = await client.bucket.create_bucket(
             bucket_name,
-            primary_sp_address=sps[0].operator_address,
+            primary_sp_address=sp["operator_address"],
             opts=CreateBucketOptions(charged_read_quota=100, visibility=VisibilityType.VISIBILITY_TYPE_PRIVATE),
         )
         assert tx_hash
@@ -59,9 +74,14 @@ async def test_create_bucket():
         assert bucket_id.bucket_name == bucket_name
         assert isinstance(bucket_id, BucketInfo)
 
-        list_buckets = await client.bucket.list_buckets(head_bucket.primary_sp_address)
+        await asyncio.sleep(3)
+
+        sp = await client.blockchain_client.sp.get_first_in_service_storage_provider()
+
+        list_buckets = await client.bucket.list_buckets(sp["operator_address"])
         assert list_buckets
-        assert list_buckets[0].bucket_info.bucket_name == bucket_name
+        names = [bucket_info.bucket_info.bucket_name for bucket_info in list_buckets]
+        assert bucket_name in names
         assert isinstance(list_buckets[0], ListBucketInfo)
 
         tx_hash = await client.bucket.delete_bucket(bucket_name)
@@ -82,10 +102,10 @@ async def test_update_bucket():
     async with GreenfieldClient(network_configuration=network_configuration, key_manager=key_manager) as client:
         await client.async_init()
         bucket_name = "".join(random.choices(string.ascii_lowercase + string.digits, k=random.randint(5, 11)))
-        sps = (await client.blockchain_client.sp.get_storage_providers(QueryStorageProvidersRequest())).sps
+        sp = await client.blockchain_client.sp.get_first_in_service_storage_provider()
         tx_hash = await client.bucket.create_bucket(
             bucket_name,
-            primary_sp_address=sps[0].operator_address,
+            primary_sp_address=sp["operator_address"],
             opts=CreateBucketOptions(charged_read_quota=100, visibility=VisibilityType.VISIBILITY_TYPE_PRIVATE),
         )
         assert tx_hash
@@ -137,10 +157,10 @@ async def test_put_bucket_policy():
         await client.async_init()
 
         bucket_name = "".join(random.choices(string.ascii_lowercase + string.digits, k=random.randint(5, 11)))
-        sps = (await client.blockchain_client.sp.get_storage_providers(QueryStorageProvidersRequest())).sps
+        sp = await client.blockchain_client.sp.get_first_in_service_storage_provider()
         tx_hash = await client.bucket.create_bucket(
             bucket_name,
-            primary_sp_address=sps[0].operator_address,
+            primary_sp_address=sp["operator_address"],
             opts=CreateBucketOptions(charged_read_quota=100, visibility=VisibilityType.VISIBILITY_TYPE_PRIVATE),
         )
         assert tx_hash
@@ -148,6 +168,7 @@ async def test_put_bucket_policy():
         assert isinstance(tx_hash, str)
         await client.basic.wait_for_tx(hash=tx_hash)
 
+        await asyncio.sleep(3)
         statements = [
             Statement(
                 effect=Effect.EFFECT_ALLOW,
@@ -155,6 +176,7 @@ async def test_put_bucket_policy():
                     ActionType.ACTION_UPDATE_BUCKET_INFO,
                     ActionType.ACTION_DELETE_BUCKET,
                 ],
+                resources=[f"grn:b::{bucket_name}"],
             )
         ]
         principal = Principal(type=PrincipalType.PRINCIPAL_TYPE_GNFD_ACCOUNT, value=principal_key_manager.address)
@@ -200,10 +222,10 @@ async def test_get_bucket_permission_and_records():
         await client.async_init()
 
         bucket_name = "".join(random.choices(string.ascii_lowercase + string.digits, k=random.randint(5, 11)))
-        sps = (await client.blockchain_client.sp.get_storage_providers(QueryStorageProvidersRequest())).sps
+        sp = await client.blockchain_client.sp.get_first_in_service_storage_provider()
         tx_hash = await client.bucket.create_bucket(
             bucket_name,
-            primary_sp_address=sps[0].operator_address,
+            primary_sp_address=sp["operator_address"],
             opts=CreateBucketOptions(charged_read_quota=100, visibility=VisibilityType.VISIBILITY_TYPE_PRIVATE),
         )
         assert tx_hash
@@ -238,10 +260,10 @@ async def test_buy_quota_for_bucket():
         await client.async_init()
 
         bucket_name = "".join(random.choices(string.ascii_lowercase + string.digits, k=random.randint(5, 11)))
-        sps = (await client.blockchain_client.sp.get_storage_providers(QueryStorageProvidersRequest())).sps
+        sp = await client.blockchain_client.sp.get_first_in_service_storage_provider()
         tx_hash = await client.bucket.create_bucket(
             bucket_name,
-            primary_sp_address=sps[0].operator_address,
+            primary_sp_address=sp["operator_address"],
             opts=CreateBucketOptions(charged_read_quota=100, visibility=VisibilityType.VISIBILITY_TYPE_PRIVATE),
         )
         assert tx_hash

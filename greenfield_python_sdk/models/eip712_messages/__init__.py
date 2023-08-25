@@ -36,5 +36,6 @@ URL_TO_PROTOS_TYPE_MAP = {
     **feegrant.URL_TO_PROTOS_TYPE_MAP,
     **proposal.URL_TO_PROTOS_TYPE_MAP,
     **sp.URL_TO_PROTOS_TYPE_MAP,
+    **storage.URL_TO_PROTOS_TYPE_MAP,
     **staking.URL_TO_PROTOS_TYPE_MAP,
 }

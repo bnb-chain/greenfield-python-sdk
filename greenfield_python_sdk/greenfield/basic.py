@@ -37,6 +37,12 @@ class Basic:
             self.response = await self._resp.json()
             return self.response["result"]["response"]["version"]
 
+    async def get_status(self):
+        raise NotImplementedError
+
+    async def get_commit(self):
+        raise NotImplementedError
+
     async def get_latest_block_height(self) -> int:
         response = await self.blockchain_client.tendermint.get_latest_block_height()
         return response
@@ -61,6 +67,12 @@ class Basic:
 
         response = await self.blockchain_client.tendermint.get_latest_validator_set(request)
         return response.validators, response.pagination
+
+    async def get_validator_set(self):
+        raise NotImplementedError
+
+    async def get_validators_by_height(self):
+        raise NotImplementedError
 
     async def wait_for_block_height(self, height: int) -> int:
         """Waits for the block with the given height to be committed to the blockchain.
@@ -119,3 +131,6 @@ class Basic:
     async def broadcast_raw_tx(self, tx_bytes: bytes) -> str:
         response = await self.blockchain_client.broadcast_raw_tx(tx_bytes=tx_bytes)
         return response
+
+    async def query_vote(self):
+        raise NotImplementedError

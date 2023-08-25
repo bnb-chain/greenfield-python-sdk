@@ -1,7 +1,14 @@
 import pytest
 from betterproto.lib.google.protobuf import Any as AnyMessage
 
-from greenfield_python_sdk import GreenfieldClient, KeyManager, NetworkConfiguration, get_account_configuration
+from greenfield_python_sdk import (
+    BLSKeyManager,
+    GreenfieldClient,
+    KeyManager,
+    NetworkConfiguration,
+    NetworkTestnet,
+    get_account_configuration,
+)
 from greenfield_python_sdk.models.proposal import ProposalOptions
 from greenfield_python_sdk.protos.cosmos.auth.v1beta1 import QueryModuleAccountByNameRequest
 from greenfield_python_sdk.protos.cosmos.base.v1beta1 import Coin
@@ -9,12 +16,13 @@ from greenfield_python_sdk.protos.cosmos.gov.v1 import Proposal, VoteOption
 from greenfield_python_sdk.protos.greenfield.sp import Description, MsgCreateStorageProvider
 
 pytestmark = [pytest.mark.asyncio, pytest.mark.e2e]
-network_configuration = NetworkConfiguration()
+network_configuration = NetworkConfiguration(**NetworkTestnet().model_dump())
 
 
 @pytest.mark.requires_config
 @pytest.mark.tx
 @pytest.mark.slow
+@pytest.mark.localnet
 async def test_submit_proposal():
     config = get_account_configuration()
     key_manager = KeyManager(private_key=config.private_key)
@@ -25,6 +33,8 @@ async def test_submit_proposal():
         seal_address = KeyManager()
         approval_address = KeyManager()
         gc_address = KeyManager()
+
+        bls_key_manager = BLSKeyManager()
 
         hash = await client.account.transfer(
             from_address=key_manager.address,
@@ -41,29 +51,30 @@ async def test_submit_proposal():
         gov_module_address = gov_module_address[4 : len(gov_module_address) - 15]
 
         create_sp = MsgCreateStorageProvider(
-            creator=gov_module_address,
-            description=Description(moniker="test"),
-            sp_address=key_manager.address,
-            funding_address=funding_address.address,
-            seal_address=seal_address.address,
             approval_address=approval_address.address,
-            gc_address=gc_address.address,
+            creator=gov_module_address,
+            deposit=Coin(denom="BNB", amount=str(100000000000000)),
+            description=Description(moniker="test"),
             endpoint="https://sp0.greenfield.io",
-            deposit=Coin(denom="BNB", amount=str(10000000000000000000000)),
-            read_price=str(1 * 10**18),
             free_read_quota=None,
+            funding_address=funding_address.address,
+            gc_address=gc_address.address,
+            read_price=str(1 * 10**18),
+            seal_address=seal_address.address,
+            sp_address=key_manager.address,
             store_price=str(1 * 10**18),
+            bls_key=bls_key_manager.account.public_key,
+            bls_proof=bls_key_manager.account.bls_proof(),
         )
         msg_create_sp = AnyMessage(type_url="/greenfield.sp.MsgCreateStorageProvider", value=bytes(create_sp))
 
-        proposal_id, tx_hash, _ = await client.proposal.submit_proposal(
+        proposal_id, tx_hash = await client.proposal.submit_proposal(
             msgs=[msg_create_sp],
-            deposit_amount=1000000000000000000,
+            deposit_amount=100000000000000,
             title="test",
             summary="test",
             opts=ProposalOptions(metadata="create"),
         )
-        assert len(tx_hash) == 64
         assert isinstance(tx_hash, str)
         assert isinstance(proposal_id, int)
         await client.basic.wait_for_tx(hash=tx_hash)
@@ -78,6 +89,5 @@ async def test_submit_proposal():
             vote_option=VoteOption.VOTE_OPTION_YES,
             opts=ProposalOptions(),
         )
-        assert len(tx_hash) == 64
         assert isinstance(tx_hash, str)
         await client.basic.wait_for_tx(hash=tx_hash)

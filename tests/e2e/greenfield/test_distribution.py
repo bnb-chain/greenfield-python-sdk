@@ -1,12 +1,18 @@
 import pytest
 
-from greenfield_python_sdk import GreenfieldClient, KeyManager, NetworkConfiguration, get_account_configuration
+from greenfield_python_sdk import (
+    GreenfieldClient,
+    KeyManager,
+    NetworkConfiguration,
+    NetworkTestnet,
+    get_account_configuration,
+)
 
 pytestmark = [pytest.mark.asyncio, pytest.mark.e2e]
 
 
 # Initialize the configuration, key manager
-network_configuration = NetworkConfiguration()
+network_configuration = NetworkConfiguration(**NetworkTestnet().model_dump())
 key_manager = KeyManager()
 
 
@@ -51,7 +57,7 @@ async def test_withdraw_validator_commission_failed():
 @pytest.mark.tx
 @pytest.mark.slow
 async def test_withdraw_delegator_reward_failed():
-    # This call will raise an exception because the account has no validator distribution info
+    # This call will raise an exception because the account has no delegation distribution info
     config = get_account_configuration()
     key_manager = KeyManager(private_key=config.private_key)
 
@@ -65,8 +71,7 @@ async def test_withdraw_delegator_reward_failed():
             await client.distribution.withdraw_delegator_reward(
                 validator_address=response.validators[1].operator_address,
             )
-
-        assert "failed to execute message; message index: 0: no validator distribution info" in str(excinfo.value)
+        assert "failed to execute message; message index: 0: no delegation distribution info" in str(excinfo.value)
 
 
 @pytest.mark.requires_config

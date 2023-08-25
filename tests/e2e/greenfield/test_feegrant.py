@@ -2,7 +2,13 @@ from datetime import datetime, timedelta
 
 import pytest
 
-from greenfield_python_sdk import GreenfieldClient, KeyManager, NetworkConfiguration, get_account_configuration
+from greenfield_python_sdk import (
+    GreenfieldClient,
+    KeyManager,
+    NetworkConfiguration,
+    NetworkTestnet,
+    get_account_configuration,
+)
 from greenfield_python_sdk.greenfield.account import Coin
 from greenfield_python_sdk.protos.cosmos.feegrant.v1beta1 import BasicAllowance, Grant
 from greenfield_python_sdk.protos.cosmos.tx.v1beta1 import Fee
@@ -14,7 +20,7 @@ pytestmark = [pytest.mark.asyncio, pytest.mark.e2e]
 
 
 # Initialize the configuration, key manager
-network_configuration = NetworkConfiguration()
+network_configuration = NetworkConfiguration(**NetworkTestnet().model_dump())
 key_manager = KeyManager()
 
 
@@ -40,7 +46,7 @@ async def test_grant_basic_allowance():
         hash = await client.account.transfer(
             from_address=key_manager.address,
             to_address=granter_key_manager.address,
-            amounts=[Coin(denom="BNB", amount="1500000000000000")],
+            amounts=[Coin(denom="BNB", amount="1400000000000000")],
         )
         assert hash
         await client.basic.wait_for_tx(hash)
@@ -49,7 +55,7 @@ async def test_grant_basic_allowance():
         hash = await client.account.transfer(
             from_address=key_manager.address,
             to_address=grantee_key_manager.address,
-            amounts=[Coin(denom="BNB", amount="1500000000000000")],
+            amounts=[Coin(denom="BNB", amount="1400000000000000")],
         )
         assert hash
         assert isinstance(hash, str)
@@ -64,13 +70,13 @@ async def test_grant_basic_allowance():
             expiration=datetime.now() + timedelta(days=5),
         )
         assert hash
-
         assert isinstance(hash, str)
         await client.basic.wait_for_tx(hash)
 
         # Query the allowance from granter to grantee
         allowance = await client.feegrant.get_basic_allowance(
-            granter_address=granter_key_manager.address, grantee_address=grantee_key_manager.address
+            granter_address=granter_key_manager.address,
+            grantee_address=grantee_key_manager.address,
         )
         assert allowance
         assert isinstance(allowance, BasicAllowance)
@@ -109,7 +115,8 @@ async def test_grant_basic_allowance():
 
         # Query the allowance from granter to grantee again, it should be reduced
         allowance_after = await client.feegrant.get_basic_allowance(
-            granter_address=granter_key_manager.address, grantee_address=grantee_key_manager.address
+            granter_address=granter_key_manager.address,
+            grantee_address=grantee_key_manager.address,
         )
 
         assert allowance_after
@@ -130,7 +137,8 @@ async def test_grant_basic_allowance():
         # Query the allowance from the granter to the grantee, must raise exception
         with pytest.raises(Exception):
             await client.feegrant.get_basic_allowance(
-                granter_address=granter_key_manager.address, grantee_address=grantee_key_manager.address
+                granter_address=granter_key_manager.address,
+                grantee_address=grantee_key_manager.address,
             )
 
         # Make another transaction, it should fail as well
@@ -201,7 +209,8 @@ async def test_grant_allowance():
 
         # Query the allowance from granter to grantee
         allowance = await client.feegrant.get_allowance(
-            granter_address=granter_key_manager.address, grantee_address=grantee_key_manager.address
+            granter_address=granter_key_manager.address,
+            grantee_address=grantee_key_manager.address,
         )
         assert allowance
         assert isinstance(allowance, Grant)
@@ -226,7 +235,8 @@ async def test_get_basic_allowance():
         # Query the allowance from granter to grantee, must raise exception
         with pytest.raises(Exception):
             await client.feegrant.get_basic_allowance(
-                granter_address=granter_key_manager.address, grantee_address=grantee_key_manager.address
+                granter_address=granter_key_manager.address,
+                grantee_address=grantee_key_manager.address,
             )
 
         # Fund both accounts with a transaction with the base account
@@ -266,7 +276,8 @@ async def test_get_basic_allowance():
 
         # Query the allowance from granter to grantee
         allowance = await client.feegrant.get_basic_allowance(
-            granter_address=granter_key_manager.address, grantee_address=grantee_key_manager.address
+            granter_address=granter_key_manager.address,
+            grantee_address=grantee_key_manager.address,
         )
         assert allowance
         assert isinstance(allowance, BasicAllowance)
@@ -291,7 +302,8 @@ async def test_get_allowance():
         # Query the allowance from granter to grantee, must raise exception
         with pytest.raises(Exception):
             await client.feegrant.get_allowance(
-                granter_address=granter_key_manager.address, grantee_address=grantee_key_manager.address
+                granter_address=granter_key_manager.address,
+                grantee_address=grantee_key_manager.address,
             )
 
         # Fund both accounts with a transaction with the base account
@@ -331,7 +343,8 @@ async def test_get_allowance():
 
         # Query the allowance from granter to grantee
         allowance = await client.feegrant.get_allowance(
-            granter_address=granter_key_manager.address, grantee_address=grantee_key_manager.address
+            granter_address=granter_key_manager.address,
+            grantee_address=grantee_key_manager.address,
         )
         assert allowance
         assert isinstance(allowance, Grant)
@@ -536,5 +549,6 @@ async def test_revoke_allowance():
         # Query the allowance from the granter to the grantee, must raise exception
         with pytest.raises(Exception):
             await client.feegrant.get_basic_allowance(
-                granter_address=granter_key_manager.address, grantee_address=grantee_key_manager.address
+                granter_address=granter_key_manager.address,
+                grantee_address=grantee_key_manager.address,
             )

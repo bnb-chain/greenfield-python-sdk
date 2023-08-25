@@ -1,12 +1,13 @@
 import binascii
+import hashlib
+import os
 from typing import Optional
-
 import ecdsa
 import hdwallets
-import secp256k1
 from Crypto.PublicKey import ECC
 from eth_utils import keccak, to_checksum_address
 from mnemonic import Mnemonic
+from py_ecc.bls import G2ProofOfPossession as bls_pop
 
 
 def seed_to_private_key(seed, derivation_path, passphrase: str = ""):
@@ -146,7 +147,8 @@ class Account:
             Public Key
         """
         pubkey_bytes = privkey_to_pubkey(self.private_key)
-        pubkey = secp256k1.PublicKey(pubkey=pubkey_bytes, raw=True).serialize()
+
+        pubkey = ecdsa.VerifyingKey.from_string(pubkey_bytes, curve=ecdsa.SECP256k1).to_string(encoding="compressed")
         return pubkey
 
     @property
@@ -232,10 +234,9 @@ class KeyManager:
             self._init_from_nothing()
 
     def _init_from_private_key(self):
-        self.private_key_instance = secp256k1.PrivateKey(privkey=self.private_key, raw=False)
+        self.private_key_instance = ecdsa.SigningKey.from_string(bytes.fromhex(self.private_key), curve=ecdsa.SECP256k1)
 
-        self.eth_private_key = self.private_key_instance.serialize()
-
+        self.eth_private_key = self.private_key_instance.to_string().hex()
         self.account = Account(private_key=self.eth_private_key)
 
         self.address = self.account.address
@@ -244,7 +245,7 @@ class KeyManager:
         raise NotImplementedError
 
     def _init_from_nothing(self):
-        self.private_key = secp256k1.PrivateKey().serialize()
+        self.private_key = ecdsa.SigningKey.generate(curve=ecdsa.SECP256k1).to_string().hex()
         self._init_from_private_key()
 
     @property
@@ -256,3 +257,50 @@ class KeyManager:
         self._account = account
         self.private_key = account.private_key
         self.address = account.address
+
+
+def tmhash(data):
+    """Compute a hash using the same algorithm as Tendermint."""
+    return hashlib.sha256(data).digest()
+
+
+class BLSAccount:
+    def __init__(self, private_key: str = None):
+        # Convert the hex private key to an integer
+        self._key = int(private_key, 16)
+
+    @property
+    def private_key(self) -> str:
+        return self._key.hex()
+
+    @property
+    def public_key(self) -> str:
+        pub_key = bls_pop.SkToPk(self._key)
+        return pub_key.hex()
+
+    def bls_proof(self):
+        # Sign the hash of the public key and get the signature in hex
+        proof = bls_pop.Sign(SK=self._key, message=tmhash(bytes.fromhex(self.public_key)))
+        return proof.hex()
+
+
+class BLSKeyManager:
+    def __init__(self, private_key: Optional[str] = None):
+        self.private_key = private_key
+        self.account = None
+        if self.private_key:
+            self._init_from_private_key()
+        else:
+            self._init_from_nothing()
+
+    def _init_from_private_key(self):
+        self.account = BLSAccount(private_key=self.private_key)
+
+    def _init_from_nothing(self):
+        # Generate a new private key
+        while True:
+            potential_privkey = int.from_bytes(os.urandom(32), "big")
+            if bls_pop._is_valid_privkey(potential_privkey):  # Check if it's a valid BLS private key
+                self.private_key = hex(potential_privkey)[2:]
+                break
+        self._init_from_private_key()

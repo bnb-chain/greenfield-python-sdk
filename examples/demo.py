@@ -1,19 +1,18 @@
 import asyncio
 import io
 
-from greenfield_python_sdk.config import NetworkConfiguration, get_account_configuration
+from greenfield_python_sdk.config import NetworkConfiguration, NetworkTestnet, get_account_configuration
 from greenfield_python_sdk.greenfield_client import GreenfieldClient
 from greenfield_python_sdk.key_manager import KeyManager
 from greenfield_python_sdk.models.bucket import CreateBucketOptions
 from greenfield_python_sdk.models.object import CreateObjectOptions, PutObjectOptions
-from greenfield_python_sdk.protos.greenfield.sp import QueryStorageProvidersRequest
 from greenfield_python_sdk.protos.greenfield.storage import VisibilityType
 
 config = get_account_configuration()
 
 
 async def main():
-    network_configuration = NetworkConfiguration()
+    network_configuration = NetworkConfiguration(**NetworkTestnet().model_dump())
     key_manager = KeyManager(private_key=config.private_key)
     
     async with GreenfieldClient(network_configuration=network_configuration, key_manager=key_manager) as client:
@@ -22,22 +21,16 @@ async def main():
         bucket_name = "demobucket"
         object_name = "demoimage.png"
 
-        # Get Storage Providers
-        sps = (await client.blockchain_client.sp.get_storage_providers(QueryStorageProvidersRequest())).sps
+        # Get a Storage Provider
+        sp = await client.blockchain_client.sp.get_first_in_service_storage_provider()
 
-        # Get Bucket
-        bucket = await client.bucket.get_bucket_head(
+        # Create Bucket
+        tx_hash = await client.bucket.create_bucket(
             bucket_name,
+            primary_sp_address=sp["operator_address"],
+            opts=CreateBucketOptions(charged_read_quota=100, visibility=VisibilityType.VISIBILITY_TYPE_PRIVATE),
         )
-
-        if not bucket:
-            # Create Bucket
-            tx_hash = await client.bucket.create_bucket(
-                bucket_name,
-                primary_sp_address=sps[0].operator_address,
-                opts=CreateBucketOptions(charged_read_quota=100, visibility=VisibilityType.VISIBILITY_TYPE_PRIVATE),
-            )
-            await client.basic.wait_for_tx(hash=tx_hash)
+        await client.basic.wait_for_tx(hash=tx_hash)
 
         # Create Object
         with open('./examples/img.png', 'rb') as f:

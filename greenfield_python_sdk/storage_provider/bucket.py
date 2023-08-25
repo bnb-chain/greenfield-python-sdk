@@ -14,7 +14,8 @@ from greenfield_python_sdk.models.bucket import (
 )
 from greenfield_python_sdk.models.const import CREATE_BUCKET_ACTION
 from greenfield_python_sdk.models.request import RequestMeta
-from greenfield_python_sdk.protos.greenfield.storage import Approval, MsgCreateBucket
+from greenfield_python_sdk.protos.greenfield.common import Approval
+from greenfield_python_sdk.protos.greenfield.storage import MsgCreateBucket
 from greenfield_python_sdk.storage_provider.request import Client
 from greenfield_python_sdk.storage_provider.utils import check_valid_bucket_name, get_unsigned_bytes_from_message
 
@@ -44,6 +45,9 @@ class Bucket:
         expired_height = int(json_signed_message["primary_sp_approval"]["expired_height"])
         create_bucket_msg.primary_sp_approval = Approval(
             expired_height=expired_height,
+            global_virtual_group_family_id=int(
+                json_signed_message["primary_sp_approval"]["global_virtual_group_family_id"]
+            ),
             sig=bytes(json_signed_message["primary_sp_approval"]["sig"], "utf-8"),
         )
         return create_bucket_msg, json_signed_message["primary_sp_approval"]["sig"]

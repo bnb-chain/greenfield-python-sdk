@@ -13,12 +13,13 @@ from greenfield_python_sdk.config import NetworkConfiguration
 
 HOST = "localhost"
 PORT = 9090
+CHAIN_ID = 5000
 
 pytestmark = [pytest.mark.unit]
 
 
 def test_blockchain_client_initialization(mock_channel):
-    network_config = NetworkConfiguration(host=HOST, port=PORT)
+    network_config = NetworkConfiguration(host=HOST, port=PORT, chain_id=CHAIN_ID)
     client = BlockchainClient(network_config, channel=mock_channel)
 
     assert client.host == HOST
@@ -28,7 +29,7 @@ def test_blockchain_client_initialization(mock_channel):
 
 @pytest.mark.asyncio
 async def test_blockchain_context_manager_client_initialization(mock_channel):
-    network_config = NetworkConfiguration(HOST, PORT)
+    network_config = NetworkConfiguration(host=HOST, port=PORT, chain_id=CHAIN_ID)
     async with BlockchainClient(network_config, channel=mock_channel) as client:
         assert isinstance(client.bridge, Bridge)
         assert isinstance(client.challenge, Challenge)
@@ -42,7 +43,7 @@ async def test_blockchain_context_manager_client_initialization(mock_channel):
 
 @pytest.mark.asyncio
 async def test_blockchain_client_connected(mock_channel):
-    network_config = NetworkConfiguration(HOST, PORT)
+    network_config = NetworkConfiguration(host=HOST, port=PORT, chain_id=CHAIN_ID)
     mock_channel._connected = True
     client = BlockchainClient(network_config, channel=mock_channel)
 
@@ -51,7 +52,7 @@ async def test_blockchain_client_connected(mock_channel):
 
 @pytest.mark.asyncio
 async def test_blockchain_client_not_connected(mock_channel):
-    network_config = NetworkConfiguration(HOST, PORT)
+    network_config = NetworkConfiguration(host=HOST, port=PORT, chain_id=CHAIN_ID)
     mock_channel._connected = False
     client = BlockchainClient(network_config, channel=mock_channel)
 

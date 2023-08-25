@@ -5,7 +5,8 @@ from pydantic import BaseModel
 from pydantic.dataclasses import dataclass
 
 from greenfield_python_sdk.models.transaction import TxOption
-from greenfield_python_sdk.protos.greenfield.storage import Approval, BillingInfo, BucketInfo, SecondarySpObjectsSize
+from greenfield_python_sdk.protos.greenfield.common import Approval
+from greenfield_python_sdk.protos.greenfield.storage import BucketInfo
 from greenfield_python_sdk.protos.greenfield.storage import VisibilityType
 from greenfield_python_sdk.protos.greenfield.storage import VisibilityType as Visibility
 

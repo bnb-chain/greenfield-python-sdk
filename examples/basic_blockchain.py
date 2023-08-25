@@ -3,13 +3,13 @@ import logging
 
 from greenfield_python_sdk.blockchain.utils import wait_for_block_height
 from greenfield_python_sdk.blockchain_client import BlockchainClient
-from greenfield_python_sdk.config import NetworkConfiguration
+from greenfield_python_sdk.config import NetworkConfiguration, NetworkTestnet
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 async def main():
-    async with BlockchainClient(NetworkConfiguration()) as client:
+    async with BlockchainClient(NetworkConfiguration(**NetworkTestnet().model_dump())) as client:
 
         response = await client.tendermint.get_node_info()
         logger.info(f"Node info moniker: {response.default_node_info.moniker}, version: {response.default_node_info.version}")

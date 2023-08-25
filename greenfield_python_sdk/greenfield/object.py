@@ -54,11 +54,11 @@ class Object:
     async def create_object(
         self, bucket_name: str, object_name: str, reader: io.BytesIO, opts: CreateObjectOptions
     ) -> str:
-        response = await self.blockchain_client.storage.get_head_bucket(QueryHeadBucketRequest(bucket_name=bucket_name))
-        primary_sp_address = response.to_pydict(casing=Casing.SNAKE)["bucket_info"]["primary_sp_address"]
+        sp = await self.blockchain_client.sp.get_first_in_service_storage_provider()
+
         storage_params = await self.blockchain_client.storage.get_params()
         get_approval, sp_signature, checksums = await self.storage_client.object.get_object_approval(
-            bucket_name, object_name, opts, primary_sp_address, reader, storage_params
+            bucket_name, object_name, opts, sp["operator_address"], reader, storage_params
         )
         response = await self.blockchain_client.broadcast_message(
             message=get_approval,
@@ -75,10 +75,9 @@ class Object:
         reader: io.BytesIO,
         opts: PutObjectOptions,
     ) -> str:
-        response = await self.blockchain_client.storage.get_head_bucket(QueryHeadBucketRequest(bucket_name=bucket_name))
-        primary_sp_address = response.to_pydict(casing=Casing.SNAKE)["bucket_info"]["primary_sp_address"]
+        sp = await self.blockchain_client.sp.get_first_in_service_storage_provider()
         return await self.storage_client.object.put_object(
-            bucket_name, object_name, object_size, primary_sp_address, reader, opts
+            bucket_name, object_name, object_size, sp["operator_address"], reader, opts
         )
 
     async def cancel_create_object(self, bucket_name: str, object_name: str) -> str:
@@ -105,9 +104,9 @@ class Object:
         return response
 
     async def get_object(self, bucket_name: str, object_name: str, opts: GetObjectOption) -> Tuple[Any, ObjectInfo]:
-        response = await self.blockchain_client.storage.get_head_bucket(QueryHeadBucketRequest(bucket_name=bucket_name))
-        primary_sp_address = response.to_pydict(casing=Casing.SNAKE)["bucket_info"]["primary_sp_address"]
-        return await self.storage_client.object.get_object(bucket_name, object_name, opts, primary_sp_address)
+        sp = await self.blockchain_client.sp.get_first_in_service_storage_provider()
+
+        return await self.storage_client.object.get_object(bucket_name, object_name, opts, sp["operator_address"])
 
     async def get_object_head(self, bucket_name: str, object_name: str) -> ObjectInfo:
         object_info = await self.blockchain_client.storage.get_head_object(
@@ -153,7 +152,7 @@ class Object:
         object_name: str,
         principal: Principal,
         statements: List["Statement"],
-        opts: PutPolicyOption,
+        opts: PutPolicyOption = None,
     ) -> str:
         resource = f"grn:{ResourceType.RESOURCE_TYPE_OBJECT.value}::{bucket_name}/{object_name}"
 
@@ -163,7 +162,7 @@ class Object:
             principal=principal,
             statements=statements,
         )
-        if opts.policy_expire_time:
+        if opts and opts.policy_expire_time:
             put_policy_msg.expiration_time = opts.policy_expire_time
         response = await self.blockchain_client.broadcast_message(message=put_policy_msg, type_url=PUT_POLICY)
         return response
@@ -203,9 +202,8 @@ class Object:
         return Effect(effect.effect).name
 
     async def list_objects(self, bucket_name: str, opts: ListObjectsOptions) -> ListObjectsResult:
-        response = await self.blockchain_client.storage.get_head_bucket(QueryHeadBucketRequest(bucket_name=bucket_name))
-        primary_sp_address = response.to_pydict(casing=Casing.SNAKE)["bucket_info"]["primary_sp_address"]
-        return await self.storage_client.object.list_objects(bucket_name, opts, primary_sp_address)
+        sp = await self.blockchain_client.sp.get_first_in_service_storage_provider()
+        return await self.storage_client.object.list_objects(bucket_name, opts, sp["operator_address"])
 
     async def create_folder(self, bucket_name: str, object_name: str, opts: CreateObjectOptions) -> str:
         if object_name.endswith("/") == False:

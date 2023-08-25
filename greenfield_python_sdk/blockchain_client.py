@@ -46,6 +46,7 @@ class BlockchainClient:
         self.host = network_configuration.host
         self.port = network_configuration.port
         self.base_url = f"{self.host}:{self.port}"
+        self.chain_id = network_configuration.chain_id
 
         self.channel = channel
         self.key_manager = key_manager
@@ -86,6 +87,7 @@ class BlockchainClient:
             raise KeyError("To build txs you need to add a key_manager to the BlockchainClient")
 
         if not fee:
+            # Note: This fee is temporal, as it will get replaced later automatically with a correct amount based on the simulated tx
             fee = Fee(
                 amount=[Coin(denom="BNB", amount="10000000000000")],
                 gas_limit=2000,
@@ -159,7 +161,7 @@ class BlockchainClient:
     ):
         tx = await self.build_tx(message=message, type_url=type_url, fee=fee)
 
-        signature_pre = await get_signature(self.key_manager, tx, message, broadcast_option)
+        signature_pre = await get_signature(self.key_manager, tx, message, self.chain_id, broadcast_option)
         tx.signatures = [signature_pre]
         try:
             simulation = await self.simulate_tx(tx)
@@ -167,12 +169,13 @@ class BlockchainClient:
             tx.auth_info.fee.amount[0].amount = str(
                 int(simulation.gas_info.min_gas_price[:-3]) * int(simulation.gas_info.gas_used)
             )
-        except Exception:
+        except Exception as e:
+            if e.args[0] != "":
+                raise Exception(f"Error at simulation: {e}")
             tx.auth_info.fee.gas_limit = 20000000
             tx.auth_info.fee.amount[0].amount = "100000000000000000"
 
-        signature = await get_signature(self.key_manager, tx, message, broadcast_option)
-
+        signature = await get_signature(self.key_manager, tx, message, self.chain_id, broadcast_option)
         tx.signatures = [signature]
         return tx
 
@@ -189,6 +192,7 @@ class BlockchainClient:
             fee=fee,
             broadcast_option=broadcast_option,
         )
+
         if tx.auth_info.fee.payer == self.key_manager.address:
             del tx.auth_info.fee.payer
 

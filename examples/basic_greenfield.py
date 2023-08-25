@@ -3,14 +3,13 @@ import logging
 import random
 import string
 
-from greenfield_python_sdk.config import NetworkConfiguration, get_account_configuration
+from greenfield_python_sdk.config import NetworkConfiguration, NetworkTestnet, get_account_configuration
 from greenfield_python_sdk.greenfield_client import GreenfieldClient
 from greenfield_python_sdk.key_manager import KeyManager
 from greenfield_python_sdk.models.bucket import CreateBucketOptions
-from greenfield_python_sdk.models.group import CreateGroupOptions, ListGroupsOptions
 from greenfield_python_sdk.models.object import CreateObjectOptions, GetObjectOption, PutObjectOptions
 from greenfield_python_sdk.protos.greenfield.sp import QueryStorageProvidersRequest
-from greenfield_python_sdk.protos.greenfield.storage import SourceType, VisibilityType
+from greenfield_python_sdk.protos.greenfield.storage import VisibilityType
 from greenfield_python_sdk.storage_provider.utils import create_example_object
 
 logging.basicConfig(level=logging.INFO)
@@ -19,7 +18,7 @@ config = get_account_configuration()
 
 
 async def main():
-    network_configuration = NetworkConfiguration()
+    network_configuration = NetworkConfiguration(**NetworkTestnet().model_dump())
     key_manager = KeyManager(private_key=config.private_key)
 
     logging.info(f"Main account address: {key_manager.address}")

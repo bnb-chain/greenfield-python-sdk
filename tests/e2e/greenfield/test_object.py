@@ -7,7 +7,13 @@ from datetime import datetime, timedelta
 
 import pytest
 
-from greenfield_python_sdk import GreenfieldClient, KeyManager, NetworkConfiguration, get_account_configuration
+from greenfield_python_sdk import (
+    GreenfieldClient,
+    KeyManager,
+    NetworkConfiguration,
+    NetworkTestnet,
+    get_account_configuration,
+)
 from greenfield_python_sdk.models.bucket import CreateBucketOptions
 from greenfield_python_sdk.models.object import (
     CreateObjectOptions,
@@ -24,7 +30,7 @@ from greenfield_python_sdk.storage_provider.utils import create_example_object
 pytestmark = [pytest.mark.asyncio, pytest.mark.e2e]
 
 
-network_configuration = NetworkConfiguration()
+network_configuration = NetworkConfiguration(**NetworkTestnet().model_dump())
 principal_key_manager = KeyManager()
 
 CONTENT = create_example_object()
@@ -44,10 +50,28 @@ async def test_create_object():
         object_name = "".join(random.choices(string.ascii_lowercase + string.digits, k=random.randint(5, 11)))
 
         await client.async_init()
-        sps = (await client.blockchain_client.sp.get_storage_providers(QueryStorageProvidersRequest())).sps
+        sp = await client.blockchain_client.sp.get_first_in_service_storage_provider()
+
+        bucket_list = await client.bucket.list_buckets(sp["operator_address"])
+        buckets = [bucket.bucket_info.bucket_name for bucket in bucket_list]
+        for bucket_name in buckets:
+            list_object = await client.object.list_objects(bucket_name, ListObjectsOptions())
+
+            for object_name in list_object.objects:
+                tx_hash = await client.object.delete_object(
+                    bucket_name,
+                    object_name,
+                )
+                assert tx_hash
+                await client.basic.wait_for_tx(hash=tx_hash)
+
+            tx_hash = await client.bucket.delete_bucket(bucket_name)
+            assert tx_hash
+            await client.basic.wait_for_tx(hash=tx_hash)
+
         tx_hash = await client.bucket.create_bucket(
             bucket_name,
-            primary_sp_address=sps[0].operator_address,
+            primary_sp_address=sp["operator_address"],
             opts=CreateBucketOptions(charged_read_quota=100, visibility=VisibilityType.VISIBILITY_TYPE_PRIVATE),
         )
         assert tx_hash
@@ -242,7 +266,7 @@ async def test_put_object_policy():
         )
         assert put_object == "Object added successfully"
 
-        await asyncio.sleep(2)
+        await asyncio.sleep(3)
         statements = [
             Statement(
                 effect=Effect.EFFECT_ALLOW,
@@ -250,6 +274,7 @@ async def test_put_object_policy():
                     ActionType.ACTION_CREATE_OBJECT,
                     ActionType.ACTION_DELETE_OBJECT,
                 ],
+                resources=[f"grn:o::{bucket_name}/{object_name}"],
             )
         ]
         principal = Principal(type=PrincipalType.PRINCIPAL_TYPE_GNFD_ACCOUNT, value=principal_key_manager.address)
@@ -442,7 +467,7 @@ async def test_upload_file():
         )
         assert fput_object == "Object added successfully"
 
-        await asyncio.sleep(3)
+        await asyncio.sleep(6)
         await client.object.fget_object(bucket_name, object_name, DOWNLOADING_FILE_DIRECTORY, GetObjectOption())
         assert os.path.exists(DOWNLOADING_FILE_DIRECTORY)
         file = open(DOWNLOADING_FILE_DIRECTORY, "r")

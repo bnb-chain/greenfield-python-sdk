@@ -161,7 +161,7 @@ class Bucket:
         bucket_name: str,
         principal: Principal,
         statements: List[Statement],
-        opts: PutPolicyOption,
+        opts: PutPolicyOption = None,
     ) -> str:
         resource = f"grn:{ResourceType.RESOURCE_TYPE_BUCKET.value}::{bucket_name}"
         put_policy_msg = MsgPutPolicy(
@@ -170,7 +170,7 @@ class Bucket:
             principal=principal,
             statements=statements,
         )
-        if opts.policy_expire_time:
+        if opts and opts.policy_expire_time:
             put_policy_msg.expiration_time = opts.policy_expire_time
 
         tx_hash = await self.blockchain_client.broadcast_message(message=put_policy_msg, type_url=PUT_POLICY)
@@ -211,9 +211,9 @@ class Bucket:
         return await self.storage_client.bucket.list_buckets(sp_address)
 
     async def list_bucket_records(self, bucket_name: str, opts: ListReadRecordOptions) -> ListBucketReadRecord:
-        response = await self.blockchain_client.storage.get_head_bucket(QueryHeadBucketRequest(bucket_name=bucket_name))
-        primary_sp_address = response.to_pydict(casing=Casing.SNAKE)["bucket_info"]["primary_sp_address"]
-        return await self.storage_client.bucket.list_bucket_read_record(bucket_name, primary_sp_address, opts)
+        sp = await self.blockchain_client.sp.get_first_in_service_storage_provider()
+
+        return await self.storage_client.bucket.list_bucket_read_record(bucket_name, sp["operator_address"], opts)
 
     async def buy_quota_for_bucket(self, bucket_name: str, target_quota: int) -> str:
         bucket_info = await self.blockchain_client.storage.get_head_bucket(
@@ -234,6 +234,5 @@ class Bucket:
         return tx_hash
 
     async def get_bucket_read_quota(self, bucket_name: str) -> ReadQuota:
-        response = await self.blockchain_client.storage.get_head_bucket(QueryHeadBucketRequest(bucket_name=bucket_name))
-        primary_sp_address = response.to_pydict(casing=Casing.SNAKE)["bucket_info"]["primary_sp_address"]
-        return await self.storage_client.bucket.get_bucket_read_quota(bucket_name, primary_sp_address)
+        sp = await self.blockchain_client.sp.get_first_in_service_storage_provider()
+        return await self.storage_client.bucket.get_bucket_read_quota(bucket_name, sp["operator_address"])

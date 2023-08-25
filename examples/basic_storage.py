@@ -3,11 +3,9 @@ import logging
 import random
 import string
 
-from betterproto import Casing
-
 from greenfield_python_sdk.blockchain.utils import parse_account
 from greenfield_python_sdk.blockchain_client import BlockchainClient
-from greenfield_python_sdk.config import NetworkConfiguration, get_account_configuration
+from greenfield_python_sdk.config import NetworkConfiguration, NetworkTestnet, get_account_configuration
 from greenfield_python_sdk.key_manager import KeyManager
 from greenfield_python_sdk.models.bucket import CreateBucketOptions, ListReadRecordOptions
 from greenfield_python_sdk.models.eip712_messages.storage.bucket_url import CREATE_BUCKET, DELETE_BUCKET
@@ -20,12 +18,7 @@ from greenfield_python_sdk.models.object import (
 )
 from greenfield_python_sdk.models.transaction import BroadcastOption
 from greenfield_python_sdk.protos.cosmos.auth.v1beta1 import QueryAccountRequest
-from greenfield_python_sdk.protos.greenfield.storage import (
-    MsgDeleteBucket,
-    MsgDeleteObject,
-    QueryHeadBucketRequest,
-    VisibilityType,
-)
+from greenfield_python_sdk.protos.greenfield.storage import MsgDeleteBucket, MsgDeleteObject, VisibilityType
 from greenfield_python_sdk.storage_client import StorageClient
 from greenfield_python_sdk.storage_provider.utils import create_example_object
 
@@ -37,7 +30,7 @@ config = get_account_configuration()
 
 
 async def main():
-    network_configuration = NetworkConfiguration()
+    network_configuration = NetworkConfiguration(**NetworkTestnet().model_dump())
     key_manager = KeyManager(private_key=config.private_key)
 
     logger.info(f"Main account address: {key_manager.address}")
@@ -51,7 +44,10 @@ async def main():
 
         response = await blockchain_client.sp.get_storage_providers()
         sp_endpoints = {sp["operatorAddress"]:sp for sp in response.to_pydict()["sps"]} # Transform the response to a dict with the operatorAddress as key
-        sp_address = list(sp_endpoints.keys())[0]
+        
+        sp = await blockchain_client.sp.get_first_in_service_storage_provider()
+        primary_sp_address = sp["operator_address"]
+        
         async with StorageClient(key_manager=key_manager, sp_endpoints=sp_endpoints) as client:
             bucket_name = "".join(random.choices(string.ascii_lowercase + string.digits, k=random.randint(5, 11)))
             object_name = "".join(random.choices(string.ascii_lowercase + string.digits, k=random.randint(5, 11)))
@@ -59,7 +55,7 @@ async def main():
             logger.info(f"---> Get Bucket Approval <---")
             bucket_approval, sp_signature = await client.bucket.get_bucket_approval(
                 bucket_name=bucket_name,
-                primary_sp_address=sp_address,
+                primary_sp_address=primary_sp_address,
                 opts=CreateBucketOptions(charged_read_quota=100, visibility=VisibilityType.VISIBILITY_TYPE_PRIVATE),
             )
             logger.info(f"Response:\n - Bucket Approval: {bucket_approval}\n - SP Signature: {sp_signature}\n\n")
@@ -75,8 +71,7 @@ async def main():
             # logger.info(f"Response: {list_bucket}\n\n")
 
             logger.info(f"---> Bucket Read Quota <---")
-            response = await blockchain_client.storage.get_head_bucket(QueryHeadBucketRequest(bucket_name=bucket_name))
-            primary_sp_address = response.to_pydict(casing=Casing.SNAKE)["bucket_info"]["primary_sp_address"]
+
             quota = await client.bucket.get_bucket_read_quota(
                 bucket_name=bucket_name,
                 primary_sp_address=primary_sp_address
@@ -85,8 +80,6 @@ async def main():
             
 
             logger.info(f"---> bucket read record <---")
-            response = await blockchain_client.storage.get_head_bucket(QueryHeadBucketRequest(bucket_name=bucket_name))
-            primary_sp_address = response.to_pydict(casing=Casing.SNAKE)["bucket_info"]["primary_sp_address"]
             bucket_read_record = await client.bucket.list_bucket_read_record(
                 bucket_name=bucket_name,
                 primary_sp_address=primary_sp_address,
@@ -98,8 +91,6 @@ async def main():
 
             content = create_example_object()
             logger.info(f"---> Get Object Approval <---")
-            response = await blockchain_client.storage.get_head_bucket(QueryHeadBucketRequest(bucket_name=bucket_name))
-            primary_sp_address = response.to_pydict(casing=Casing.SNAKE)["bucket_info"]["primary_sp_address"]
             storage_params = await blockchain_client.storage.get_params()
             object_approval, sp_signature, checksums= await client.object.get_object_approval(
                 bucket_name=bucket_name,
@@ -120,8 +111,6 @@ async def main():
             await asyncio.sleep(5)
 
             logger.info(f"---> Put Object <---")
-            response = await blockchain_client.storage.get_head_bucket(QueryHeadBucketRequest(bucket_name=bucket_name))
-            primary_sp_address = response.to_pydict(casing=Casing.SNAKE)["bucket_info"]["primary_sp_address"]
             put_object = await client.object.put_object(
                 bucket_name=bucket_name,
                 object_name=object_name,
@@ -135,9 +124,7 @@ async def main():
 
    
             logger.info(f"---> Get Object <---")
-            response = await blockchain_client.storage.get_head_bucket(QueryHeadBucketRequest(bucket_name=bucket_name))
-            primary_sp_address = response.to_pydict(casing=Casing.SNAKE)["bucket_info"]["primary_sp_address"]
-        
+            
             info, object_data = await client.object.get_object(
                 bucket_name=bucket_name,
                 object_name=object_name,
@@ -148,8 +135,7 @@ async def main():
          
 
             logger.info(f"---> Get list Object <---")
-            response = await blockchain_client.storage.get_head_bucket(QueryHeadBucketRequest(bucket_name=bucket_name))
-            primary_sp_address = response.to_pydict(casing=Casing.SNAKE)["bucket_info"]["primary_sp_address"]
+        
             list_objects = await client.object.list_objects(
                 bucket_name=bucket_name,
                 opts=ListObjectsOptions(),
