@@ -31,6 +31,8 @@ class Client:
 
     @property
     def open(self) -> bool:
+        if self.scheme not in ["http", "https"]:
+            raise ValueError(f"Invalid scheme: {self.scheme}")
         url_open = urllib.request.urlopen(self.scheme + self.domain_name).getcode()
         if url_open == 200:
             return True
@@ -74,6 +76,8 @@ class Client:
 
     def set_bucket_url(self, address: str, bucket_name: str) -> str:
         url = urlparse(self.sp_endpoints[address]["endpoint"])
+        if url.scheme not in ["http", "https"]:
+            raise ValueError(f"Invalid scheme: {url.scheme}")
         return url.scheme + "://" + bucket_name + "." + url.netloc
 
     async def prepare_request(

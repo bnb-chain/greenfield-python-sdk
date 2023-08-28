@@ -1,5 +1,4 @@
 import binascii
-from datetime import datetime, timedelta
 from typing import Optional, Tuple
 
 from betterproto.lib.google.protobuf import Any as AnyMessage
@@ -8,10 +7,15 @@ from greenfield_python_sdk.blockchain_client import BlockchainClient
 from greenfield_python_sdk.greenfield.account import Account
 from greenfield_python_sdk.greenfield.basic import Basic
 from greenfield_python_sdk.models.eip712_messages.proposal.proposal_url import PROPOSAL
+from greenfield_python_sdk.models.eip712_messages.sp.sp_url import COSMOS_GRANT
 from greenfield_python_sdk.models.eip712_messages.staking.staking_url import (
+    BEGIN_REDELEGATE,
     CREATE_VALIDATOR,
+    DELEGATE,
+    EDIT_VALIDATOR,
     PUBKEY,
     STAKE_AUTHORIZATION,
+    UNDELEGATE,
 )
 from greenfield_python_sdk.protos.cosmos.authz.v1beta1 import Grant, MsgGrant
 from greenfield_python_sdk.protos.cosmos.base.v1beta1 import Coin
@@ -19,11 +23,9 @@ from greenfield_python_sdk.protos.cosmos.crypto.ed25519 import PubKey
 from greenfield_python_sdk.protos.cosmos.gov.v1 import MsgSubmitProposal
 from greenfield_python_sdk.protos.cosmos.slashing.v1beta1 import MsgImpeach, MsgUnjail
 from greenfield_python_sdk.protos.cosmos.staking.v1beta1 import (
-    AuthorizationType,
     CommissionRates,
     Description,
     MsgBeginRedelegate,
-    MsgCancelUnbondingDelegation,
     MsgCreateValidator,
     MsgDelegate,
     MsgEditValidator,
@@ -131,9 +133,12 @@ class Validator:
             challenger_address=challenger_address,
             bls_key=bls_key,
         )
+        if not message.commission_rate:
+            del message.commission_rate
+
         hash = await self.blockchain_client.broadcast_message(
             message=message,
-            type_url="/cosmos.staking.v1beta1.MsgEditValidator",
+            type_url=EDIT_VALIDATOR,
         )
 
         return hash
@@ -146,7 +151,7 @@ class Validator:
         )
         hash = await self.blockchain_client.broadcast_message(
             message=message,
-            type_url="/cosmos.staking.v1beta1.MsgDelegate",
+            type_url=DELEGATE,
         )
 
         return hash
@@ -160,7 +165,7 @@ class Validator:
         )
         hash = await self.blockchain_client.broadcast_message(
             message=message,
-            type_url="/cosmos.staking.v1beta1.MsgBeginRedelegate",
+            type_url=BEGIN_REDELEGATE,
         )
 
         return hash
@@ -173,21 +178,7 @@ class Validator:
         )
         hash = await self.blockchain_client.broadcast_message(
             message=message,
-            type_url="/cosmos.staking.v1beta1.MsgUndelegate",
-        )
-
-        return hash
-
-    async def cancel_unbonding_delegation(self, validator_address: str, creation_height: int, amount: str) -> str:
-        message = MsgCancelUnbondingDelegation(
-            delegator_address=self.storage_client.key_manager.address,
-            validator_address=validator_address,
-            creation_height=creation_height,
-            amount=Coin(denom="BNB", amount=amount),
-        )
-        hash = await self.blockchain_client.broadcast_message(
-            message=message,
-            type_url="/cosmos.staking.v1beta1.MsgCancelUnbondingDelegation",
+            type_url=UNDELEGATE,
         )
 
         return hash
@@ -212,7 +203,7 @@ class Validator:
 
         hash = await self.blockchain_client.broadcast_message(
             message=message,
-            type_url="/cosmos.authz.v1beta1.MsgGrant",
+            type_url=COSMOS_GRANT,
         )
 
         return hash

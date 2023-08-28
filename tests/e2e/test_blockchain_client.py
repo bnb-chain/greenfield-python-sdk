@@ -2,12 +2,14 @@ import pytest
 
 from greenfield_python_sdk import BlockchainClient
 from greenfield_python_sdk.blockchain._cosmos.bank import QueryBalanceRequest
-from greenfield_python_sdk.config import NetworkConfiguration
+from greenfield_python_sdk.config import NetworkConfiguration, NetworkTestnet
+
+testnet_configuration = NetworkConfiguration(**NetworkTestnet().model_dump())
 
 
 @pytest.mark.asyncio
 async def test_blockchain_client():
-    async with BlockchainClient(NetworkConfiguration()) as client:
+    async with BlockchainClient(testnet_configuration) as client:
         # Get bridge parameters
         bridge_params = await client.bridge.get_params()
         print(f"Bridge Parameters: {bridge_params}")

@@ -14,13 +14,8 @@ from greenfield_python_sdk.models.object import (
     PutObjectOptions,
 )
 from greenfield_python_sdk.models.request import RequestMeta, SendOptions
-from greenfield_python_sdk.protos.greenfield.storage import (
-    Approval,
-    MsgCreateObject,
-    ObjectInfo,
-    RedundancyType,
-    VisibilityType,
-)
+from greenfield_python_sdk.protos.greenfield.common import Approval
+from greenfield_python_sdk.protos.greenfield.storage import MsgCreateObject, ObjectInfo, RedundancyType, VisibilityType
 from greenfield_python_sdk.storage_provider.request import Client
 from greenfield_python_sdk.storage_provider.utils import (
     check_valid_bucket_name,
@@ -65,7 +60,6 @@ class Object:
             content_type=content_type,
             creator=self.client.key_manager.address,
             expect_checksums=expect_check_Sums,
-            expect_secondary_sp_addresses=[],
             object_name=object_name,
             payload_size=size,
             primary_sp_approval=Approval(expired_height=0),

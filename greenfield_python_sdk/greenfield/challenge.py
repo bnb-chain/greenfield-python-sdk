@@ -10,6 +10,9 @@ class Challenge:
         self.blockchain_client = blockchain_client
         self.storage_client = storage_client
 
+    async def get_challenge_info(self):
+        raise NotImplementedError
+
     async def submit_challenge(
         self,
         challenger_address: str,
@@ -32,6 +35,9 @@ class Challenge:
         )
 
         return tx_response
+
+    async def attest_challenge(self):
+        raise NotImplementedError
 
     async def get_latest_attested_challenges(self) -> List[int]:
         response = await self.blockchain_client.challenge.get_latest_attested_challenges()

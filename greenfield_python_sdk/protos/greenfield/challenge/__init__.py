@@ -31,7 +31,7 @@ class Slash(betterproto.Message):
     Slash records the storage provider slashes, which will be pruned periodically.
     """
 
-    sp_operator_address: bytes = betterproto.bytes_field(1)
+    sp_id: int = betterproto.uint32_field(1)
     """The slashed storage provider."""
 
     object_id: str = betterproto.string_field(2)
@@ -94,16 +94,19 @@ class EventStartChallenge(betterproto.Message):
     segment_index: int = betterproto.uint32_field(3)
     """The segment/piece index of the object info."""
 
-    sp_operator_address: str = betterproto.string_field(4)
+    sp_id: int = betterproto.uint32_field(4)
     """The storage provider to be challenged."""
 
-    redundancy_index: int = betterproto.int32_field(5)
+    sp_operator_address: str = betterproto.string_field(5)
+    """The storage provider to be challenged."""
+
+    redundancy_index: int = betterproto.int32_field(6)
     """The redundancy index, which comes from the index of storage providers."""
 
-    challenger_address: str = betterproto.string_field(6)
+    challenger_address: str = betterproto.string_field(7)
     """The challenger who submits the challenge."""
 
-    expired_height: int = betterproto.uint64_field(7)
+    expired_height: int = betterproto.uint64_field(8)
     """The challenge will be expired after this height"""
 
 
@@ -117,7 +120,7 @@ class EventAttestChallenge(betterproto.Message):
     result: "VoteResult" = betterproto.enum_field(2)
     """The result of challenge."""
 
-    sp_operator_address: str = betterproto.string_field(3)
+    sp_id: int = betterproto.uint32_field(3)
     """The slashed storage provider address."""
 
     slash_amount: str = betterproto.string_field(4)
@@ -194,6 +197,12 @@ class Params(betterproto.Message):
     attestation_kept_count: int = betterproto.uint64_field(12)
     """The number of kept attested challenge ids, which can be queried by clients."""
 
+    sp_slash_max_amount: str = betterproto.string_field(13)
+    """The max slash amount for a sp in a counting window."""
+
+    sp_slash_counting_window: int = betterproto.uint64_field(14)
+    """The number of blocks to count how much a sp had been slashed."""
+
 
 @dataclass(eq=False, repr=False)
 class GenesisState(betterproto.Message):
@@ -215,6 +224,27 @@ class QueryParamsResponse(betterproto.Message):
 
     params: "Params" = betterproto.message_field(1)
     """params holds all the parameters of this module."""
+
+
+@dataclass(eq=False, repr=False)
+class QueryAttestedChallengeRequest(betterproto.Message):
+    """
+    QueryAttestedChallengeRequest is request type for the Query/AttestedChallenge RPC
+    method.
+    """
+
+    challenge_id: int = betterproto.uint64_field(1)
+    """The id of the challenge."""
+
+
+@dataclass(eq=False, repr=False)
+class QueryAttestedChallengeResponse(betterproto.Message):
+    """
+    QueryAttestedChallengeResponse is response type for the Query/AttestedChallenge RPC
+    method.
+    """
+
+    challenge: "AttestedChallenge" = betterproto.message_field(1)
 
 
 @dataclass(eq=False, repr=False)
@@ -296,7 +326,8 @@ class MsgSubmit(betterproto.Message):
 class MsgSubmitResponse(betterproto.Message):
     """MsgSubmitResponse defines the response of MsgSubmit."""
 
-    pass
+    challenge_id: int = betterproto.uint64_field(1)
+    """The id of the challenge."""
 
 
 @dataclass(eq=False, repr=False)
@@ -375,6 +406,23 @@ class QueryStub(betterproto.ServiceStub):
             "/greenfield.challenge.Query/Params",
             query_params_request,
             QueryParamsResponse,
+            timeout=timeout,
+            deadline=deadline,
+            metadata=metadata,
+        )
+
+    async def attested_challenge(
+        self,
+        query_attested_challenge_request: "QueryAttestedChallengeRequest",
+        *,
+        timeout: Optional[float] = None,
+        deadline: Optional["Deadline"] = None,
+        metadata: Optional["MetadataLike"] = None
+    ) -> "QueryAttestedChallengeResponse":
+        return await self._unary_unary(
+            "/greenfield.challenge.Query/AttestedChallenge",
+            query_attested_challenge_request,
+            QueryAttestedChallengeResponse,
             timeout=timeout,
             deadline=deadline,
             metadata=metadata,
@@ -472,6 +520,11 @@ class QueryBase(ServiceBase):
     async def params(self, query_params_request: "QueryParamsRequest") -> "QueryParamsResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
+    async def attested_challenge(
+        self, query_attested_challenge_request: "QueryAttestedChallengeRequest"
+    ) -> "QueryAttestedChallengeResponse":
+        raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
+
     async def latest_attested_challenges(
         self,
         query_latest_attested_challenges_request: "QueryLatestAttestedChallengesRequest",
@@ -487,6 +540,14 @@ class QueryBase(ServiceBase):
     async def __rpc_params(self, stream: "grpclib.server.Stream[QueryParamsRequest, QueryParamsResponse]") -> None:
         request = await stream.recv_message()
         response = await self.params(request)
+        await stream.send_message(response)
+
+    async def __rpc_attested_challenge(
+        self,
+        stream: "grpclib.server.Stream[QueryAttestedChallengeRequest, QueryAttestedChallengeResponse]",
+    ) -> None:
+        request = await stream.recv_message()
+        response = await self.attested_challenge(request)
         await stream.send_message(response)
 
     async def __rpc_latest_attested_challenges(
@@ -512,6 +573,12 @@ class QueryBase(ServiceBase):
                 grpclib.const.Cardinality.UNARY_UNARY,
                 QueryParamsRequest,
                 QueryParamsResponse,
+            ),
+            "/greenfield.challenge.Query/AttestedChallenge": grpclib.const.Handler(
+                self.__rpc_attested_challenge,
+                grpclib.const.Cardinality.UNARY_UNARY,
+                QueryAttestedChallengeRequest,
+                QueryAttestedChallengeResponse,
             ),
             "/greenfield.challenge.Query/LatestAttestedChallenges": grpclib.const.Handler(
                 self.__rpc_latest_attested_challenges,

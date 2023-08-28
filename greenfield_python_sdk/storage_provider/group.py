@@ -16,20 +16,20 @@ class Group:
         default_get_group_list_limit = 50
 
         if name == "":
-            return GroupsResult()
+            return []
 
         if prefix == "":
-            return GroupsResult()
+            return []
 
         if opts.limit < 0:
-            return GroupsResult()
+            return []
         elif opts.limit > maximum_get_group_list_limit:
             opts.limit = maximum_get_group_list_limit
         elif opts.limit == 0:
             opts.limit = default_get_group_list_limit
 
         if opts.offset < 0 or opts.offset > maximum_get_group_list_offset:
-            return GroupsResult()
+            return []
 
         if opts.source_type != "":
             source_types = [member.name for member in SourceType]
@@ -53,5 +53,5 @@ class Group:
         ).model_dump()
 
         response = await self.client.prepare_request(base_url, request_metadata, request_metadata["query_parameters"])
-        groups = (await response.json())["groups"]
-        return groups
+        data = await response.json()
+        return data["groups"]

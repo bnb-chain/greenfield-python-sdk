@@ -5,7 +5,14 @@ from datetime import datetime, timedelta
 
 import pytest
 
-from greenfield_python_sdk import GreenfieldClient, KeyManager, NetworkConfiguration, get_account_configuration
+from greenfield_python_sdk import (
+    GreenfieldClient,
+    KeyManager,
+    NetworkConfiguration,
+    NetworkTestnet,
+    get_account_configuration,
+)
+from greenfield_python_sdk.greenfield.account import Coin
 from greenfield_python_sdk.models.bucket import CreateBucketOptions
 from greenfield_python_sdk.models.group import CreateGroupOptions, ListGroupsOptions
 from greenfield_python_sdk.models.object import CreateObjectOptions, PutObjectOptions
@@ -18,7 +25,7 @@ from greenfield_python_sdk.storage_provider.utils import create_example_object
 pytestmark = [pytest.mark.asyncio, pytest.mark.e2e]
 
 
-network_configuration = NetworkConfiguration()
+network_configuration = NetworkConfiguration(**NetworkTestnet().model_dump())
 group_key_manager = KeyManager()
 
 
@@ -140,6 +147,7 @@ async def test_policy_group():
                     ActionType.ACTION_UPDATE_BUCKET_INFO,
                     ActionType.ACTION_DELETE_BUCKET,
                 ],
+                resources=[f"grn:b::{bucket_name}"],
             )
         ]
         principal = Principal(type=PrincipalType.PRINCIPAL_TYPE_GNFD_GROUP, value=group_head.id)
@@ -176,7 +184,7 @@ async def test_policy_group():
         )
         assert put_object == "Object added successfully"
 
-        await asyncio.sleep(2)
+        await asyncio.sleep(4)
         statements = [
             Statement(
                 effect=Effect.EFFECT_ALLOW,
@@ -184,6 +192,7 @@ async def test_policy_group():
                     ActionType.ACTION_CREATE_OBJECT,
                     ActionType.ACTION_DELETE_OBJECT,
                 ],
+                resources=[f"grn:g:{key_manager.address}/{group_name}"],
             )
         ]
         principal = Principal(type=PrincipalType.PRINCIPAL_TYPE_GNFD_GROUP, value=group_head.id)
@@ -203,6 +212,7 @@ async def test_policy_group():
         assert object_policy_of_group.statements[0].actions[0] == "ACTION_CREATE_OBJECT"
         assert object_policy_of_group.statements[0].actions[1] == "ACTION_DELETE_OBJECT"
 
+        await asyncio.sleep(2)
         statements = [
             Statement(
                 effect=Effect.EFFECT_ALLOW,
@@ -210,6 +220,7 @@ async def test_policy_group():
                     ActionType.ACTION_UPDATE_GROUP_MEMBER,
                     ActionType.ACTION_DELETE_GROUP,
                 ],
+                resources=[""],
             )
         ]
 
@@ -268,11 +279,13 @@ async def test_list_group():
     config = get_account_configuration()
     key_manager = KeyManager(private_key=config.private_key)
     async with GreenfieldClient(network_configuration=network_configuration, key_manager=key_manager) as client:
-        prefix = "test_"
-        group_name1 = prefix + "".join(random.choices(string.ascii_lowercase + string.digits, k=random.randint(4, 6)))
-        group_name2 = prefix + "".join(random.choices(string.ascii_lowercase + string.digits, k=random.randint(4, 6)))
-        group_name3 = prefix + "".join(random.choices(string.ascii_lowercase + string.digits, k=random.randint(4, 6)))
         await client.async_init()
+
+        tracker = "".join(random.choices(string.ascii_lowercase + string.digits, k=random.randint(4, 5)))
+        prefix = f"test_{tracker}"
+        group_name1 = prefix + "-1"
+        group_name2 = prefix + "-2"
+        group_name3 = prefix + "-3"
 
         tx_hash = await client.group.create_group(
             group_name=group_name1, opts=CreateGroupOptions(init_group_members=[key_manager.address])
@@ -298,9 +311,12 @@ async def test_list_group():
         assert isinstance(tx_hash, str)
         await client.basic.wait_for_tx(hash=tx_hash)
 
+        await asyncio.sleep(5)
+
         list_groups = await client.group.list_group(
-            "e", "t", ListGroupsOptions(source_type="SOURCE_TYPE_ORIGIN", limit=10)
+            tracker, "_", ListGroupsOptions(source_type="SOURCE_TYPE_ORIGIN", limit=5)
         )
+
         assert list_groups
         assert len(list_groups) == 3
         assert list_groups[0]["group"]["group_name"] == group_name1

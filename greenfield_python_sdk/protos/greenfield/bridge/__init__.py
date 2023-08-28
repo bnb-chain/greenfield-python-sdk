@@ -42,6 +42,9 @@ class EventCrossTransferOut(betterproto.Message):
     sequence: int = betterproto.uint64_field(5)
     """Sequence of the corresponding cross chain package"""
 
+    dest_chain_id: int = betterproto.uint32_field(6)
+    """Destination chain id of the cross chain transfer tx"""
+
 
 @dataclass(eq=False, repr=False)
 class EventCrossTransferOutRefund(betterproto.Message):
@@ -61,6 +64,9 @@ class EventCrossTransferOutRefund(betterproto.Message):
     sequence: int = betterproto.uint64_field(4)
     """Sequence of the corresponding cross chain package"""
 
+    dest_chain_id: int = betterproto.uint32_field(5)
+    """Destination chain id of the cross chain transfer tx"""
+
 
 @dataclass(eq=False, repr=False)
 class EventCrossTransferIn(betterproto.Message):
@@ -78,17 +84,21 @@ class EventCrossTransferIn(betterproto.Message):
     sequence: int = betterproto.uint64_field(4)
     """Sequence of the corresponding cross chain package"""
 
+    src_chain_id: int = betterproto.uint32_field(5)
+    """Source chain id of the cross chain transfer tx"""
+
 
 @dataclass(eq=False, repr=False)
 class Params(betterproto.Message):
     """Params defines the parameters for the module."""
 
-    transfer_out_relayer_fee: str = betterproto.string_field(1)
-    """Relayer fee for the cross chain transfer out tx"""
+    bsc_transfer_out_relayer_fee: str = betterproto.string_field(1)
+    """Relayer fee for the cross chain transfer out tx to bsc"""
 
-    transfer_out_ack_relayer_fee: str = betterproto.string_field(2)
+    bsc_transfer_out_ack_relayer_fee: str = betterproto.string_field(2)
     """
-    Relayer fee for the ACK or FAIL_ACK package of the cross chain transfer out tx
+    Relayer fee for the ACK or FAIL_ACK package of the cross chain transfer out tx to
+    bsc
     """
 
 

@@ -56,7 +56,7 @@ async def test_sp_get_secondary_sp_store_price_by_time(mock_sp):
 
 
 async def test_sp_get_storage_provider(mock_sp):
-    sp_address = "test_sp_address"
+    sp_id = 1
 
-    await mock_sp.get_storage_provider(QueryStorageProviderRequest(sp_address=sp_address))
-    mock_sp.query_stub.storage_provider.assert_called_once_with(QueryStorageProviderRequest(sp_address=sp_address))
+    await mock_sp.get_storage_provider(QueryStorageProviderRequest(id=sp_id))
+    mock_sp.query_stub.storage_provider.assert_called_once_with(QueryStorageProviderRequest(id=sp_id))

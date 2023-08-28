@@ -3,9 +3,8 @@ from typing import Optional
 
 from grpclib.client import Channel
 
-from greenfield_python_sdk.__greenfield_version__ import __greenfield_version__
 from greenfield_python_sdk.blockchain_client import BlockchainClient
-from greenfield_python_sdk.config import NetworkConfiguration
+from greenfield_python_sdk.config import GREENFIELD_VERSION, NetworkConfiguration
 from greenfield_python_sdk.greenfield.account import Account as AccountInterface
 from greenfield_python_sdk.greenfield.basic import Basic
 from greenfield_python_sdk.greenfield.bucket import Bucket
@@ -89,8 +88,8 @@ class GreenfieldClient:
     async def check_node_version(self):
         # Check the node version
         node_version = await self.basic.get_greenfield_node_version()
-        if node_version != __greenfield_version__:
-            logger.warning(f"Node version mismatch. Expected: {__greenfield_version__}, got: {node_version}")
+        if node_version != GREENFIELD_VERSION:
+            logger.warning(f"Node version mismatch. Expected: {GREENFIELD_VERSION}, got: {node_version}")
 
     async def sync_account(self):
         # Add the account number and sequence to the key manager

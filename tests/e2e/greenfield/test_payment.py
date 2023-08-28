@@ -1,13 +1,19 @@
 import pytest
 
-from greenfield_python_sdk import GreenfieldClient, KeyManager, NetworkConfiguration, get_account_configuration
+from greenfield_python_sdk import (
+    GreenfieldClient,
+    KeyManager,
+    NetworkConfiguration,
+    NetworkTestnet,
+    get_account_configuration,
+)
 from greenfield_python_sdk.greenfield.account import Coin
 
 pytestmark = [pytest.mark.asyncio, pytest.mark.e2e]
 
 
 # Initialize the configuration, key manager
-network_configuration = NetworkConfiguration()
+network_configuration = NetworkConfiguration(**NetworkTestnet().model_dump())
 
 
 @pytest.mark.requires_config

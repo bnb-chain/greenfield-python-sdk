@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 from greenfield_python_sdk.blockchain_client import BlockchainClient
 from greenfield_python_sdk.models.eip712_messages.group.group_url import (
@@ -111,7 +111,7 @@ class Group:
         return True if group_member_head.group_member != None else False
 
     async def put_group_policy(
-        self, group_name: str, principal_addr: str, statements: List[Statement], opts: PutPolicyOption
+        self, group_name: str, principal_addr: str, statements: List[Statement], opts: Optional[PutPolicyOption] = None
     ) -> str:
         resource = (
             f"grn:{ResourceType.RESOURCE_TYPE_GROUP.value}:{self.storage_client.key_manager.address}:{group_name}"
@@ -123,7 +123,7 @@ class Group:
             principal=principal,
             statements=statements,
         )
-        if opts.policy_expire_time:
+        if opts and opts.policy_expire_time:
             put_policy_msg.expiration_time = opts.policy_expire_time
 
         tx_hash = await self.blockchain_client.broadcast_message(message=put_policy_msg, type_url=PUT_POLICY)

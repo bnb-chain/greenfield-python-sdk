@@ -35,7 +35,7 @@ class CrossChain:
         vote_addr_set: List[int],
         agg_signature: bytes,
     ):
-        msg = MsgClaim(
+        msg_claim = MsgClaim(
             from_address=self.storage_client.key_manager.address,
             src_chain_id=src_chain_id,
             dest_chain_id=dest_chain_id,
@@ -45,7 +45,7 @@ class CrossChain:
             vote_addr_set=vote_addr_set,
             agg_signature=agg_signature,
         )
-        tx = await self.blockchain_client.broadcast_message(msg)
+        tx = await self.blockchain_client.broadcast_message(msg_claim, type_url="/cosmos.oracle.v1.MsgClaim")
 
         return tx
 

@@ -1,3 +1,4 @@
+from betterproto import Casing
 from grpclib.client import Channel
 
 from greenfield_python_sdk.protos.greenfield.sp import (
@@ -45,3 +46,15 @@ class Sp:
     async def get_storage_provider(self, request: QueryStorageProviderRequest) -> QueryStorageProviderResponse:
         response = await self.query_stub.storage_provider(request)
         return response
+
+    async def get_first_in_service_storage_provider(self):
+        response = await self.get_storage_providers()
+        if response.sps is None:
+            raise Exception("Storage providers not found")
+
+        sps = response.to_pydict(casing=Casing.SNAKE)["sps"]
+        for sp in sps:
+            if sp.get("status", 0) == 0:
+                return sp
+
+        raise Exception("No Storage Provider in service")

@@ -271,7 +271,11 @@ class GroupPolicyInfo(betterproto.Message):
     """admin is the account address of the group admin."""
 
     metadata: str = betterproto.string_field(4)
-    """metadata is any arbitrary metadata attached to the group policy."""
+    """
+    metadata is any arbitrary metadata attached to the group policy.
+    the recommended format of the metadata is to be found here:
+    https://docs.cosmos.network/v0.47/modules/group#decision-policy-1
+    """
 
     version: int = betterproto.uint64_field(5)
     """
@@ -302,7 +306,11 @@ class Proposal(betterproto.Message):
     """group_policy_address is the account address of group policy."""
 
     metadata: str = betterproto.string_field(3)
-    """metadata is any arbitrary metadata attached to the proposal."""
+    """
+    metadata is any arbitrary metadata attached to the proposal.
+    the recommended format of the metadata is to be found here:
+    https://docs.cosmos.network/v0.47/modules/group#proposal-4
+    """
 
     proposers: List[str] = betterproto.string_field(4)
     """proposers are the account addresses of the proposers."""
@@ -487,6 +495,23 @@ class EventLeaveGroup(betterproto.Message):
 
     address: str = betterproto.string_field(2)
     """address is the account address of the group member."""
+
+
+@dataclass(eq=False, repr=False)
+class EventProposalPruned(betterproto.Message):
+    """EventProposalPruned is an event emitted when a proposal is pruned."""
+
+    proposal_id: int = betterproto.uint64_field(1)
+    """proposal_id is the unique ID of the proposal."""
+
+    status: "ProposalStatus" = betterproto.enum_field(2)
+    """
+    status is the proposal status (UNSPECIFIED, SUBMITTED, ACCEPTED, REJECTED, ABORTED,
+    WITHDRAWN).
+    """
+
+    tally_result: "TallyResult" = betterproto.message_field(3)
+    """tally_result is the proposal tally result (when applicable)."""
 
 
 @dataclass(eq=False, repr=False)

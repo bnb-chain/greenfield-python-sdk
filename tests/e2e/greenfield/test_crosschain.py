@@ -2,7 +2,13 @@ from random import randint
 
 import pytest
 
-from greenfield_python_sdk import GreenfieldClient, KeyManager, NetworkConfiguration, get_account_configuration
+from greenfield_python_sdk import (
+    GreenfieldClient,
+    KeyManager,
+    NetworkConfiguration,
+    NetworkTestnet,
+    get_account_configuration,
+)
 from greenfield_python_sdk.blockchain._cosmos.oracle import QueryInturnRelayerResponse
 from greenfield_python_sdk.greenfield.account import Coin
 
@@ -10,7 +16,7 @@ pytestmark = [pytest.mark.asyncio, pytest.mark.e2e]
 
 
 # Initialize the configuration, key manager
-network_configuration = NetworkConfiguration()
+network_configuration = NetworkConfiguration(**NetworkTestnet().model_dump())
 key_manager = KeyManager()
 
 
@@ -31,22 +37,6 @@ async def test_transfer_out():
         assert tx_hash
         assert isinstance(tx_hash, str)
         await client.basic.wait_for_tx(tx_hash)
-
-
-"""
-@pytest.mark.requires_config
-@pytest.mark.tx
-@pytest.mark.slow
-async def test_claims():
-
-    config = get_account_configuration()
-    key_manager = KeyManager(private_key=config.private_key)
-
-    async with GreenfieldClient(network_configuration=network_configuration, key_manager=key_manager) as client:
-        await client.async_init()
-        # TODO: Implement this
-
-"""
 
 
 async def test_get_channel_send_sequence():

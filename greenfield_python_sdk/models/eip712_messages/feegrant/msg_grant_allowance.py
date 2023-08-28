@@ -4,10 +4,10 @@ TYPE_URL = "/cosmos.feegrant.v1beta1.MsgGrantAllowance"
 
 TYPES = {
     "Msg1": [
-        {"name": "type", "type": "string"},
-        {"name": "granter", "type": "string"},
-        {"name": "grantee", "type": "string"},
         {"name": "allowance", "type": "TypeAny"},
+        {"name": "grantee", "type": "string"},
+        {"name": "granter", "type": "string"},
+        {"name": "type", "type": "string"},
     ],
     "TypeAny": [{"name": "type", "type": "string"}, {"name": "value", "type": "bytes"}],
 }

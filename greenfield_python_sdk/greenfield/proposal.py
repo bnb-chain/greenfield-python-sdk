@@ -23,7 +23,7 @@ class Proposal:
 
     async def submit_proposal(
         self, msgs: List[Any], deposit_amount: int, title: str, summary: str, opts: ProposalOptions
-    ) -> Tuple[int, str, Exception]:
+    ) -> Tuple[int, str]:
         msg_submit_proposal = MsgSubmitProposal(
             initial_deposit=[Coin(denom="BNB", amount=str(deposit_amount))],
             proposer=self.storage_client.key_manager.address,
@@ -44,8 +44,8 @@ class Proposal:
                 for attributes in events.attributes:
                     if attributes.key == "proposal_id":
                         proposal_id = int(attributes.value)
-                        return proposal_id, tx_resp, None
-        return 0, tx_resp, Exception("ProposalID not found")
+                        return proposal_id, tx_resp
+        raise Exception("ProposalID not found")
 
     async def vote_proposal(self, proposal_id: int, vote_option: VoteOption, opts: ProposalOptions) -> str:
         msg_vote = MsgVote(

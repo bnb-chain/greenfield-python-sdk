@@ -163,6 +163,9 @@ class Proposal(betterproto.Message):
     Since: cosmos-sdk 0.47
     """
 
+    failed_reason: str = betterproto.string_field(14)
+    """The reason of the failure proposal"""
+
 
 @dataclass(eq=False, repr=False)
 class TallyResult(betterproto.Message):

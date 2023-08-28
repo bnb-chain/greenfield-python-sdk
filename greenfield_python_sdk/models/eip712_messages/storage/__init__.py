@@ -39,3 +39,5 @@ TYPES_MAP = {
     msg_mirror_bucket.TYPE_URL: msg_mirror_bucket.TYPES,
     msg_mirror_object.TYPE_URL: msg_mirror_object.TYPES,
 }
+
+URL_TO_PROTOS_TYPE_MAP = {**msg_put_policy.URL_TO_PROTOS_TYPE_MAP}

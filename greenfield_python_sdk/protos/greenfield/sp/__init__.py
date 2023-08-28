@@ -66,50 +66,59 @@ class Description(betterproto.Message):
 class StorageProvider(betterproto.Message):
     """StorageProvider defines the meta info of storage provider"""
 
-    operator_address: str = betterproto.string_field(1)
+    id: int = betterproto.uint32_field(1)
+    """// id is the identifier of the storage provider, used in virtual group"""
+
+    operator_address: str = betterproto.string_field(2)
     """
     operator_address defines the account address of the storage provider's operator; It
     also is the unique index key of sp.
     """
 
-    funding_address: str = betterproto.string_field(2)
+    funding_address: str = betterproto.string_field(3)
     """
     funding_address defines one of the storage provider's accounts which is used to
     deposit and reward.
     """
 
-    seal_address: str = betterproto.string_field(3)
+    seal_address: str = betterproto.string_field(4)
     """
     seal_address defines one of the storage provider's accounts which is used to
     SealObject
     """
 
-    approval_address: str = betterproto.string_field(4)
+    approval_address: str = betterproto.string_field(5)
     """
     approval_address defines one of the storage provider's accounts which is used to
     approve use's createBucket/createObject request
     """
 
-    gc_address: str = betterproto.string_field(5)
+    gc_address: str = betterproto.string_field(6)
     """
     gc_address defines one of the storage provider's accounts which is used for gc
     purpose.
     """
 
-    total_deposit: str = betterproto.string_field(6)
+    total_deposit: str = betterproto.string_field(7)
     """
     total_deposit defines the number of tokens deposited by this storage provider for
     staking.
     """
 
-    status: "Status" = betterproto.enum_field(7)
+    status: "Status" = betterproto.enum_field(8)
     """status defines the current service status of this storage provider"""
 
-    endpoint: str = betterproto.string_field(8)
+    endpoint: str = betterproto.string_field(9)
     """endpoint define the storage provider's network service address"""
 
-    description: "Description" = betterproto.message_field(9)
+    description: "Description" = betterproto.message_field(10)
     """description defines the description terms for the storage provider."""
+
+    bls_key: bytes = betterproto.bytes_field(11)
+    """
+    bls_key defines the bls pub key of the Storage provider for sealing object and
+    completing migration
+    """
 
 
 @dataclass(eq=False, repr=False)
@@ -122,8 +131,8 @@ class RewardInfo(betterproto.Message):
 class SpStoragePrice(betterproto.Message):
     """storage price of a specific sp"""
 
-    sp_address: str = betterproto.string_field(1)
-    """sp address"""
+    sp_id: int = betterproto.uint32_field(1)
+    """sp id"""
 
     update_time_sec: int = betterproto.int64_field(2)
     """update time, unix timestamp in seconds"""
@@ -155,54 +164,14 @@ class EventCreateStorageProvider(betterproto.Message):
     EventCreateStorageProvider is emitted when there is a storage provider created
     """
 
-    sp_address: str = betterproto.string_field(1)
+    sp_id: int = betterproto.uint32_field(1)
+    """sp_id defines the identifier of storage provider which generated on-chain"""
+
+    sp_address: str = betterproto.string_field(2)
     """sp_address is the operator address of the storage provider"""
 
-    funding_address: str = betterproto.string_field(2)
+    funding_address: str = betterproto.string_field(3)
     """funding_address is the funding account address of the storage provider"""
-
-    seal_address: str = betterproto.string_field(3)
-    """seal_address is the account address for SealObject Tx"""
-
-    approval_address: str = betterproto.string_field(4)
-    """
-    approval_address is the account address for approve create bucket/object signature
-    """
-
-    gc_address: str = betterproto.string_field(5)
-    """
-    gc_address defines one of the storage provider's accounts which is used for gc
-    purpose
-    """
-
-    endpoint: str = betterproto.string_field(6)
-    """endpoint is the domain name address used by SP to provide storage services"""
-
-    total_deposit: "__cosmos_base_v1_beta1__.Coin" = betterproto.message_field(7)
-    """
-    total_deposit is the token coin that the storage provider deposit to the storage
-    module
-    """
-
-    status: "Status" = betterproto.enum_field(8)
-    """status defines the status of the storage provider"""
-
-    description: "Description" = betterproto.message_field(9)
-    """description defines the description terms for the storage provider"""
-
-
-@dataclass(eq=False, repr=False)
-class EventEditStorageProvider(betterproto.Message):
-    """EventEditStorageProvider is emitted when SP's metadata is edited."""
-
-    sp_address: str = betterproto.string_field(1)
-    """sp_address is the operator address of the storage provider"""
-
-    endpoint: str = betterproto.string_field(2)
-    """endpoint is the service endpoint of the storage provider"""
-
-    description: "Description" = betterproto.message_field(3)
-    """description defines the description terms for the storage provider"""
 
     seal_address: str = betterproto.string_field(4)
     """seal_address is the account address for SealObject Tx"""
@@ -216,6 +185,63 @@ class EventEditStorageProvider(betterproto.Message):
     """
     gc_address defines one of the storage provider's accounts which is used for gc
     purpose
+    """
+
+    endpoint: str = betterproto.string_field(7)
+    """endpoint is the domain name address used by SP to provide storage services"""
+
+    total_deposit: "__cosmos_base_v1_beta1__.Coin" = betterproto.message_field(8)
+    """
+    total_deposit is the token coin that the storage provider deposit to the storage
+    module
+    """
+
+    status: "Status" = betterproto.enum_field(9)
+    """status defines the status of the storage provider"""
+
+    description: "Description" = betterproto.message_field(10)
+    """description defines the description terms for the storage provider"""
+
+    bls_key: str = betterproto.string_field(11)
+    """
+    bls_key defines the bls pub key owned by storage provider used when sealing object
+    and completing migration
+    """
+
+
+@dataclass(eq=False, repr=False)
+class EventEditStorageProvider(betterproto.Message):
+    """EventEditStorageProvider is emitted when SP's metadata is edited."""
+
+    sp_id: int = betterproto.uint32_field(1)
+    """sp_id defines the identifier of storage provider which generated on-chain"""
+
+    sp_address: str = betterproto.string_field(2)
+    """sp_address is the operator address of the storage provider"""
+
+    endpoint: str = betterproto.string_field(3)
+    """endpoint is the service endpoint of the storage provider"""
+
+    description: "Description" = betterproto.message_field(4)
+    """description defines the description terms for the storage provider"""
+
+    seal_address: str = betterproto.string_field(5)
+    """seal_address is the account address for SealObject Tx"""
+
+    approval_address: str = betterproto.string_field(6)
+    """
+    approval_address is the account address for approve create bucket/object signature
+    """
+
+    gc_address: str = betterproto.string_field(7)
+    """
+    gc_address defines one of the storage provider's accounts which is used for gc
+    purpose
+    """
+
+    bls_key: str = betterproto.string_field(8)
+    """
+    bls_key defines the bls pub key owned by storage provider used when sealing object
     """
 
 
@@ -235,8 +261,8 @@ class EventDeposit(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class EventSpStoragePriceUpdate(betterproto.Message):
-    sp_address: str = betterproto.string_field(1)
-    """sp address"""
+    sp_id: int = betterproto.uint32_field(1)
+    """sp id"""
 
     update_time_sec: int = betterproto.int64_field(2)
     """update time, in unix timestamp"""
@@ -345,11 +371,21 @@ class QueryGetSecondarySpStorePriceByTimeResponse(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class QueryStorageProviderRequest(betterproto.Message):
-    sp_address: str = betterproto.string_field(1)
+    id: int = betterproto.uint32_field(1)
 
 
 @dataclass(eq=False, repr=False)
 class QueryStorageProviderResponse(betterproto.Message):
+    storage_provider: "StorageProvider" = betterproto.message_field(1)
+
+
+@dataclass(eq=False, repr=False)
+class QueryStorageProviderByOperatorAddressRequest(betterproto.Message):
+    operator_address: str = betterproto.string_field(1)
+
+
+@dataclass(eq=False, repr=False)
+class QueryStorageProviderByOperatorAddressResponse(betterproto.Message):
     storage_provider: "StorageProvider" = betterproto.message_field(1)
 
 
@@ -405,6 +441,11 @@ class MsgCreateStorageProvider(betterproto.Message):
     store_price: str = betterproto.string_field(12)
     """store price, in bnb wei per charge byte"""
 
+    bls_key: str = betterproto.string_field(13)
+    """bls_key defines the bls pub key of the Storage provider for sealing object"""
+
+    bls_proof: str = betterproto.string_field(14)
+
 
 @dataclass(eq=False, repr=False)
 class MsgCreateStorageProviderResponse(betterproto.Message):
@@ -439,7 +480,10 @@ class MsgDepositResponse(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class MsgEditStorageProvider(betterproto.Message):
-    """MsgEditStorageProvider defines a SDK message for editing an existing sp."""
+    """
+    MsgEditStorageProvider defines a SDK message for editing an existing sp.
+    TODO: use sp id to edit the storage provider.
+    """
 
     sp_address: str = betterproto.string_field(1)
     endpoint: str = betterproto.string_field(2)
@@ -458,6 +502,11 @@ class MsgEditStorageProvider(betterproto.Message):
     gc_address defines one of the storage provider's accounts which is used for gc
     purpose
     """
+
+    bls_key: str = betterproto.string_field(7)
+    """bls_key defines the bls pub key of the Storage provider for sealing object"""
+
+    bls_proof: str = betterproto.string_field(8)
 
 
 @dataclass(eq=False, repr=False)
@@ -602,6 +651,23 @@ class QueryStub(betterproto.ServiceStub):
             metadata=metadata,
         )
 
+    async def storage_provider_by_operator_address(
+        self,
+        query_storage_provider_by_operator_address_request: "QueryStorageProviderByOperatorAddressRequest",
+        *,
+        timeout: Optional[float] = None,
+        deadline: Optional["Deadline"] = None,
+        metadata: Optional["MetadataLike"] = None
+    ) -> "QueryStorageProviderByOperatorAddressResponse":
+        return await self._unary_unary(
+            "/greenfield.sp.Query/StorageProviderByOperatorAddress",
+            query_storage_provider_by_operator_address_request,
+            QueryStorageProviderByOperatorAddressResponse,
+            timeout=timeout,
+            deadline=deadline,
+            metadata=metadata,
+        )
+
 
 class MsgStub(betterproto.ServiceStub):
     async def create_storage_provider(
@@ -716,6 +782,12 @@ class QueryBase(ServiceBase):
     ) -> "QueryStorageProviderResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
+    async def storage_provider_by_operator_address(
+        self,
+        query_storage_provider_by_operator_address_request: "QueryStorageProviderByOperatorAddressRequest",
+    ) -> "QueryStorageProviderByOperatorAddressResponse":
+        raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
+
     async def __rpc_params(self, stream: "grpclib.server.Stream[QueryParamsRequest, QueryParamsResponse]") -> None:
         request = await stream.recv_message()
         response = await self.params(request)
@@ -753,6 +825,14 @@ class QueryBase(ServiceBase):
         response = await self.storage_provider(request)
         await stream.send_message(response)
 
+    async def __rpc_storage_provider_by_operator_address(
+        self,
+        stream: "grpclib.server.Stream[QueryStorageProviderByOperatorAddressRequest, QueryStorageProviderByOperatorAddressResponse]",
+    ) -> None:
+        request = await stream.recv_message()
+        response = await self.storage_provider_by_operator_address(request)
+        await stream.send_message(response)
+
     def __mapping__(self) -> Dict[str, grpclib.const.Handler]:
         return {
             "/greenfield.sp.Query/Params": grpclib.const.Handler(
@@ -784,6 +864,12 @@ class QueryBase(ServiceBase):
                 grpclib.const.Cardinality.UNARY_UNARY,
                 QueryStorageProviderRequest,
                 QueryStorageProviderResponse,
+            ),
+            "/greenfield.sp.Query/StorageProviderByOperatorAddress": grpclib.const.Handler(
+                self.__rpc_storage_provider_by_operator_address,
+                grpclib.const.Cardinality.UNARY_UNARY,
+                QueryStorageProviderByOperatorAddressRequest,
+                QueryStorageProviderByOperatorAddressResponse,
             ),
         }
 

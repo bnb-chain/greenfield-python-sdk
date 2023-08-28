@@ -4,7 +4,13 @@ import string
 
 import pytest
 
-from greenfield_python_sdk import GreenfieldClient, KeyManager, NetworkConfiguration, get_account_configuration
+from greenfield_python_sdk import (
+    GreenfieldClient,
+    KeyManager,
+    NetworkConfiguration,
+    NetworkTestnet,
+    get_account_configuration,
+)
 from greenfield_python_sdk.models.bucket import CreateBucketOptions
 from greenfield_python_sdk.models.object import CreateObjectOptions, PutObjectOptions
 from greenfield_python_sdk.protos.greenfield.challenge import AttestedChallenge, QueryInturnAttestationSubmitterResponse
@@ -16,7 +22,7 @@ pytestmark = [pytest.mark.asyncio, pytest.mark.e2e]
 
 
 # Initialize the configuration, key manager
-network_configuration = NetworkConfiguration()
+network_configuration = NetworkConfiguration(**NetworkTestnet().model_dump())
 key_manager = KeyManager()
 
 

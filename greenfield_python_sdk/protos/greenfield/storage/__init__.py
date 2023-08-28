@@ -14,6 +14,7 @@ from pydantic.dataclasses import dataclass as pydantic_dataclass
 from ...cosmos.base.query import v1beta1 as __cosmos_base_query_v1_beta1__
 from .. import common as _common__
 from .. import permission as _permission__
+from .. import virtualgroup as _virtualgroup__
 
 if TYPE_CHECKING:
     import grpclib.server
@@ -42,6 +43,7 @@ class BucketStatus(betterproto.Enum):
 
     BUCKET_STATUS_CREATED = 0
     BUCKET_STATUS_DISCONTINUED = 1
+    BUCKET_STATUS_MIGRATING = 2
 
 
 class RedundancyType(betterproto.Enum):
@@ -82,35 +84,61 @@ class VisibilityType(betterproto.Enum):
 
 
 @dataclass(eq=False, repr=False)
-class Approval(betterproto.Message):
+class SecondarySpSealObjectSignDoc(betterproto.Message):
     """
-    Approval is the signature information returned by the Primary Storage Provider (SP)
-    to the user
-    after allowing them to create a bucket or object, which is then used for
-    verification on the chain
-    to ensure agreement between the Primary SP and the user."
-    """
-
-    expired_height: int = betterproto.uint64_field(1)
-    """expired_height is the block height at which the signature expires."""
-
-    sig: bytes = betterproto.bytes_field(2)
-    """The signature needs to conform to the EIP 712 specification."""
-
-
-@dataclass(eq=False, repr=False)
-class SecondarySpSignDoc(betterproto.Message):
-    """
-    SecondarySpSignDoc used to generate seal signature of secondary SP
+    SecondarySpSealObjectSignDoc used to generate seal signature of secondary SP
     If the secondary SP only signs the checksum to declare the object pieces are saved,
     it might be reused by the primary SP to fake it's declaration.
     Then the primary SP can challenge and slash the secondary SP.
     So the id of the object is needed to prevent this.
     """
 
-    sp_address: str = betterproto.string_field(1)
-    object_id: str = betterproto.string_field(2)
-    checksum: bytes = betterproto.bytes_field(3)
+    chain_id: str = betterproto.string_field(1)
+    global_virtual_group_id: int = betterproto.uint32_field(2)
+    object_id: str = betterproto.string_field(3)
+    checksum: bytes = betterproto.bytes_field(4)
+    """checksum is the sha256 hash of slice of integrity hash from secondary sps"""
+
+
+@dataclass(eq=False, repr=False)
+class GvgMapping(betterproto.Message):
+    src_global_virtual_group_id: int = betterproto.uint32_field(1)
+    dst_global_virtual_group_id: int = betterproto.uint32_field(2)
+    secondary_sp_bls_signature: bytes = betterproto.bytes_field(3)
+
+
+@dataclass(eq=False, repr=False)
+class SecondarySpMigrationBucketSignDoc(betterproto.Message):
+    chain_id: str = betterproto.string_field(1)
+    dst_primary_sp_id: int = betterproto.uint32_field(2)
+    src_global_virtual_group_id: int = betterproto.uint32_field(3)
+    dst_global_virtual_group_id: int = betterproto.uint32_field(4)
+    bucket_id: str = betterproto.string_field(5)
+
+
+@dataclass(eq=False, repr=False)
+class LocalVirtualGroup(betterproto.Message):
+    """
+    Local virtual group(LVG) uniquely associated with a global virtual group.
+    Each bucket maintains a mapping from local virtual group to global virtual group
+    Each local virtual group is associated with a unique virtual payment account,
+    where all object fees are streamed to.
+    """
+
+    id: int = betterproto.uint32_field(1)
+    """id is the identifier of the local virtual group."""
+
+    global_virtual_group_id: int = betterproto.uint32_field(2)
+    """global_virtual_group_id is the identifier of the global virtual group."""
+
+    stored_size: int = betterproto.uint64_field(3)
+    """stored_size is the size of the stored data in the local virtual group."""
+
+    total_charge_size: int = betterproto.uint64_field(4)
+    """
+    total_charge_size is the total charged size of the objects in the LVG.
+    Notice that the minimum unit of charge is 128K
+    """
 
 
 @pydantic_dataclass(eq=False, repr=False)
@@ -142,12 +170,8 @@ class BucketInfo(betterproto.Message):
     payment_address: str = betterproto.string_field(7)
     """payment_address is the address of the payment account"""
 
-    primary_sp_address: str = betterproto.string_field(8)
-    """
-    primary_sp_address is the address of the primary sp. Objects belongs to this bucket
-    will never
-    leave this SP, unless you explicitly shift them to another SP.
-    """
+    global_virtual_group_family_id: int = betterproto.uint32_field(8)
+    """global_virtual_group_family_id defines the unique id of gvg family"""
 
     charged_read_quota: int = betterproto.uint64_field(9)
     """
@@ -157,17 +181,12 @@ class BucketInfo(betterproto.Message):
     the ChargeReadQuota specified here.
     """
 
-    billing_info: "BillingInfo" = betterproto.message_field(10)
-    """billing info of the bucket"""
-
-    bucket_status: "BucketStatus" = betterproto.enum_field(11)
+    bucket_status: "BucketStatus" = betterproto.enum_field(10)
     """bucket_status define the status of the bucket."""
 
 
-@pydantic_dataclass(eq=False, repr=False)
-class BillingInfo(betterproto.Message):
-    """BillingInfo is the billing information of the bucket"""
-
+@dataclass(eq=False, repr=False)
+class InternalBucketInfo(betterproto.Message):
     price_time: int = betterproto.int64_field(1)
     """
     the time of the payment price, used to calculate the charge rate of the bucket
@@ -179,70 +198,65 @@ class BillingInfo(betterproto.Message):
     the bucket
     """
 
-    secondary_sp_objects_size: List["SecondarySpObjectsSize"] = betterproto.message_field(3)
-    """secondary sp objects size statistics"""
+    local_virtual_groups: List["LocalVirtualGroup"] = betterproto.message_field(3)
+    """local_virtual_groups contains all the lvg of this bucket."""
 
-
-@dataclass(eq=False, repr=False)
-class SecondarySpObjectsSize(betterproto.Message):
-    """secondary sp objects size statistics"""
-
-    sp_address: str = betterproto.string_field(1)
-    """address is the address of the secondary sp"""
-
-    total_charge_size: int = betterproto.uint64_field(2)
-    """size is the total size of the objects in the secondary sp"""
+    next_local_virtual_group_id: int = betterproto.uint32_field(4)
+    """next_local_virtual_group_id store the next id used by local virtual group"""
 
 
 @dataclass(eq=False, repr=False)
 class ObjectInfo(betterproto.Message):
     owner: str = betterproto.string_field(1)
-    bucket_name: str = betterproto.string_field(2)
+    """owner is the object owner"""
+
+    creator: str = betterproto.string_field(2)
+    """creator is the address of the uploader, it always be same as owner address"""
+
+    bucket_name: str = betterproto.string_field(3)
     """bucket_name is the name of the bucket"""
 
-    object_name: str = betterproto.string_field(3)
+    object_name: str = betterproto.string_field(4)
     """object_name is the name of object"""
 
-    id: str = betterproto.string_field(4)
+    id: str = betterproto.string_field(5)
     """id is the unique identifier of object"""
 
-    payload_size: int = betterproto.uint64_field(5)
+    local_virtual_group_id: int = betterproto.uint32_field(6)
+    payload_size: int = betterproto.uint64_field(7)
     """payloadSize is the total size of the object payload"""
 
-    visibility: "VisibilityType" = betterproto.enum_field(6)
+    visibility: "VisibilityType" = betterproto.enum_field(8)
     """
     visibility defines the highest permissions for object. When an object is public,
     everyone can access it.
     """
 
-    content_type: str = betterproto.string_field(7)
+    content_type: str = betterproto.string_field(9)
     """
     content_type define the format of the object which should be a standard MIME type.
     """
 
-    create_at: int = betterproto.int64_field(8)
+    create_at: int = betterproto.int64_field(10)
     """create_at define the block timestamp when the object is created"""
 
-    object_status: "ObjectStatus" = betterproto.enum_field(9)
+    object_status: "ObjectStatus" = betterproto.enum_field(11)
     """object_status define the upload status of the object."""
 
-    redundancy_type: "RedundancyType" = betterproto.enum_field(10)
+    redundancy_type: "RedundancyType" = betterproto.enum_field(12)
     """
     redundancy_type define the type of the redundancy which can be multi-replication or
     EC.
     """
 
-    source_type: "SourceType" = betterproto.enum_field(11)
+    source_type: "SourceType" = betterproto.enum_field(13)
     """source_type define the source of the object."""
 
-    checksums: List[bytes] = betterproto.bytes_field(12)
+    checksums: List[bytes] = betterproto.bytes_field(14)
     """
     checksums define the root hash of the pieces which stored in a SP.
     add omit tag to omit the field when converting to NFT metadata
     """
-
-    secondary_sp_addresses: List[str] = betterproto.string_field(13)
-    """secondary_sp_addresses define the addresses of secondary_sps"""
 
 
 @dataclass(eq=False, repr=False)
@@ -337,6 +351,15 @@ class DeleteInfo(betterproto.Message):
 
 
 @dataclass(eq=False, repr=False)
+class MigrationBucketInfo(betterproto.Message):
+    src_sp_id: int = betterproto.uint32_field(1)
+    src_global_virtual_group_family_id: int = betterproto.uint32_field(2)
+    dst_sp_id: int = betterproto.uint32_field(3)
+    bucket_id: str = betterproto.string_field(4)
+    """id is the unique identifier of bucket"""
+
+
+@dataclass(eq=False, repr=False)
 class EventCreateBucket(betterproto.Message):
     """EventCreateBucket is emitted on MsgCreateBucket"""
 
@@ -370,10 +393,13 @@ class EventCreateBucket(betterproto.Message):
     payment_address: str = betterproto.string_field(8)
     """payment_address is the address of the payment account"""
 
-    primary_sp_address: str = betterproto.string_field(9)
-    """primary_sp_address is the operator address of the primary sp."""
+    primary_sp_id: int = betterproto.uint32_field(9)
+    """primary_sp_id is the unique id of primary sp."""
 
-    status: "BucketStatus" = betterproto.enum_field(10)
+    global_virtual_group_family_id: int = betterproto.uint32_field(10)
+    """global_virtual_group_family_id defines the unique id of gvg family"""
+
+    status: "BucketStatus" = betterproto.enum_field(11)
     """status define the status of the bucket."""
 
 
@@ -393,8 +419,8 @@ class EventDeleteBucket(betterproto.Message):
     bucket_id: str = betterproto.string_field(4)
     """bucket_id define an u256 id for bucket"""
 
-    primary_sp_address: str = betterproto.string_field(5)
-    """primary_sp_address define the account address of primary sp"""
+    global_virtual_group_family_id: int = betterproto.uint32_field(5)
+    """global_virtual_group_family_id defines the unique id of gvg family"""
 
 
 @dataclass(eq=False, repr=False)
@@ -410,20 +436,17 @@ class EventUpdateBucketInfo(betterproto.Message):
     bucket_id: str = betterproto.string_field(3)
     """bucket_id define an u256 id for bucket"""
 
-    charged_read_quota_before: int = betterproto.uint64_field(4)
-    """charged_read_quota_before define the read quota before updated"""
-
-    charged_read_quota_after: int = betterproto.uint64_field(5)
+    charged_read_quota: int = betterproto.uint64_field(4)
     """charged_read_quota_after define the read quota after updated"""
 
-    payment_address_before: str = betterproto.string_field(6)
-    """payment_address_before define the payment address before updated"""
+    payment_address: str = betterproto.string_field(5)
+    """payment_address define the payment address after updated"""
 
-    payment_address_after: str = betterproto.string_field(7)
-    """payment_address_after define the payment address after updated"""
-
-    visibility: "VisibilityType" = betterproto.enum_field(8)
+    visibility: "VisibilityType" = betterproto.enum_field(6)
     """visibility defines the highest permission of object."""
+
+    global_virtual_group_family_id: int = betterproto.uint32_field(7)
+    """global_virtual_group_family_id defines the gvg family id after migrated."""
 
 
 @dataclass(eq=False, repr=False)
@@ -465,8 +488,8 @@ class EventCreateObject(betterproto.Message):
     object_id: str = betterproto.string_field(7)
     """object_id define an u256 id for object"""
 
-    primary_sp_address: str = betterproto.string_field(8)
-    """primary_sp_address define the account address of primary sp"""
+    primary_sp_id: int = betterproto.uint32_field(8)
+    """primary_sp_id define the unique id of primary sp"""
 
     payload_size: int = betterproto.uint64_field(9)
     """payload_size define the size of payload data which you want upload"""
@@ -497,7 +520,7 @@ class EventCreateObject(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class EventCancelCreateObject(betterproto.Message):
-    """EventSealObject is emitted on MsgSealObject"""
+    """EventCancelCreateObject is emitted on MsgCancelCreateObject"""
 
     operator: str = betterproto.string_field(1)
     """operator define the account address of operator who cancel create object"""
@@ -508,8 +531,8 @@ class EventCancelCreateObject(betterproto.Message):
     object_name: str = betterproto.string_field(3)
     """object_name define the name of the object"""
 
-    primary_sp_address: str = betterproto.string_field(4)
-    """primary_sp_address define the operator account address of the sp"""
+    primary_sp_id: int = betterproto.uint32_field(4)
+    """primary_sp_id define the unique id of primary sp"""
 
     object_id: str = betterproto.string_field(6)
     """id define an u256 id for object"""
@@ -534,8 +557,11 @@ class EventSealObject(betterproto.Message):
     status: "ObjectStatus" = betterproto.enum_field(6)
     """status define the status of the object. INIT or IN_SERVICE or others"""
 
-    secondary_sp_addresses: List[str] = betterproto.string_field(7)
-    """secondary_sp_address define all the operator address of the secondary sps"""
+    global_virtual_group_id: int = betterproto.uint32_field(7)
+    """global_virtual_group_id defines the unique id of gvg which the object stored"""
+
+    local_virtual_group_id: int = betterproto.uint32_field(8)
+    """local_virtual_group_id defines the unique id of lvg which the object stored"""
 
 
 @dataclass(eq=False, repr=False)
@@ -580,11 +606,8 @@ class EventDeleteObject(betterproto.Message):
     object_id: str = betterproto.string_field(4)
     """id define an u256 id for object"""
 
-    primary_sp_address: str = betterproto.string_field(5)
-    """primary_sp_address define the operator account address of the sp"""
-
-    secondary_sp_addresses: List[str] = betterproto.string_field(6)
-    """secondary_sp_address define all the operator address of the secondary sps"""
+    local_virtual_group_id: int = betterproto.uint32_field(5)
+    """local_virtual_group_id defines the unique id of lvg which the object stored"""
 
 
 @dataclass(eq=False, repr=False)
@@ -751,6 +774,9 @@ class EventMirrorBucket(betterproto.Message):
     bucket_id: str = betterproto.string_field(4)
     """bucket_id define an u256 id for bucket"""
 
+    dest_chain_id: int = betterproto.uint32_field(5)
+    """chain id of the destination chain"""
+
 
 @dataclass(eq=False, repr=False)
 class EventMirrorBucketResult(betterproto.Message):
@@ -766,6 +792,9 @@ class EventMirrorBucketResult(betterproto.Message):
 
     bucket_id: str = betterproto.string_field(4)
     """bucket_id define an u256 id for bucket"""
+
+    dest_chain_id: int = betterproto.uint32_field(5)
+    """chain id of the destination chain"""
 
 
 @dataclass(eq=False, repr=False)
@@ -783,6 +812,9 @@ class EventMirrorObject(betterproto.Message):
 
     object_id: str = betterproto.string_field(4)
     """object_id define an u256 id for object"""
+
+    dest_chain_id: int = betterproto.uint32_field(5)
+    """chain id of the destination chain"""
 
 
 @dataclass(eq=False, repr=False)
@@ -803,6 +835,9 @@ class EventMirrorObjectResult(betterproto.Message):
     object_id: str = betterproto.string_field(4)
     """object_id define an u256 id for object"""
 
+    dest_chain_id: int = betterproto.uint32_field(5)
+    """chain id of the destination chain"""
+
 
 @dataclass(eq=False, repr=False)
 class EventMirrorGroup(betterproto.Message):
@@ -816,6 +851,9 @@ class EventMirrorGroup(betterproto.Message):
 
     group_id: str = betterproto.string_field(3)
     """group_id define an u256 id for group"""
+
+    dest_chain_id: int = betterproto.uint32_field(4)
+    """chain id of the destination chain"""
 
 
 @dataclass(eq=False, repr=False)
@@ -833,6 +871,9 @@ class EventMirrorGroupResult(betterproto.Message):
     group_id: str = betterproto.string_field(3)
     """group_id define an u256 id for group"""
 
+    dest_chain_id: int = betterproto.uint32_field(4)
+    """chain id of the destination chain"""
+
 
 @dataclass(eq=False, repr=False)
 class EventStalePolicyCleanup(betterproto.Message):
@@ -846,6 +887,60 @@ class EventStalePolicyCleanup(betterproto.Message):
 
 
 @dataclass(eq=False, repr=False)
+class EventMigrationBucket(betterproto.Message):
+    operator: str = betterproto.string_field(1)
+    """
+    The address of the operator that initiated the bucket migration,
+    usually the owner of the bucket or another account which has permission to operate
+    """
+
+    bucket_name: str = betterproto.string_field(2)
+    """The name of the bucket to be migrated"""
+
+    bucket_id: str = betterproto.string_field(3)
+    """bucket_id define an u256 id for object"""
+
+    dst_primary_sp_id: int = betterproto.uint32_field(4)
+    """The id of the destination primary sp"""
+
+
+@dataclass(eq=False, repr=False)
+class EventCancelMigrationBucket(betterproto.Message):
+    operator: str = betterproto.string_field(1)
+    """
+    The address of the operator that canceled the bucket migration,
+    usually the owner of the bucket or another account which has permission to operate
+    """
+
+    bucket_name: str = betterproto.string_field(2)
+    """The name of the bucket to be migrated"""
+
+    bucket_id: str = betterproto.string_field(3)
+    """bucket_id define an u256 id for object"""
+
+
+@dataclass(eq=False, repr=False)
+class EventCompleteMigrationBucket(betterproto.Message):
+    operator: str = betterproto.string_field(1)
+    """
+    The address of the operator that initiated the bucket migration,
+    usually the owner of the bucket or another account which has permission to operate
+    """
+
+    bucket_name: str = betterproto.string_field(2)
+    """The name of the bucket to be migrated"""
+
+    bucket_id: str = betterproto.string_field(3)
+    """bucket_id define an u256 id for object"""
+
+    global_virtual_group_family_id: int = betterproto.uint32_field(4)
+    """The family id that the bucket to be migrated to"""
+
+    src_primary_sp_id: int = betterproto.uint32_field(5)
+    """The src_primary_sp_id defines the primary sp id of the bucket before migrate."""
+
+
+@dataclass(eq=False, repr=False)
 class Params(betterproto.Message):
     """Params defines the parameters for the module."""
 
@@ -853,23 +948,23 @@ class Params(betterproto.Message):
     max_payload_size: int = betterproto.uint64_field(2)
     """max_payload_size is the maximum size of the payload, default: 2G"""
 
-    mirror_bucket_relayer_fee: str = betterproto.string_field(3)
-    """relayer fee for the mirror bucket tx"""
+    bsc_mirror_bucket_relayer_fee: str = betterproto.string_field(3)
+    """relayer fee for the mirror bucket tx to bsc"""
 
-    mirror_bucket_ack_relayer_fee: str = betterproto.string_field(4)
-    """relayer fee for the ACK or FAIL_ACK package of the mirror bucket tx"""
+    bsc_mirror_bucket_ack_relayer_fee: str = betterproto.string_field(4)
+    """relayer fee for the ACK or FAIL_ACK package of the mirror bucket tx to bsc"""
 
-    mirror_object_relayer_fee: str = betterproto.string_field(5)
-    """relayer fee for the mirror object tx"""
+    bsc_mirror_object_relayer_fee: str = betterproto.string_field(5)
+    """relayer fee for the mirror object tx to bsc"""
 
-    mirror_object_ack_relayer_fee: str = betterproto.string_field(6)
-    """Relayer fee for the ACK or FAIL_ACK package of the mirror object tx"""
+    bsc_mirror_object_ack_relayer_fee: str = betterproto.string_field(6)
+    """Relayer fee for the ACK or FAIL_ACK package of the mirror object tx to bsc"""
 
-    mirror_group_relayer_fee: str = betterproto.string_field(7)
-    """relayer fee for the mirror object tx"""
+    bsc_mirror_group_relayer_fee: str = betterproto.string_field(7)
+    """relayer fee for the mirror object tx to bsc"""
 
-    mirror_group_ack_relayer_fee: str = betterproto.string_field(8)
-    """Relayer fee for the ACK or FAIL_ACK package of the mirror object tx"""
+    bsc_mirror_group_ack_relayer_fee: str = betterproto.string_field(8)
+    """Relayer fee for the ACK or FAIL_ACK package of the mirror object tx to bsc"""
 
     max_buckets_per_account: int = betterproto.uint32_field(9)
     """The maximum number of buckets that can be created per account"""
@@ -891,6 +986,12 @@ class Params(betterproto.Message):
 
     stale_policy_cleanup_max: int = betterproto.uint64_field(15)
     """The max number for deleting policy in each end block"""
+
+    min_quota_update_interval: int = betterproto.uint64_field(16)
+    """The min interval for making quota smaller in seconds"""
+
+    max_local_virtual_group_num_per_bucket: int = betterproto.uint32_field(17)
+    """the max number of local virtual group per bucket"""
 
 
 @dataclass(eq=False, repr=False)
@@ -991,6 +1092,7 @@ class QueryHeadObjectByIdRequest(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class QueryHeadObjectResponse(betterproto.Message):
     object_info: "ObjectInfo" = betterproto.message_field(1)
+    global_virtual_group: "_virtualgroup__.GlobalVirtualGroup" = betterproto.message_field(2)
 
 
 @dataclass(eq=False, repr=False)
@@ -1123,6 +1225,51 @@ class QueryPolicyByIdResponse(betterproto.Message):
 
 
 @dataclass(eq=False, repr=False)
+class QueryLockFeeRequest(betterproto.Message):
+    primary_sp_address: str = betterproto.string_field(1)
+    """primary_sp_address is the address of the primary sp."""
+
+    create_at: int = betterproto.int64_field(2)
+    """create_at define the block timestamp when the object created."""
+
+    payload_size: int = betterproto.uint64_field(3)
+    """payloadSize is the total size of the object payload"""
+
+
+@dataclass(eq=False, repr=False)
+class QueryLockFeeResponse(betterproto.Message):
+    amount: str = betterproto.string_field(1)
+
+
+@dataclass(eq=False, repr=False)
+class QueryHeadBucketExtraRequest(betterproto.Message):
+    bucket_name: str = betterproto.string_field(1)
+
+
+@dataclass(eq=False, repr=False)
+class QueryHeadBucketExtraResponse(betterproto.Message):
+    extra_info: "InternalBucketInfo" = betterproto.message_field(1)
+
+
+@dataclass(eq=False, repr=False)
+class QueryIsPriceChangedRequest(betterproto.Message):
+    bucket_name: str = betterproto.string_field(1)
+
+
+@dataclass(eq=False, repr=False)
+class QueryIsPriceChangedResponse(betterproto.Message):
+    changed: bool = betterproto.bool_field(1)
+    current_read_price: str = betterproto.string_field(2)
+    current_primary_store_price: str = betterproto.string_field(3)
+    current_secondary_store_price: str = betterproto.string_field(4)
+    current_validator_tax_rate: str = betterproto.string_field(5)
+    new_read_price: str = betterproto.string_field(6)
+    new_primary_store_price: str = betterproto.string_field(7)
+    new_secondary_store_price: str = betterproto.string_field(8)
+    new_validator_tax_rate: str = betterproto.string_field(9)
+
+
+@dataclass(eq=False, repr=False)
 class MsgCreateBucket(betterproto.Message):
     creator: str = betterproto.string_field(1)
     """
@@ -1145,16 +1292,16 @@ class MsgCreateBucket(betterproto.Message):
     fee. Default: creator
     """
 
-    primary_sp_address: str = betterproto.string_field(6)
+    primary_sp_address: str = betterproto.string_field(5)
     """primary_sp_address defines the address of primary sp."""
 
-    primary_sp_approval: "Approval" = betterproto.message_field(7)
+    primary_sp_approval: "_common__.Approval" = betterproto.message_field(6)
     """
     primary_sp_approval defines the approval info of the primary SP which indicates that
     primary sp confirm the user's request.
     """
 
-    charged_read_quota: int = betterproto.uint64_field(8)
+    charged_read_quota: int = betterproto.uint64_field(7)
     """
     charged_read_quota defines the read data that users are charged for, measured in
     bytes.
@@ -1232,7 +1379,7 @@ class MsgCreateObject(betterproto.Message):
     content_type defines a standard MIME type describing the format of the object.
     """
 
-    primary_sp_approval: "Approval" = betterproto.message_field(7)
+    primary_sp_approval: "_common__.Approval" = betterproto.message_field(7)
     """
     primary_sp_approval defines the approval info of the primary SP which indicates that
     primary sp confirm the user's request.
@@ -1246,11 +1393,6 @@ class MsgCreateObject(betterproto.Message):
 
     redundancy_type: "RedundancyType" = betterproto.enum_field(9)
     """redundancy_type can be ec or replica"""
-
-    expect_secondary_sp_addresses: List[str] = betterproto.string_field(10)
-    """
-    expect_secondarySPs defines a list of StorageProvider address, which is optional
-    """
 
 
 @dataclass(eq=False, repr=False)
@@ -1269,15 +1411,13 @@ class MsgSealObject(betterproto.Message):
     object_name: str = betterproto.string_field(3)
     """object_name defines the name of object to be sealed."""
 
-    secondary_sp_addresses: List[str] = betterproto.string_field(4)
-    """
-    secondary_sp_addresses defines a list of storage provider which store the redundant
-    data.
-    """
+    global_virtual_group_id: int = betterproto.uint32_field(4)
+    """global_virtual_group_id defines the id of global virtual group"""
 
-    secondary_sp_signatures: List[bytes] = betterproto.bytes_field(5)
+    secondary_sp_bls_agg_signatures: bytes = betterproto.bytes_field(5)
     """
-    secondary_sp_signatures defines the signature of the secondary sp that can
+    secondary_sp_bls_agg_signatures defines the aggregate bls signature of the secondary
+    sp that can
     acknowledge that the payload data has received and stored.
     """
 
@@ -1327,7 +1467,7 @@ class MsgCopyObject(betterproto.Message):
     dst_object_name: str = betterproto.string_field(5)
     """dst_object_name defines the name of the object which is copied to"""
 
-    dst_primary_sp_approval: "Approval" = betterproto.message_field(6)
+    dst_primary_sp_approval: "_common__.Approval" = betterproto.message_field(6)
     """
     primary_sp_approval defines the approval info of the primary SP which indicates that
     primary sp confirm the user's request.
@@ -1707,11 +1847,78 @@ class MsgUpdateParams(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class MsgUpdateParamsResponse(betterproto.Message):
+    """MsgUpdateParamsResponse defines the response structure for executing a"""
+
+    pass
+
+
+@dataclass(eq=False, repr=False)
+class MsgMigrateBucket(betterproto.Message):
+    """this line is used by starport scaffolding # proto/tx/message"""
+
+    operator: str = betterproto.string_field(1)
     """
-    MsgUpdateParamsResponse defines the response structure for executing a
-    MsgUpdateParams message.
+    operator defines the account address of the operator who initial the migrate bucket
     """
 
+    bucket_name: str = betterproto.string_field(2)
+    """bucket_name defines the name of the bucket that need to be migrated"""
+
+    dst_primary_sp_id: int = betterproto.uint32_field(3)
+    """dst_primary_sp_id defines the destination SP for migration"""
+
+    dst_primary_sp_approval: "_common__.Approval" = betterproto.message_field(4)
+    """dst_primary_sp_approval defines the approval of destination sp"""
+
+
+@dataclass(eq=False, repr=False)
+class MsgMigrateBucketResponse(betterproto.Message):
+    pass
+
+
+@dataclass(eq=False, repr=False)
+class MsgCompleteMigrateBucket(betterproto.Message):
+    operator: str = betterproto.string_field(1)
+    """
+    operator defines the account address of the msg operator.
+    The CompleteMigrateBucket transaction must be initiated by the destination SP of the
+    migration
+    """
+
+    bucket_name: str = betterproto.string_field(2)
+    """bucket_name defines the name of the bucket that need to be migrated"""
+
+    global_virtual_group_family_id: int = betterproto.uint32_field(3)
+    """
+    global_virtual_group_family_id defines the family id which the bucket migrate to
+    """
+
+    gvg_mappings: List["GvgMapping"] = betterproto.message_field(4)
+    """
+    gvg_mappings defines the src and dst gvg mapping relationships which the bucket
+    migrate to
+    """
+
+
+@dataclass(eq=False, repr=False)
+class MsgCompleteMigrateBucketResponse(betterproto.Message):
+    pass
+
+
+@dataclass(eq=False, repr=False)
+class MsgCancelMigrateBucket(betterproto.Message):
+    operator: str = betterproto.string_field(1)
+    """
+    operator defines the account address of the msg operator.
+    Only the user can send this transaction to cancel the migrate bucket
+    """
+
+    bucket_name: str = betterproto.string_field(2)
+    """bucket_name defines the name of the bucket that need to be migrated"""
+
+
+@dataclass(eq=False, repr=False)
+class MsgCancelMigrateBucketResponse(betterproto.Message):
     pass
 
 
@@ -2031,6 +2238,57 @@ class QueryStub(betterproto.ServiceStub):
             "/greenfield.storage.Query/QueryPolicyById",
             query_policy_by_id_request,
             QueryPolicyByIdResponse,
+            timeout=timeout,
+            deadline=deadline,
+            metadata=metadata,
+        )
+
+    async def query_lock_fee(
+        self,
+        query_lock_fee_request: "QueryLockFeeRequest",
+        *,
+        timeout: Optional[float] = None,
+        deadline: Optional["Deadline"] = None,
+        metadata: Optional["MetadataLike"] = None
+    ) -> "QueryLockFeeResponse":
+        return await self._unary_unary(
+            "/greenfield.storage.Query/QueryLockFee",
+            query_lock_fee_request,
+            QueryLockFeeResponse,
+            timeout=timeout,
+            deadline=deadline,
+            metadata=metadata,
+        )
+
+    async def head_bucket_extra(
+        self,
+        query_head_bucket_extra_request: "QueryHeadBucketExtraRequest",
+        *,
+        timeout: Optional[float] = None,
+        deadline: Optional["Deadline"] = None,
+        metadata: Optional["MetadataLike"] = None
+    ) -> "QueryHeadBucketExtraResponse":
+        return await self._unary_unary(
+            "/greenfield.storage.Query/HeadBucketExtra",
+            query_head_bucket_extra_request,
+            QueryHeadBucketExtraResponse,
+            timeout=timeout,
+            deadline=deadline,
+            metadata=metadata,
+        )
+
+    async def query_is_price_changed(
+        self,
+        query_is_price_changed_request: "QueryIsPriceChangedRequest",
+        *,
+        timeout: Optional[float] = None,
+        deadline: Optional["Deadline"] = None,
+        metadata: Optional["MetadataLike"] = None
+    ) -> "QueryIsPriceChangedResponse":
+        return await self._unary_unary(
+            "/greenfield.storage.Query/QueryIsPriceChanged",
+            query_is_price_changed_request,
+            QueryIsPriceChangedResponse,
             timeout=timeout,
             deadline=deadline,
             metadata=metadata,
@@ -2429,6 +2687,57 @@ class MsgStub(betterproto.ServiceStub):
             metadata=metadata,
         )
 
+    async def migrate_bucket(
+        self,
+        msg_migrate_bucket: "MsgMigrateBucket",
+        *,
+        timeout: Optional[float] = None,
+        deadline: Optional["Deadline"] = None,
+        metadata: Optional["MetadataLike"] = None
+    ) -> "MsgMigrateBucketResponse":
+        return await self._unary_unary(
+            "/greenfield.storage.Msg/MigrateBucket",
+            msg_migrate_bucket,
+            MsgMigrateBucketResponse,
+            timeout=timeout,
+            deadline=deadline,
+            metadata=metadata,
+        )
+
+    async def complete_migrate_bucket(
+        self,
+        msg_complete_migrate_bucket: "MsgCompleteMigrateBucket",
+        *,
+        timeout: Optional[float] = None,
+        deadline: Optional["Deadline"] = None,
+        metadata: Optional["MetadataLike"] = None
+    ) -> "MsgCompleteMigrateBucketResponse":
+        return await self._unary_unary(
+            "/greenfield.storage.Msg/CompleteMigrateBucket",
+            msg_complete_migrate_bucket,
+            MsgCompleteMigrateBucketResponse,
+            timeout=timeout,
+            deadline=deadline,
+            metadata=metadata,
+        )
+
+    async def cancel_migrate_bucket(
+        self,
+        msg_cancel_migrate_bucket: "MsgCancelMigrateBucket",
+        *,
+        timeout: Optional[float] = None,
+        deadline: Optional["Deadline"] = None,
+        metadata: Optional["MetadataLike"] = None
+    ) -> "MsgCancelMigrateBucketResponse":
+        return await self._unary_unary(
+            "/greenfield.storage.Msg/CancelMigrateBucket",
+            msg_cancel_migrate_bucket,
+            MsgCancelMigrateBucketResponse,
+            timeout=timeout,
+            deadline=deadline,
+            metadata=metadata,
+        )
+
 
 class QueryBase(ServiceBase):
     async def params(self, query_params_request: "QueryParamsRequest") -> "QueryParamsResponse":
@@ -2505,6 +2814,19 @@ class QueryBase(ServiceBase):
     async def query_policy_by_id(
         self, query_policy_by_id_request: "QueryPolicyByIdRequest"
     ) -> "QueryPolicyByIdResponse":
+        raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
+
+    async def query_lock_fee(self, query_lock_fee_request: "QueryLockFeeRequest") -> "QueryLockFeeResponse":
+        raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
+
+    async def head_bucket_extra(
+        self, query_head_bucket_extra_request: "QueryHeadBucketExtraRequest"
+    ) -> "QueryHeadBucketExtraResponse":
+        raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
+
+    async def query_is_price_changed(
+        self, query_is_price_changed_request: "QueryIsPriceChangedRequest"
+    ) -> "QueryIsPriceChangedResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
     async def __rpc_params(self, stream: "grpclib.server.Stream[QueryParamsRequest, QueryParamsResponse]") -> None:
@@ -2653,6 +2975,29 @@ class QueryBase(ServiceBase):
         response = await self.query_policy_by_id(request)
         await stream.send_message(response)
 
+    async def __rpc_query_lock_fee(
+        self, stream: "grpclib.server.Stream[QueryLockFeeRequest, QueryLockFeeResponse]"
+    ) -> None:
+        request = await stream.recv_message()
+        response = await self.query_lock_fee(request)
+        await stream.send_message(response)
+
+    async def __rpc_head_bucket_extra(
+        self,
+        stream: "grpclib.server.Stream[QueryHeadBucketExtraRequest, QueryHeadBucketExtraResponse]",
+    ) -> None:
+        request = await stream.recv_message()
+        response = await self.head_bucket_extra(request)
+        await stream.send_message(response)
+
+    async def __rpc_query_is_price_changed(
+        self,
+        stream: "grpclib.server.Stream[QueryIsPriceChangedRequest, QueryIsPriceChangedResponse]",
+    ) -> None:
+        request = await stream.recv_message()
+        response = await self.query_is_price_changed(request)
+        await stream.send_message(response)
+
     def __mapping__(self) -> Dict[str, grpclib.const.Handler]:
         return {
             "/greenfield.storage.Query/Params": grpclib.const.Handler(
@@ -2769,6 +3114,24 @@ class QueryBase(ServiceBase):
                 QueryPolicyByIdRequest,
                 QueryPolicyByIdResponse,
             ),
+            "/greenfield.storage.Query/QueryLockFee": grpclib.const.Handler(
+                self.__rpc_query_lock_fee,
+                grpclib.const.Cardinality.UNARY_UNARY,
+                QueryLockFeeRequest,
+                QueryLockFeeResponse,
+            ),
+            "/greenfield.storage.Query/HeadBucketExtra": grpclib.const.Handler(
+                self.__rpc_head_bucket_extra,
+                grpclib.const.Cardinality.UNARY_UNARY,
+                QueryHeadBucketExtraRequest,
+                QueryHeadBucketExtraResponse,
+            ),
+            "/greenfield.storage.Query/QueryIsPriceChanged": grpclib.const.Handler(
+                self.__rpc_query_is_price_changed,
+                grpclib.const.Cardinality.UNARY_UNARY,
+                QueryIsPriceChangedRequest,
+                QueryIsPriceChangedResponse,
+            ),
         }
 
 
@@ -2848,6 +3211,19 @@ class MsgBase(ServiceBase):
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
     async def update_params(self, msg_update_params: "MsgUpdateParams") -> "MsgUpdateParamsResponse":
+        raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
+
+    async def migrate_bucket(self, msg_migrate_bucket: "MsgMigrateBucket") -> "MsgMigrateBucketResponse":
+        raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
+
+    async def complete_migrate_bucket(
+        self, msg_complete_migrate_bucket: "MsgCompleteMigrateBucket"
+    ) -> "MsgCompleteMigrateBucketResponse":
+        raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
+
+    async def cancel_migrate_bucket(
+        self, msg_cancel_migrate_bucket: "MsgCancelMigrateBucket"
+    ) -> "MsgCancelMigrateBucketResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
     async def __rpc_create_bucket(
@@ -3005,6 +3381,30 @@ class MsgBase(ServiceBase):
         response = await self.update_params(request)
         await stream.send_message(response)
 
+    async def __rpc_migrate_bucket(
+        self,
+        stream: "grpclib.server.Stream[MsgMigrateBucket, MsgMigrateBucketResponse]",
+    ) -> None:
+        request = await stream.recv_message()
+        response = await self.migrate_bucket(request)
+        await stream.send_message(response)
+
+    async def __rpc_complete_migrate_bucket(
+        self,
+        stream: "grpclib.server.Stream[MsgCompleteMigrateBucket, MsgCompleteMigrateBucketResponse]",
+    ) -> None:
+        request = await stream.recv_message()
+        response = await self.complete_migrate_bucket(request)
+        await stream.send_message(response)
+
+    async def __rpc_cancel_migrate_bucket(
+        self,
+        stream: "grpclib.server.Stream[MsgCancelMigrateBucket, MsgCancelMigrateBucketResponse]",
+    ) -> None:
+        request = await stream.recv_message()
+        response = await self.cancel_migrate_bucket(request)
+        await stream.send_message(response)
+
     def __mapping__(self) -> Dict[str, grpclib.const.Handler]:
         return {
             "/greenfield.storage.Msg/CreateBucket": grpclib.const.Handler(
@@ -3144,5 +3544,23 @@ class MsgBase(ServiceBase):
                 grpclib.const.Cardinality.UNARY_UNARY,
                 MsgUpdateParams,
                 MsgUpdateParamsResponse,
+            ),
+            "/greenfield.storage.Msg/MigrateBucket": grpclib.const.Handler(
+                self.__rpc_migrate_bucket,
+                grpclib.const.Cardinality.UNARY_UNARY,
+                MsgMigrateBucket,
+                MsgMigrateBucketResponse,
+            ),
+            "/greenfield.storage.Msg/CompleteMigrateBucket": grpclib.const.Handler(
+                self.__rpc_complete_migrate_bucket,
+                grpclib.const.Cardinality.UNARY_UNARY,
+                MsgCompleteMigrateBucket,
+                MsgCompleteMigrateBucketResponse,
+            ),
+            "/greenfield.storage.Msg/CancelMigrateBucket": grpclib.const.Handler(
+                self.__rpc_cancel_migrate_bucket,
+                grpclib.const.Cardinality.UNARY_UNARY,
+                MsgCancelMigrateBucket,
+                MsgCancelMigrateBucketResponse,
             ),
         }

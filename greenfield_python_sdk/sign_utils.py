@@ -1,7 +1,10 @@
+import base64
 import binascii
 import json
 import re
 from datetime import datetime, timedelta
+from decimal import Decimal
+from logging import getLogger
 from typing import Any, Dict, List, Optional, Union
 
 from betterproto import Casing
@@ -13,7 +16,6 @@ from pydantic import BaseModel
 from sha3 import keccak_256
 
 from greenfield_python_sdk.__version__ import __version__
-from greenfield_python_sdk.config import NetworkConfiguration
 from greenfield_python_sdk.key_manager import KeyManager
 from greenfield_python_sdk.models.eip712_messages import TYPES_MAP, URL_TO_PROTOS_TYPE_MAP
 from greenfield_python_sdk.models.eip712_messages.base import BASE_TYPES
@@ -24,7 +26,11 @@ from greenfield_python_sdk.models.eip712_messages.sp.sp_url import (
     CREATE_STORAGE_PROVIDER,
     UPDATE_SP_STORAGE_PRICE,
 )
-from greenfield_python_sdk.models.eip712_messages.staking.staking_url import CREATE_VALIDATOR, STAKE_AUTHORIZATION
+from greenfield_python_sdk.models.eip712_messages.staking.staking_url import (
+    CREATE_VALIDATOR,
+    EDIT_VALIDATOR,
+    STAKE_AUTHORIZATION,
+)
 from greenfield_python_sdk.models.eip712_messages.storage.bucket_url import CREATE_BUCKET
 from greenfield_python_sdk.models.eip712_messages.storage.object_url import CREATE_OBJECT
 from greenfield_python_sdk.models.eip712_messages.storage.policy_url import DELETE_POLICY, PUT_POLICY
@@ -35,7 +41,13 @@ from greenfield_python_sdk.protos.cosmos.tx.v1beta1 import Tx
 from greenfield_python_sdk.protos.greenfield.permission import ActionType, Effect, PrincipalType
 from greenfield_python_sdk.protos.greenfield.storage import RedundancyType, VisibilityType
 
-CHAIN_ID = NetworkConfiguration().chain_id
+IGNORED_TYPES = [
+    "PRINCIPAL_TYPE_UNSPECIFIED",
+    "PRINCIPAL_TYPE_GNFD_ACCOUNT",
+    "PRINCIPAL_TYPE_GNFD_GROUP",
+]
+
+logger = getLogger(__name__)
 
 
 def fast_keccak(value: bytes) -> bytes:
@@ -103,9 +115,13 @@ def encode_data(primary_type: str, data, types):
         return [typ, value]
 
     for field in types[primary_type]:
-        typ, val = _encode_field(field["name"], field["type"], data[field["name"]])
-        encoded_types.append(typ)
-        encoded_values.append(val)
+        try:
+            typ, val = _encode_field(field["name"], field["type"], data[field["name"]])
+            encoded_types.append(typ)
+            encoded_values.append(val)
+        except Exception as e:
+            if field["name"] not in ["resources"]:
+                logger.exception(e)
 
     return encode_abi(encoded_types, encoded_values)
 
@@ -197,7 +213,8 @@ def eip712_signature(hashed_payload: bytes, private_key: Union[HexStr, bytes]) -
         private_key = private_key.hex()
 
     account = Account.from_key(private_key)
-    return account.signHash(hashed_payload)["signature"]
+    signature = account.signHash(hashed_payload)["signature"]
+    return signature
 
 
 def deep_sort(obj):
@@ -214,50 +231,61 @@ def deep_sort(obj):
 
 def convert_value_to_json(obj) -> bytes:
     try:
-        base_type = URL_TO_PROTOS_TYPE_MAP[obj["type_url"]]
+        base_type = URL_TO_PROTOS_TYPE_MAP[obj["type"]]
     except KeyError:
-        raise Exception(f"Unknown type_url: {obj['type_url']}, add it to URL_TO_PROTOS_TYPE_MAP")
+        raise Exception(f"Unknown type: {obj['type']} - {obj}, add it to URL_TO_PROTOS_TYPE_MAP")
 
+    # Deserialize the raw value into the appropriate protobuf message
     instance = base_type.FromString(obj["value"])
-    if obj["type_url"] == CREATE_VALIDATOR:
+
+    if obj["type"] == CREATE_VALIDATOR:
         instance.pubkey.value = binascii.unhexlify((instance.pubkey.value).hex()[4:])
 
-    if obj["type_url"] == STAKE_AUTHORIZATION:
+    # Convert the protobuf message to its JSON representation
+    if obj["type"] == STAKE_AUTHORIZATION:
         value = {
-            "@type": obj["type_url"],
+            "@type": obj["type"],
             **json.loads(instance.to_json(casing=Casing.SNAKE, include_default_values=False)),
         }
     else:
         value = {
-            "@type": obj["type_url"],
+            "@type": obj["type"],
             **json.loads(instance.to_json(casing=Casing.SNAKE, include_default_values=True)),
         }
-    value = set_value(obj, value)
-    result = json.dumps(value, sort_keys=True).replace(": ", ":").replace(", ", ",").encode()
+
+    value = set_value(obj, value)  # Assuming set_value is another function you've defined elsewhere
+
+    # Convert the resulting value into a JSON string and then base64 encode it
+    json_str = json.dumps(value, sort_keys=True).replace(": ", ":").replace(", ", ",")
+    result = base64.b64encode(json_str.encode())
 
     return result
 
 
 def set_value(obj, value):
-    if obj["type_url"] == CREATE_STORAGE_PROVIDER:
-        value["read_price"] = str(format(int(value["read_price"]) / 10**18, ".18f"))
-        value["store_price"] = str(format(int(value["store_price"]) / 10**18, ".18f"))
+    if obj["type"] == CREATE_STORAGE_PROVIDER:
+        value["read_price"] = str(format(Decimal(value["read_price"]) / 10**18, ".18f"))
+        value["store_price"] = str(format(Decimal(value["store_price"]) / 10**18, ".18f"))
 
-    if obj["type_url"] == CREATE_VALIDATOR:
-        pubkey = {"@type": value["pubkey"]["type_url"], "key": value["pubkey"]["value"]}
+    if obj["type"] == CREATE_VALIDATOR:
+        pubkey = {"@type": value["pubkey"]["type"], "key": value["pubkey"]["value"]}
         value["pubkey"] = pubkey
         value["commission"]["max_rate"] = str(format(int(value["commission"]["max_rate"]) / 10**18, ".18f"))
         value["commission"]["max_change_rate"] = str(
-            format(int(value["commission"]["max_change_rate"]) / 10**18, ".18f")
+            format(Decimal(value["commission"]["max_change_rate"]) / 10**18, ".18f")
         )
-        value["commission"]["rate"] = str(format(int(value["commission"]["rate"]), ".18f"))
+        value["commission"]["rate"] = str(format(Decimal(value["commission"]["rate"]), ".18f"))
     return value
 
 
 def swap_any_value_to_json(obj):
     if isinstance(obj, dict):
         return {
-            k: (convert_value_to_json(obj) if k == "value" and "type_url" in obj.keys() else swap_any_value_to_json(v))
+            k: (
+                convert_value_to_json(obj)
+                if k == "value" and "type" in obj.keys() and obj["type"] not in IGNORED_TYPES
+                else swap_any_value_to_json(v)
+            )
             for k, v in obj.items()
         }
     elif isinstance(obj, list):
@@ -285,7 +313,9 @@ class SignDocEip712(BaseModel):
     timeout_height: int
 
 
-async def get_signature(key_manager: KeyManager, tx: Tx, message, broadcast_option: Optional[BroadcastOption] = None):
+async def get_signature(
+    key_manager: KeyManager, tx: Tx, message, chain_id: int, broadcast_option: Optional[BroadcastOption] = None
+):
     tx_types = TYPES_MAP[tx.body.messages[0].type_url]
 
     # TODO: Move to other place
@@ -306,11 +336,11 @@ async def get_signature(key_manager: KeyManager, tx: Tx, message, broadcast_opti
         "type": tx.body.messages[0].type_url,  # Swaps the type_url key for the type key
         **message.to_pydict(casing=Casing.SNAKE, include_default_values=True),
     }
-    # When a message has a "type_url" key, the "value" must be base64 encoded, not bytes. This comes from "Any"/"AnyMessage" in the proto files
-    msg1 = swap_any_value_to_json(msg1)
-
     # When a message has a "type_url" key, it needs to be swapped for a "type" key, this comes form "Any"/"AnyMessage" in the proto files
     msg1 = swap_type_url_key(msg1)
+
+    # When a message has a "type_url" key, the "value" must be base64 encoded, not bytes. This comes from "Any"/"AnyMessage" in the proto files
+    msg1 = swap_any_value_to_json(msg1)
 
     # Sorts the keys alphabetically in msg1
     msg1 = deep_sort(msg1)
@@ -318,7 +348,7 @@ async def get_signature(key_manager: KeyManager, tx: Tx, message, broadcast_opti
     tx_message = SignDocEip712(
         **{
             "account_number": key_manager.account.account_number,
-            "chain_id": str(CHAIN_ID),
+            "chain_id": str(chain_id),
             "fee": tx.auth_info.fee.to_pydict(casing=Casing.SNAKE, include_default_values=True),
             "memo": "",
             "msg1": msg1,
@@ -333,7 +363,8 @@ async def get_signature(key_manager: KeyManager, tx: Tx, message, broadcast_opti
 
     if hasattr(message, "statements"):
         del tx_message.msg1["statements"][0]["limit_size"]
-        del tx_message.msg1["statements"][0]["resources"]
+        if not tx_message.msg1["statements"][0]["resources"]:
+            del tx_message.msg1["statements"][0]["resources"]
         tx_message.msg1["statements"][0]["expiration_time"] = ""
         tx_message.msg1["expiration_time"] = (
             message.expiration_time.strftime("%Y-%m-%dT%H:%M:%S.%fZ") if message.expiration_time.year != 1969 else ""
@@ -345,12 +376,19 @@ async def get_signature(key_manager: KeyManager, tx: Tx, message, broadcast_opti
         "domain": {
             "name": "Greenfield Tx",
             "version": "1.0.0",
-            "chainId": CHAIN_ID,
+            "chainId": chain_id,
             "verifyingContract": "greenfield",
             "salt": "0",
         },
         "message": tx_message.model_dump(),
     }
+
+    # Sort fees
+    payload["message"]["fee"] = {k: v for k, v in sorted(payload["message"]["fee"].items())}
+    payload["message"]["fee"]["amount"] = [
+        {"amount": entry["amount"], "denom": entry["denom"]} for entry in payload["message"]["fee"]["amount"]
+    ]
+
     eip712_hash = eip712_encode_hash(payload)
     signature = eip712_signature(eip712_hash, key_manager.private_key)
     signature = bytes.fromhex(signature.hex()[2:])
@@ -358,9 +396,14 @@ async def get_signature(key_manager: KeyManager, tx: Tx, message, broadcast_opti
 
 
 def sorted_dict(full_types):
-    sorted_keys = list(full_types.keys())
-    sorted_keys.sort()
-    return {i: full_types[i] for i in sorted_keys}
+    # First, sort the main dictionary by its keys
+    sorted_d = dict(sorted(full_types.items()))
+
+    # For each key in the main dictionary, sort the nested list of dictionaries by the 'name' key
+    for key, value in sorted_d.items():
+        if isinstance(value, list) and all(isinstance(item, dict) and "name" in item for item in value):
+            sorted_d[key] = sorted(value, key=lambda x: x["name"])
+    return sorted_d
 
 
 def set_message(url, message, broadcast_option: Optional[BroadcastOption] = None):
@@ -407,6 +450,9 @@ def set_message(url, message, broadcast_option: Optional[BroadcastOption] = None
             message.grant.expiration = message.grant.expiration - timedelta(hours=9)
 
     if url == UPDATE_SP_STORAGE_PRICE and "." not in message.read_price:
-        message.read_price = str(format(int(message.read_price) / 10**18, ".18f"))
-        message.store_price = str(format(int(message.store_price) / 10**18, ".18f"))
+        message.read_price = str(format(Decimal(message.read_price) / 10**18, ".18f"))
+        message.store_price = str(format(Decimal(message.store_price) / 10**18, ".18f"))
+
+    if url == EDIT_VALIDATOR and "." not in message.commission_rate and message.commission_rate != "":
+        message.commission_rate = str(format(Decimal(message.commission_rate) / 10**18, ".18f"))
     return message

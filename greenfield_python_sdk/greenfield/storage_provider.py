@@ -1,7 +1,7 @@
 import asyncio
 from datetime import datetime, timedelta
 from decimal import Decimal
-from typing import List, Tuple
+from typing import List, Optional, Tuple
 
 from betterproto.lib.google.protobuf import Any as AnyMessage
 
@@ -15,7 +15,6 @@ from greenfield_python_sdk.models.eip712_messages.sp.sp_url import (
     UPDATE_SP_STORAGE_PRICE,
 )
 from greenfield_python_sdk.models.storage_provider import CreateStorageProviderOptions, GrantDepositOptions
-from greenfield_python_sdk.models.transaction import BroadcastOption, TxOption
 from greenfield_python_sdk.protos.cosmos.auth.v1beta1 import QueryModuleAccountByNameRequest
 from greenfield_python_sdk.protos.cosmos.authz.v1beta1 import Grant, MsgGrant
 from greenfield_python_sdk.protos.cosmos.base.v1beta1 import Coin
@@ -31,6 +30,7 @@ from greenfield_python_sdk.protos.greenfield.sp import (
     QueryStorageProviderRequest,
     SecondarySpStorePrice,
     SpStoragePrice,
+    Status,
 )
 from greenfield_python_sdk.protos.greenfield.sp import StorageProvider as SpStorageProvider
 from greenfield_python_sdk.storage_client import StorageClient
@@ -46,15 +46,22 @@ class StorageProvider:
         self.key_manager = key_manager
         self.storage_client = storage_client
 
-    async def list_storage_providers(self) -> List[SpStorageProvider]:
+    async def list_storage_providers(self, in_service: Optional[bool] = False) -> List[SpStorageProvider]:
         response = await self.blockchain_client.sp.get_storage_providers()
         if response.sps is None:
             raise Exception("Storage providers not found")
 
-        return response.to_pydict()["sps"]
+        sps = response.to_pydict()["sps"]
+        if in_service:
+            filtered_sps = []
+            for sp in sps:
+                if sp.get("status", 0) == Status.STATUS_IN_SERVICE:
+                    filtered_sps.append(sp)
+            return filtered_sps
+        return sps
 
-    async def get_storage_provider_info(self, sp_address: str) -> SpStorageProvider:
-        response = await self.blockchain_client.sp.get_storage_provider(QueryStorageProviderRequest(sp_address))
+    async def get_storage_provider_info(self, sp_id: int) -> SpStorageProvider:
+        response = await self.blockchain_client.sp.get_storage_provider(QueryStorageProviderRequest(id=sp_id))
         if response.storage_provider is None:
             raise Exception("Storage provider not found")
 

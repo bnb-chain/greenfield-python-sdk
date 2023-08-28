@@ -904,6 +904,7 @@ class MsgCreateValidator(betterproto.Message):
     relayer_address: str = betterproto.string_field(9)
     challenger_address: str = betterproto.string_field(10)
     bls_key: str = betterproto.string_field(11)
+    bls_proof: str = betterproto.string_field(12)
 
 
 @dataclass(eq=False, repr=False)
@@ -931,6 +932,7 @@ class MsgEditValidator(betterproto.Message):
     relayer_address: str = betterproto.string_field(5)
     challenger_address: str = betterproto.string_field(6)
     bls_key: str = betterproto.string_field(7)
+    bls_proof: str = betterproto.string_field(8)
 
 
 @dataclass(eq=False, repr=False)
