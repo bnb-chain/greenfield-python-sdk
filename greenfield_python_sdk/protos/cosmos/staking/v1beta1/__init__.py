@@ -2,7 +2,14 @@
 # sources: cosmos/staking/v1beta1/authz.proto, cosmos/staking/v1beta1/genesis.proto, cosmos/staking/v1beta1/query.proto, cosmos/staking/v1beta1/staking.proto, cosmos/staking/v1beta1/tx.proto
 # plugin: python-betterproto
 # This file has been @generated
-from dataclasses import dataclass
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from dataclasses import dataclass
+else:
+    from pydantic.dataclasses import dataclass
+
 from datetime import datetime, timedelta
 from typing import TYPE_CHECKING, Dict, List, Optional
 
@@ -10,6 +17,7 @@ import betterproto
 import betterproto.lib.google.protobuf as betterproto_lib_google_protobuf
 import grpclib
 from betterproto.grpc.grpclib_server import ServiceBase
+from pydantic import root_validator
 
 from ....tendermint import abci as ___tendermint_abci__
 from ....tendermint import types as ___tendermint_types__
@@ -29,19 +37,25 @@ class AuthorizationType(betterproto.Enum):
     """
 
     AUTHORIZATION_TYPE_UNSPECIFIED = 0
-    """AUTHORIZATION_TYPE_UNSPECIFIED specifies an unknown authorization type"""
+    """
+    AUTHORIZATION_TYPE_UNSPECIFIED specifies an unknown authorization type
+    """
 
     AUTHORIZATION_TYPE_DELEGATE = 1
-    """AUTHORIZATION_TYPE_DELEGATE defines an authorization type for Msg/Delegate"""
+    """
+    AUTHORIZATION_TYPE_DELEGATE defines an authorization type for Msg/Delegate
+    """
 
     AUTHORIZATION_TYPE_UNDELEGATE = 2
     """
-    AUTHORIZATION_TYPE_UNDELEGATE defines an authorization type for Msg/Undelegate
+    AUTHORIZATION_TYPE_UNDELEGATE defines an authorization type for
+    Msg/Undelegate
     """
 
     AUTHORIZATION_TYPE_REDELEGATE = 3
     """
-    AUTHORIZATION_TYPE_REDELEGATE defines an authorization type for Msg/BeginRedelegate
+    AUTHORIZATION_TYPE_REDELEGATE defines an authorization type for
+    Msg/BeginRedelegate
     """
 
 
@@ -77,32 +91,39 @@ class Infraction(betterproto.Enum):
 @dataclass(eq=False, repr=False)
 class StakeAuthorization(betterproto.Message):
     """
-    StakeAuthorization defines authorization for delegate/undelegate/redelegate.
-    Since: cosmos-sdk 0.43
+    StakeAuthorization defines authorization for
+    delegate/undelegate/redelegate. Since: cosmos-sdk 0.43
     """
 
     max_tokens: "__base_v1_beta1__.Coin" = betterproto.message_field(1)
     """
-    max_tokens specifies the maximum amount of tokens can be delegate to a validator. If
-    it is
-    empty, there is no spend limit and any amount of coins can be delegated.
+    max_tokens specifies the maximum amount of tokens can be delegate to a
+    validator. If it is empty, there is no spend limit and any amount of coins
+    can be delegated.
     """
 
-    allow_list: "StakeAuthorizationValidators" = betterproto.message_field(2, group="validators")
+    allow_list: Optional["StakeAuthorizationValidators"] = betterproto.message_field(
+        2, optional=True, group="validators"
+    )
     """
-    allow_list specifies list of validator addresses to whom grantee can delegate tokens
-    on behalf of granter's
-    account.
+    allow_list specifies list of validator addresses to whom grantee can
+    delegate tokens on behalf of granter's account.
     """
 
-    deny_list: "StakeAuthorizationValidators" = betterproto.message_field(3, group="validators")
+    deny_list: Optional["StakeAuthorizationValidators"] = betterproto.message_field(
+        3, optional=True, group="validators"
+    )
     """
-    deny_list specifies list of validator addresses to whom grantee can not delegate
-    tokens.
+    deny_list specifies list of validator addresses to whom grantee can not
+    delegate tokens.
     """
 
     authorization_type: "AuthorizationType" = betterproto.enum_field(4)
     """authorization_type defines one of AuthorizationType."""
+
+    @root_validator()
+    def check_oneof(cls, values):
+        return cls._validate_field_groups(values)
 
 
 @dataclass(eq=False, repr=False)
@@ -117,8 +138,8 @@ class HistoricalInfo(betterproto.Message):
     """
     HistoricalInfo contains header and validator information for a given block.
     It is stored as part of staking module's state, which persists the `n` most
-    recent HistoricalInfo
-    (`n` is set by the staking module's `historical_entries` parameter).
+    recent HistoricalInfo (`n` is set by the staking module's
+    `historical_entries` parameter).
     """
 
     header: "___tendermint_types__.Header" = betterproto.message_field(1)
@@ -128,8 +149,8 @@ class HistoricalInfo(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class CommissionRates(betterproto.Message):
     """
-    CommissionRates defines the initial commission rates to be used for creating
-    a validator.
+    CommissionRates defines the initial commission rates to be used for
+    creating a validator.
     """
 
     rate: str = betterproto.string_field(1)
@@ -137,14 +158,14 @@ class CommissionRates(betterproto.Message):
 
     max_rate: str = betterproto.string_field(2)
     """
-    max_rate defines the maximum commission rate which validator can ever charge, as a
-    fraction.
+    max_rate defines the maximum commission rate which validator can ever
+    charge, as a fraction.
     """
 
     max_change_rate: str = betterproto.string_field(3)
     """
-    max_change_rate defines the maximum daily increase of the validator commission, as a
-    fraction.
+    max_change_rate defines the maximum daily increase of the validator
+    commission, as a fraction.
     """
 
 
@@ -154,8 +175,8 @@ class Commission(betterproto.Message):
 
     commission_rates: "CommissionRates" = betterproto.message_field(1)
     """
-    commission_rates defines the initial commission rates to be used for creating a
-    validator.
+    commission_rates defines the initial commission rates to be used for
+    creating a validator.
     """
 
     update_time: datetime = betterproto.message_field(2)
@@ -170,7 +191,9 @@ class Description(betterproto.Message):
     """moniker defines a human-readable name for the validator."""
 
     identity: str = betterproto.string_field(2)
-    """identity defines an optional identity signature (ex. UPort or Keybase)."""
+    """
+    identity defines an optional identity signature (ex. UPort or Keybase).
+    """
 
     website: str = betterproto.string_field(3)
     """website defines an optional website link."""
@@ -186,29 +209,31 @@ class Description(betterproto.Message):
 class Validator(betterproto.Message):
     """
     Validator defines a validator, together with the total amount of the
-    Validator's bond shares and their exchange rate to coins. Slashing results in
-    a decrease in the exchange rate, allowing correct calculation of future
-    undelegations without iterating over delegators. When coins are delegated to
-    this validator, the validator is credited with a delegation whose number of
-    bond shares is based on the amount of coins delegated divided by the current
-    exchange rate. Voting power can be calculated as total bonded shares
-    multiplied by exchange rate.
+    Validator's bond shares and their exchange rate to coins. Slashing results
+    in a decrease in the exchange rate, allowing correct calculation of future
+    undelegations without iterating over delegators. When coins are delegated
+    to this validator, the validator is credited with a delegation whose number
+    of bond shares is based on the amount of coins delegated divided by the
+    current exchange rate. Voting power can be calculated as total bonded
+    shares multiplied by exchange rate.
     """
 
     operator_address: str = betterproto.string_field(1)
     """
-    operator_address defines the address of the validator's operator; bech encoded in
-    JSON.
+    operator_address defines the address of the validator's operator; bech
+    encoded in JSON.
     """
 
     consensus_pubkey: "betterproto_lib_google_protobuf.Any" = betterproto.message_field(2)
     """
-    consensus_pubkey is the consensus public key of the validator, as a Protobuf Any.
+    consensus_pubkey is the consensus public key of the validator, as a
+    Protobuf Any.
     """
 
     jailed: bool = betterproto.bool_field(3)
     """
-    jailed defined whether the validator has been jailed from bonded status or not.
+    jailed defined whether the validator has been jailed from bonded status or
+    not.
     """
 
     status: "BondStatus" = betterproto.enum_field(4)
@@ -218,21 +243,23 @@ class Validator(betterproto.Message):
     """tokens define the delegated tokens (incl. self-delegation)."""
 
     delegator_shares: str = betterproto.string_field(6)
-    """delegator_shares defines total shares issued to a validator's delegators."""
+    """
+    delegator_shares defines total shares issued to a validator's delegators.
+    """
 
     description: "Description" = betterproto.message_field(7)
     """description defines the description terms for the validator."""
 
     unbonding_height: int = betterproto.int64_field(8)
     """
-    unbonding_height defines, if unbonding, the height at which this validator has begun
-    unbonding.
+    unbonding_height defines, if unbonding, the height at which this validator
+    has begun unbonding.
     """
 
     unbonding_time: datetime = betterproto.message_field(9)
     """
-    unbonding_time defines, if unbonding, the min time for the validator to complete
-    unbonding.
+    unbonding_time defines, if unbonding, the min time for the validator to
+    complete unbonding.
     """
 
     commission: "Commission" = betterproto.message_field(10)
@@ -240,29 +267,36 @@ class Validator(betterproto.Message):
 
     min_self_delegation: str = betterproto.string_field(11)
     """
-    min_self_delegation is the validator's self declared minimum self delegation.
-    Since: cosmos-sdk 0.46
+    min_self_delegation is the validator's self declared minimum self
+    delegation. Since: cosmos-sdk 0.46
     """
 
     unbonding_on_hold_ref_count: int = betterproto.int64_field(12)
     """
-    strictly positive if this validator's unbonding has been stopped by external modules
+    strictly positive if this validator's unbonding has been stopped by
+    external modules
     """
 
     unbonding_ids: List[int] = betterproto.uint64_field(13)
     """
-    list of unbonding ids, each uniquely identifing an unbonding of this validator
+    list of unbonding ids, each uniquely identifing an unbonding of this
+    validator
     """
 
     self_del_address: str = betterproto.string_field(14)
-    """self_del_address defines the address of the validator for self delegation."""
+    """
+    self_del_address defines the address of the validator for self delegation.
+    """
 
     relayer_address: str = betterproto.string_field(15)
-    """relayer_address defines the address of the validator's authorized relayer;."""
+    """
+    relayer_address defines the address of the validator's authorized relayer;.
+    """
 
     challenger_address: str = betterproto.string_field(16)
     """
-    challenger_address defines the address of the validator's authorized challenger;.
+    challenger_address defines the address of the validator's authorized
+    challenger;.
     """
 
     bls_key: bytes = betterproto.bytes_field(17)
@@ -282,9 +316,10 @@ class ValAddresses(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class DvPair(betterproto.Message):
     """
-    DVPair is struct that just has a delegator-validator pair with no other data.
-    It is intended to be used as a marshalable pointer. For example, a DVPair can
-    be used to construct the key to getting an UnbondingDelegation from state.
+    DVPair is struct that just has a delegator-validator pair with no other
+    data. It is intended to be used as a marshalable pointer. For example, a
+    DVPair can be used to construct the key to getting an UnbondingDelegation
+    from state.
     """
 
     delegator_address: str = betterproto.string_field(1)
@@ -322,9 +357,8 @@ class DvvTriplets(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class Delegation(betterproto.Message):
     """
-    Delegation represents the bond with tokens held by an account. It is
-    owned by one delegator, and is associated with the voting power of one
-    validator.
+    Delegation represents the bond with tokens held by an account. It is owned
+    by one delegator, and is associated with the voting power of one validator.
     """
 
     delegator_address: str = betterproto.string_field(1)
@@ -340,8 +374,8 @@ class Delegation(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class UnbondingDelegation(betterproto.Message):
     """
-    UnbondingDelegation stores all of a single delegator's unbonding bonds
-    for a single validator in an time-ordered list.
+    UnbondingDelegation stores all of a single delegator's unbonding bonds for
+    a single validator in an time-ordered list.
     """
 
     delegator_address: str = betterproto.string_field(1)
@@ -356,7 +390,10 @@ class UnbondingDelegation(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class UnbondingDelegationEntry(betterproto.Message):
-    """UnbondingDelegationEntry defines an unbonding object with relevant metadata."""
+    """
+    UnbondingDelegationEntry defines an unbonding object with relevant
+    metadata.
+    """
 
     creation_height: int = betterproto.int64_field(1)
     """creation_height is the height which the unbonding took place."""
@@ -366,7 +403,8 @@ class UnbondingDelegationEntry(betterproto.Message):
 
     initial_balance: str = betterproto.string_field(3)
     """
-    initial_balance defines the tokens initially scheduled to receive at completion.
+    initial_balance defines the tokens initially scheduled to receive at
+    completion.
     """
 
     balance: str = betterproto.string_field(4)
@@ -377,26 +415,34 @@ class UnbondingDelegationEntry(betterproto.Message):
 
     unbonding_on_hold_ref_count: int = betterproto.int64_field(6)
     """
-    Strictly positive if this entry's unbonding has been stopped by external modules
+    Strictly positive if this entry's unbonding has been stopped by external
+    modules
     """
 
 
 @dataclass(eq=False, repr=False)
 class RedelegationEntry(betterproto.Message):
-    """RedelegationEntry defines a redelegation object with relevant metadata."""
+    """
+    RedelegationEntry defines a redelegation object with relevant metadata.
+    """
 
     creation_height: int = betterproto.int64_field(1)
-    """creation_height  defines the height which the redelegation took place."""
+    """
+    creation_height  defines the height which the redelegation took place.
+    """
 
     completion_time: datetime = betterproto.message_field(2)
     """completion_time defines the unix time for redelegation completion."""
 
     initial_balance: str = betterproto.string_field(3)
-    """initial_balance defines the initial balance when redelegation started."""
+    """
+    initial_balance defines the initial balance when redelegation started.
+    """
 
     shares_dst: str = betterproto.string_field(4)
     """
-    shares_dst is the amount of destination-validator shares created by redelegation.
+    shares_dst is the amount of destination-validator shares created by
+    redelegation.
     """
 
     unbonding_id: int = betterproto.uint64_field(5)
@@ -404,26 +450,32 @@ class RedelegationEntry(betterproto.Message):
 
     unbonding_on_hold_ref_count: int = betterproto.int64_field(6)
     """
-    Strictly positive if this entry's unbonding has been stopped by external modules
+    Strictly positive if this entry's unbonding has been stopped by external
+    modules
     """
 
 
 @dataclass(eq=False, repr=False)
 class Redelegation(betterproto.Message):
     """
-    Redelegation contains the list of a particular delegator's redelegating bonds
-    from a particular source validator to a particular destination validator.
+    Redelegation contains the list of a particular delegator's redelegating
+    bonds from a particular source validator to a particular destination
+    validator.
     """
 
     delegator_address: str = betterproto.string_field(1)
     """delegator_address is the bech32-encoded address of the delegator."""
 
     validator_src_address: str = betterproto.string_field(2)
-    """validator_src_address is the validator redelegation source operator address."""
+    """
+    validator_src_address is the validator redelegation source operator
+    address.
+    """
 
     validator_dst_address: str = betterproto.string_field(3)
     """
-    validator_dst_address is the validator redelegation destination operator address.
+    validator_dst_address is the validator redelegation destination operator
+    address.
     """
 
     entries: List["RedelegationEntry"] = betterproto.message_field(4)
@@ -442,8 +494,8 @@ class Params(betterproto.Message):
 
     max_entries: int = betterproto.uint32_field(3)
     """
-    max_entries is the max entries for either unbonding delegation or redelegation (per
-    pair/trio).
+    max_entries is the max entries for either unbonding delegation or
+    redelegation (per pair/trio).
     """
 
     historical_entries: int = betterproto.uint32_field(4)
@@ -454,12 +506,14 @@ class Params(betterproto.Message):
 
     min_commission_rate: str = betterproto.string_field(6)
     """
-    min_commission_rate is the chain-wide minimum commission rate that a validator can
-    charge their delegators
+    min_commission_rate is the chain-wide minimum commission rate that a
+    validator can charge their delegators
     """
 
     min_self_delegation: str = betterproto.string_field(7)
-    """min_self_delegation defines the minimum self delegation for validators."""
+    """
+    min_self_delegation defines the minimum self delegation for validators.
+    """
 
 
 @dataclass(eq=False, repr=False)
@@ -476,9 +530,9 @@ class DelegationResponse(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class RedelegationEntryResponse(betterproto.Message):
     """
-    RedelegationEntryResponse is equivalent to a RedelegationEntry except that it
-    contains a balance in addition to shares which is more suitable for client
-    responses.
+    RedelegationEntryResponse is equivalent to a RedelegationEntry except that
+    it contains a balance in addition to shares which is more suitable for
+    client responses.
     """
 
     redelegation_entry: "RedelegationEntry" = betterproto.message_field(1)
@@ -488,9 +542,9 @@ class RedelegationEntryResponse(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class RedelegationResponse(betterproto.Message):
     """
-    RedelegationResponse is equivalent to a Redelegation except that its entries
-    contain a balance in addition to shares which is more suitable for client
-    responses.
+    RedelegationResponse is equivalent to a Redelegation except that its
+    entries contain a balance in addition to shares which is more suitable for
+    client responses.
     """
 
     redelegation: "Redelegation" = betterproto.message_field(1)
@@ -511,9 +565,9 @@ class Pool(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class ValidatorUpdates(betterproto.Message):
     """
-    ValidatorUpdates defines an array of abci.ValidatorUpdate objects.
-    TODO: explore moving this to proto/cosmos/base to separate modules from tendermint
-    dependence
+    ValidatorUpdates defines an array of abci.ValidatorUpdate objects. TODO:
+    explore moving this to proto/cosmos/base to separate modules from
+    tendermint dependence
     """
 
     updates: List["___tendermint_abci__.ValidatorUpdate"] = betterproto.message_field(1)
@@ -534,8 +588,8 @@ class GenesisState(betterproto.Message):
 
     last_validator_powers: List["LastValidatorPower"] = betterproto.message_field(3)
     """
-    last_validator_powers is a special index that provides a historical list
-    of the last-block's bonded validators.
+    last_validator_powers is a special index that provides a historical list of
+    the last-block's bonded validators.
     """
 
     validators: List["Validator"] = betterproto.message_field(4)
@@ -545,7 +599,9 @@ class GenesisState(betterproto.Message):
     """delegations defines the delegations active at genesis."""
 
     unbonding_delegations: List["UnbondingDelegation"] = betterproto.message_field(6)
-    """unbonding_delegations defines the unbonding delegations active at genesis."""
+    """
+    unbonding_delegations defines the unbonding delegations active at genesis.
+    """
 
     redelegations: List["Redelegation"] = betterproto.message_field(7)
     """redelegations defines the redelegations active at genesis."""
@@ -566,7 +622,9 @@ class LastValidatorPower(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class QueryValidatorsRequest(betterproto.Message):
-    """QueryValidatorsRequest is request type for Query/Validators RPC method."""
+    """
+    QueryValidatorsRequest is request type for Query/Validators RPC method.
+    """
 
     status: str = betterproto.string_field(1)
     """status enables to query for validators matching a given status."""
@@ -577,7 +635,10 @@ class QueryValidatorsRequest(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class QueryValidatorsResponse(betterproto.Message):
-    """QueryValidatorsResponse is response type for the Query/Validators RPC method"""
+    """
+    QueryValidatorsResponse is response type for the Query/Validators RPC
+    method
+    """
 
     validators: List["Validator"] = betterproto.message_field(1)
     """validators contains all the queried validators."""
@@ -588,7 +649,9 @@ class QueryValidatorsResponse(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class QueryValidatorRequest(betterproto.Message):
-    """QueryValidatorRequest is response type for the Query/Validator RPC method"""
+    """
+    QueryValidatorRequest is response type for the Query/Validator RPC method
+    """
 
     validator_addr: str = betterproto.string_field(1)
     """validator_addr defines the validator address to query for."""
@@ -596,7 +659,9 @@ class QueryValidatorRequest(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class QueryValidatorResponse(betterproto.Message):
-    """QueryValidatorResponse is response type for the Query/Validator RPC method"""
+    """
+    QueryValidatorResponse is response type for the Query/Validator RPC method
+    """
 
     validator: "Validator" = betterproto.message_field(1)
     """validator defines the validator info."""
@@ -656,7 +721,9 @@ class QueryValidatorUnbondingDelegationsResponse(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class QueryDelegationRequest(betterproto.Message):
-    """QueryDelegationRequest is request type for the Query/Delegation RPC method."""
+    """
+    QueryDelegationRequest is request type for the Query/Delegation RPC method.
+    """
 
     delegator_addr: str = betterproto.string_field(1)
     """delegator_addr defines the delegator address to query for."""
@@ -667,7 +734,10 @@ class QueryDelegationRequest(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class QueryDelegationResponse(betterproto.Message):
-    """QueryDelegationResponse is response type for the Query/Delegation RPC method."""
+    """
+    QueryDelegationResponse is response type for the Query/Delegation RPC
+    method.
+    """
 
     delegation_response: "DelegationResponse" = betterproto.message_field(1)
     """delegation_responses defines the delegation info of a delegation."""
@@ -720,7 +790,9 @@ class QueryDelegatorDelegationsResponse(betterproto.Message):
     """
 
     delegation_responses: List["DelegationResponse"] = betterproto.message_field(1)
-    """delegation_responses defines all the delegations' info of a delegator."""
+    """
+    delegation_responses defines all the delegations' info of a delegator.
+    """
 
     pagination: "__base_query_v1_beta1__.PageResponse" = betterproto.message_field(2)
     """pagination defines the pagination in the response."""
@@ -851,8 +923,8 @@ class QueryHistoricalInfoRequest(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class QueryHistoricalInfoResponse(betterproto.Message):
     """
-    QueryHistoricalInfoResponse is response type for the Query/HistoricalInfo RPC
-    method.
+    QueryHistoricalInfoResponse is response type for the Query/HistoricalInfo
+    RPC method.
     """
 
     hist: "HistoricalInfo" = betterproto.message_field(1)
@@ -883,7 +955,9 @@ class QueryParamsRequest(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class QueryParamsResponse(betterproto.Message):
-    """QueryParamsResponse is response type for the Query/Params RPC method."""
+    """
+    QueryParamsResponse is response type for the Query/Params RPC method.
+    """
 
     params: "Params" = betterproto.message_field(1)
     """params holds all the parameters of this module."""
@@ -891,7 +965,9 @@ class QueryParamsResponse(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class MsgCreateValidator(betterproto.Message):
-    """MsgCreateValidator defines a SDK message for creating a new validator."""
+    """
+    MsgCreateValidator defines a SDK message for creating a new validator.
+    """
 
     description: "Description" = betterproto.message_field(1)
     commission: "CommissionRates" = betterproto.message_field(2)
@@ -909,14 +985,18 @@ class MsgCreateValidator(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class MsgCreateValidatorResponse(betterproto.Message):
-    """MsgCreateValidatorResponse defines the Msg/CreateValidator response type."""
+    """
+    MsgCreateValidatorResponse defines the Msg/CreateValidator response type.
+    """
 
     pass
 
 
 @dataclass(eq=False, repr=False)
 class MsgEditValidator(betterproto.Message):
-    """MsgEditValidator defines a SDK message for editing an existing validator."""
+    """
+    MsgEditValidator defines a SDK message for editing an existing validator.
+    """
 
     description: "Description" = betterproto.message_field(1)
     validator_address: str = betterproto.string_field(2)
@@ -924,8 +1004,7 @@ class MsgEditValidator(betterproto.Message):
     """
     We pass a reference to the new commission rate and min self delegation as
     it's not mandatory to update. If not updated, the deserialized rate will be
-    zero with no way to distinguish if an update was intended.
-    REF: #2373
+    zero with no way to distinguish if an update was intended. REF: #2373
     """
 
     min_self_delegation: str = betterproto.string_field(4)
@@ -937,7 +1016,9 @@ class MsgEditValidator(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class MsgEditValidatorResponse(betterproto.Message):
-    """MsgEditValidatorResponse defines the Msg/EditValidator response type."""
+    """
+    MsgEditValidatorResponse defines the Msg/EditValidator response type.
+    """
 
     pass
 
@@ -945,8 +1026,8 @@ class MsgEditValidatorResponse(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class MsgDelegate(betterproto.Message):
     """
-    MsgDelegate defines a SDK message for performing a delegation of coins
-    from a delegator to a validator.
+    MsgDelegate defines a SDK message for performing a delegation of coins from
+    a delegator to a validator.
     """
 
     delegator_address: str = betterproto.string_field(1)
@@ -964,8 +1045,8 @@ class MsgDelegateResponse(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class MsgBeginRedelegate(betterproto.Message):
     """
-    MsgBeginRedelegate defines a SDK message for performing a redelegation
-    of coins from a delegator and source validator to a destination validator.
+    MsgBeginRedelegate defines a SDK message for performing a redelegation of
+    coins from a delegator and source validator to a destination validator.
     """
 
     delegator_address: str = betterproto.string_field(1)
@@ -976,7 +1057,9 @@ class MsgBeginRedelegate(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class MsgBeginRedelegateResponse(betterproto.Message):
-    """MsgBeginRedelegateResponse defines the Msg/BeginRedelegate response type."""
+    """
+    MsgBeginRedelegateResponse defines the Msg/BeginRedelegate response type.
+    """
 
     completion_time: datetime = betterproto.message_field(1)
 
@@ -1003,15 +1086,16 @@ class MsgUndelegateResponse(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class MsgCancelUnbondingDelegation(betterproto.Message):
     """
-    MsgCancelUnbondingDelegation defines the SDK message for performing a cancel
-    unbonding delegation for delegator
-    Since: cosmos-sdk 0.46
+    MsgCancelUnbondingDelegation defines the SDK message for performing a
+    cancel unbonding delegation for delegator Since: cosmos-sdk 0.46
     """
 
     delegator_address: str = betterproto.string_field(1)
     validator_address: str = betterproto.string_field(2)
     amount: "__base_v1_beta1__.Coin" = betterproto.message_field(3)
-    """amount is always less than or equal to unbonding delegation entry balance"""
+    """
+    amount is always less than or equal to unbonding delegation entry balance
+    """
 
     creation_height: int = betterproto.int64_field(4)
     """creation_height is the height which the unbonding took place."""
@@ -1019,10 +1103,7 @@ class MsgCancelUnbondingDelegation(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class MsgCancelUnbondingDelegationResponse(betterproto.Message):
-    """
-    MsgCancelUnbondingDelegationResponse
-    Since: cosmos-sdk 0.46
-    """
+    """MsgCancelUnbondingDelegationResponse Since: cosmos-sdk 0.46"""
 
     pass
 
@@ -1030,8 +1111,8 @@ class MsgCancelUnbondingDelegationResponse(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class MsgUpdateParams(betterproto.Message):
     """
-    MsgUpdateParams is the Msg/UpdateParams request type.
-    Since: cosmos-sdk 0.47
+    MsgUpdateParams is the Msg/UpdateParams request type. Since: cosmos-sdk
+    0.47
     """
 
     authority: str = betterproto.string_field(1)
@@ -1042,8 +1123,8 @@ class MsgUpdateParams(betterproto.Message):
 
     params: "Params" = betterproto.message_field(2)
     """
-    params defines the x/staking parameters to update.
-    NOTE: All parameters must be supplied.
+    params defines the x/staking parameters to update. NOTE: All parameters
+    must be supplied.
     """
 
 
@@ -1051,8 +1132,7 @@ class MsgUpdateParams(betterproto.Message):
 class MsgUpdateParamsResponse(betterproto.Message):
     """
     MsgUpdateParamsResponse defines the response structure for executing a
-    MsgUpdateParams message.
-    Since: cosmos-sdk 0.47
+    MsgUpdateParams message. Since: cosmos-sdk 0.47
     """
 
     pass
@@ -1795,3 +1875,51 @@ class MsgBase(ServiceBase):
                 MsgUpdateParamsResponse,
             ),
         }
+
+
+StakeAuthorization.__pydantic_model__.update_forward_refs()  # type: ignore
+HistoricalInfo.__pydantic_model__.update_forward_refs()  # type: ignore
+Commission.__pydantic_model__.update_forward_refs()  # type: ignore
+Validator.__pydantic_model__.update_forward_refs()  # type: ignore
+DvPairs.__pydantic_model__.update_forward_refs()  # type: ignore
+DvvTriplets.__pydantic_model__.update_forward_refs()  # type: ignore
+UnbondingDelegation.__pydantic_model__.update_forward_refs()  # type: ignore
+UnbondingDelegationEntry.__pydantic_model__.update_forward_refs()  # type: ignore
+RedelegationEntry.__pydantic_model__.update_forward_refs()  # type: ignore
+Redelegation.__pydantic_model__.update_forward_refs()  # type: ignore
+Params.__pydantic_model__.update_forward_refs()  # type: ignore
+DelegationResponse.__pydantic_model__.update_forward_refs()  # type: ignore
+RedelegationEntryResponse.__pydantic_model__.update_forward_refs()  # type: ignore
+RedelegationResponse.__pydantic_model__.update_forward_refs()  # type: ignore
+ValidatorUpdates.__pydantic_model__.update_forward_refs()  # type: ignore
+GenesisState.__pydantic_model__.update_forward_refs()  # type: ignore
+QueryValidatorsRequest.__pydantic_model__.update_forward_refs()  # type: ignore
+QueryValidatorsResponse.__pydantic_model__.update_forward_refs()  # type: ignore
+QueryValidatorResponse.__pydantic_model__.update_forward_refs()  # type: ignore
+QueryValidatorDelegationsRequest.__pydantic_model__.update_forward_refs()  # type: ignore
+QueryValidatorDelegationsResponse.__pydantic_model__.update_forward_refs()  # type: ignore
+QueryValidatorUnbondingDelegationsRequest.__pydantic_model__.update_forward_refs()  # type: ignore
+QueryValidatorUnbondingDelegationsResponse.__pydantic_model__.update_forward_refs()  # type: ignore
+QueryDelegationResponse.__pydantic_model__.update_forward_refs()  # type: ignore
+QueryUnbondingDelegationResponse.__pydantic_model__.update_forward_refs()  # type: ignore
+QueryDelegatorDelegationsRequest.__pydantic_model__.update_forward_refs()  # type: ignore
+QueryDelegatorDelegationsResponse.__pydantic_model__.update_forward_refs()  # type: ignore
+QueryDelegatorUnbondingDelegationsRequest.__pydantic_model__.update_forward_refs()  # type: ignore
+QueryDelegatorUnbondingDelegationsResponse.__pydantic_model__.update_forward_refs()  # type: ignore
+QueryRedelegationsRequest.__pydantic_model__.update_forward_refs()  # type: ignore
+QueryRedelegationsResponse.__pydantic_model__.update_forward_refs()  # type: ignore
+QueryDelegatorValidatorsRequest.__pydantic_model__.update_forward_refs()  # type: ignore
+QueryDelegatorValidatorsResponse.__pydantic_model__.update_forward_refs()  # type: ignore
+QueryDelegatorValidatorResponse.__pydantic_model__.update_forward_refs()  # type: ignore
+QueryHistoricalInfoResponse.__pydantic_model__.update_forward_refs()  # type: ignore
+QueryPoolResponse.__pydantic_model__.update_forward_refs()  # type: ignore
+QueryParamsResponse.__pydantic_model__.update_forward_refs()  # type: ignore
+MsgCreateValidator.__pydantic_model__.update_forward_refs()  # type: ignore
+MsgEditValidator.__pydantic_model__.update_forward_refs()  # type: ignore
+MsgDelegate.__pydantic_model__.update_forward_refs()  # type: ignore
+MsgBeginRedelegate.__pydantic_model__.update_forward_refs()  # type: ignore
+MsgBeginRedelegateResponse.__pydantic_model__.update_forward_refs()  # type: ignore
+MsgUndelegate.__pydantic_model__.update_forward_refs()  # type: ignore
+MsgUndelegateResponse.__pydantic_model__.update_forward_refs()  # type: ignore
+MsgCancelUnbondingDelegation.__pydantic_model__.update_forward_refs()  # type: ignore
+MsgUpdateParams.__pydantic_model__.update_forward_refs()  # type: ignore

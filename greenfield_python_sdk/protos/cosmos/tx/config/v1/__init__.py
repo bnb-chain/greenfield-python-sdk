@@ -2,7 +2,13 @@
 # sources: cosmos/tx/config/v1/config.proto
 # plugin: python-betterproto
 # This file has been @generated
-from dataclasses import dataclass
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from dataclasses import dataclass
+else:
+    from pydantic.dataclasses import dataclass
 
 import betterproto
 
@@ -13,14 +19,12 @@ class Config(betterproto.Message):
 
     skip_ante_handler: bool = betterproto.bool_field(1)
     """
-    skip_ante_handler defines whether the ante handler registration should be skipped in
-    case an app wants to override
-    this functionality.
+    skip_ante_handler defines whether the ante handler registration should be
+    skipped in case an app wants to override this functionality.
     """
 
     skip_post_handler: bool = betterproto.bool_field(2)
     """
-    skip_post_handler defines whether the post handler registration should be skipped in
-    case an app wants to override
-    this functionality.
+    skip_post_handler defines whether the post handler registration should be
+    skipped in case an app wants to override this functionality.
     """

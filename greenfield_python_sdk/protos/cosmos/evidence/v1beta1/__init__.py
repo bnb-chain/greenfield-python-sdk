@@ -3,7 +3,13 @@
 # plugin: python-betterproto
 # This file has been @generated
 import warnings
-from dataclasses import dataclass
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from dataclasses import dataclass
+else:
+    from pydantic.dataclasses import dataclass
+
 from datetime import datetime
 from typing import TYPE_CHECKING, Dict, List, Optional
 
@@ -23,8 +29,8 @@ if TYPE_CHECKING:
 @dataclass(eq=False, repr=False)
 class Equivocation(betterproto.Message):
     """
-    Equivocation implements the Evidence interface and defines evidence of double
-    signing misbehavior.
+    Equivocation implements the Evidence interface and defines evidence of
+    double signing misbehavior.
     """
 
     height: int = betterproto.int64_field(1)
@@ -50,18 +56,20 @@ class GenesisState(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class QueryEvidenceRequest(betterproto.Message):
-    """QueryEvidenceRequest is the request type for the Query/Evidence RPC method."""
+    """
+    QueryEvidenceRequest is the request type for the Query/Evidence RPC method.
+    """
 
     evidence_hash: bytes = betterproto.bytes_field(1)
     """
-    evidence_hash defines the hash of the requested evidence.
-    Deprecated: Use hash, a HEX encoded string, instead.
+    evidence_hash defines the hash of the requested evidence. Deprecated: Use
+    hash, a HEX encoded string, instead.
     """
 
     hash: str = betterproto.string_field(2)
     """
-    hash defines the evidence hash of the requested evidence.
-    Since: cosmos-sdk 0.47
+    hash defines the evidence hash of the requested evidence. Since: cosmos-sdk
+    0.47
     """
 
     def __post_init__(self) -> None:
@@ -72,7 +80,10 @@ class QueryEvidenceRequest(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class QueryEvidenceResponse(betterproto.Message):
-    """QueryEvidenceResponse is the response type for the Query/Evidence RPC method."""
+    """
+    QueryEvidenceResponse is the response type for the Query/Evidence RPC
+    method.
+    """
 
     evidence: "betterproto_lib_google_protobuf.Any" = betterproto.message_field(1)
     """evidence returns the requested evidence."""
@@ -119,7 +130,9 @@ class MsgSubmitEvidence(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class MsgSubmitEvidenceResponse(betterproto.Message):
-    """MsgSubmitEvidenceResponse defines the Msg/SubmitEvidence response type."""
+    """
+    MsgSubmitEvidenceResponse defines the Msg/SubmitEvidence response type.
+    """
 
     hash: bytes = betterproto.bytes_field(4)
     """hash defines the hash of the evidence."""
@@ -241,3 +254,11 @@ class MsgBase(ServiceBase):
                 MsgSubmitEvidenceResponse,
             ),
         }
+
+
+Equivocation.__pydantic_model__.update_forward_refs()  # type: ignore
+GenesisState.__pydantic_model__.update_forward_refs()  # type: ignore
+QueryEvidenceResponse.__pydantic_model__.update_forward_refs()  # type: ignore
+QueryAllEvidenceRequest.__pydantic_model__.update_forward_refs()  # type: ignore
+QueryAllEvidenceResponse.__pydantic_model__.update_forward_refs()  # type: ignore
+MsgSubmitEvidence.__pydantic_model__.update_forward_refs()  # type: ignore

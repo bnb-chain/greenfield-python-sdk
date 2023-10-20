@@ -2,8 +2,10 @@ import base64
 import binascii
 import io
 import json
-from types import SimpleNamespace
+from datetime import datetime, timedelta
 from typing import Any, List, Tuple
+
+import html_to_json
 
 from greenfield_python_sdk.models.const import CREATE_OBJECT_ACTION
 from greenfield_python_sdk.models.object import (
@@ -21,6 +23,8 @@ from greenfield_python_sdk.storage_provider.utils import (
     check_valid_bucket_name,
     check_valid_object_name,
     compute_integrity_hash_go,
+    convert_key,
+    convert_value,
     get_obj_info,
     get_unsigned_bytes_from_message,
     is_valid_object_prefix,
@@ -75,7 +79,11 @@ class Object:
             expired_height=expired_height,
             sig=bytes(json_signed_message["primary_sp_approval"]["sig"], "utf-8"),
         )
-        return create_object_msg, json_signed_message["primary_sp_approval"]["sig"], checksums
+        return (
+            create_object_msg,
+            json_signed_message["primary_sp_approval"]["sig"],
+            checksums,
+        )
 
     async def compute_hash_roots(self, storage_params, reader: io.BytesIO) -> Tuple[List[bytes], int, RedundancyType]:
         data_blocks = storage_params.params.versioned_params.redundant_data_chunk_num
@@ -113,6 +121,7 @@ class Object:
             send_opt = SendOptions(method="PUT", body=reader)
 
         base_url = await self.client._get_sp_url_by_addr(primary_sp_address, bucket_name)
+        expiry = (datetime.utcnow() + timedelta(seconds=1000)).strftime("%Y-%m-%dT%H:%M:%SZ")
         request_metadata = RequestMeta(
             method="PUT",
             bucket_name=bucket_name,
@@ -120,6 +129,7 @@ class Object:
             content_type=content_type,
             content_length=object_size,
             base_url=base_url,
+            expiry_timestamp=expiry,
         ).model_dump()
 
         response = await self.client.prepare_request(
@@ -132,17 +142,23 @@ class Object:
         return "Object added successfully"
 
     async def get_object(
-        self, bucket_name: str, object_name: str, opts: GetObjectOption, primary_sp_address
+        self,
+        bucket_name: str,
+        object_name: str,
+        opts: GetObjectOption,
+        primary_sp_address,
     ) -> Tuple[Any, ObjectInfo]:
         check_valid_bucket_name(bucket_name)
         check_valid_object_name(object_name)
 
         base_url = await self.client._get_sp_url_by_addr(primary_sp_address, bucket_name)
+        expiry = (datetime.utcnow() + timedelta(seconds=1000)).strftime("%Y-%m-%dT%H:%M:%SZ")
         request_metadata = RequestMeta(
             bucket_name=bucket_name,
             object_name=object_name,
             base_url=base_url,
             disable_close_body=True,
+            expiry_timestamp=expiry,
         ).model_dump()
 
         if opts.range != "":
@@ -194,34 +210,48 @@ class Object:
         ).model_dump()
 
         response = await self.client.prepare_request(base_url, request_metadata, query_parameters)
-        res = json.loads(await response.text(), object_hook=lambda d: SimpleNamespace(**d))
-        res.objects = [obj for obj in res.objects if not obj.removed]
-        res.objects = {
-            object.object_info.object_name: {
-                "object_name": object.object_info.object_name,
-                "id": object.object_info.id,
-                "payload_size": int(object.object_info.payload_size),
-                "visibility": VisibilityType(object.object_info.visibility).name,
-                "content_type": object.object_info.content_type,
-                "checksums": object.object_info.checksums,
-                "create_at": int(object.object_info.create_at),
-            }
-            for object in res.objects
-        }
-        res.key_count = len(res.objects)
-        return res
+        res = html_to_json.convert(await response.text())["gfsplistobjectsbybucketnameresponse"][0]
+        if "objects" in res:
+            current_object = []
+            for _, object_info in enumerate(res["objects"]):
+                converted_data_list = {
+                    convert_key(key): convert_value(key, value) if value[0] else ""
+                    for key, value in object_info.items()
+                }
+                if converted_data_list["removed"] == False:
+                    current_object.append(
+                        {
+                            "object_name": converted_data_list["object_info"]["object_name"],
+                            "id": converted_data_list["object_info"]["id"],
+                            "payload_size": converted_data_list["object_info"]["payload_size"],
+                            "visibility": converted_data_list["object_info"]["visibility"].name,
+                            "content_type": converted_data_list["object_info"]["content_type"],
+                            "checksums": converted_data_list["object_info"]["checksums"],
+                            "create_at": converted_data_list["object_info"]["create_at"],
+                        }
+                    )
+            res.pop("objects")
+            res = {convert_key(key): convert_value(key, value) for key, value in res.items()}
+            res["objects"] = current_object
+        else:
+            res = {convert_key(key): convert_value(key, value) for key, value in res.items()}
+            res["objects"] = []
+        return ListObjectsResult(**res)
 
     async def create_object_approval(self, create_object_msg: MsgCreateObject, primary_sp_address: str) -> str:
         unsigned_bytes = get_unsigned_bytes_from_message(create_object_msg)
         query_parameters = {"action": CREATE_OBJECT_ACTION}
         endpoint = "get-approval"
         base_url = await self.client._get_sp_url_by_addr(primary_sp_address)
+
+        expiry = (datetime.utcnow() + timedelta(seconds=1000)).strftime("%Y-%m-%dT%H:%M:%SZ")
         request_metadata = RequestMeta(
             query_parameters=query_parameters,
             txn_msg=binascii.hexlify(unsigned_bytes),
             is_admin_api=True,
             base_url=base_url,
             endpoint=endpoint,
+            expiry_timestamp=expiry,
         ).model_dump()
 
         response = await self.client.prepare_request(

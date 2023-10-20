@@ -4,11 +4,18 @@ from typing import Any, Dict, Optional, Union
 from urllib.parse import urlparse
 
 import aiohttp
+import html_to_json
 
 from greenfield_python_sdk.key_manager import KeyManager
 from greenfield_python_sdk.models.const import USER_AGENT
 from greenfield_python_sdk.models.request import RequestMeta
-from greenfield_python_sdk.storage_provider.utils import generate_headers, generate_url, generate_url_chunks
+from greenfield_python_sdk.storage_provider.utils import (
+    convert_key,
+    convert_value,
+    generate_headers,
+    generate_url,
+    generate_url_chunks,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -55,6 +62,12 @@ class Client:
             elif method == "PUT":
                 response = await self.session.put(url, data=data, headers=headers)
             if response.status >= 400:
+                converted_data = {
+                    convert_key(key): convert_value(key, value) if value[0] else ""
+                    for key, value in html_to_json.convert(await response.text()).items()
+                }
+                if "failed to get user buckets" in converted_data["error"]["message"]:
+                    return response
                 raise Exception(f"Error with response status: \n{await response.text()}")
             return response
 

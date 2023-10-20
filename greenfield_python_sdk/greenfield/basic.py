@@ -35,7 +35,11 @@ class Basic:
         async with aiohttp.ClientSession() as session:
             self._resp = await session.get(self.blockchain_client.channel.base_url + endpoint, headers=headers)
             self.response = await self._resp.json()
-            return self.response["result"]["response"]["version"]
+            return (
+                self.response["result"]["response"]["version"]
+                if "version" in self.response["result"]["response"]
+                else "v1.0.0"
+            )
 
     async def get_status(self):
         raise NotImplementedError

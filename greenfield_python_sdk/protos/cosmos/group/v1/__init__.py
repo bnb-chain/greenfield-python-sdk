@@ -2,7 +2,14 @@
 # sources: cosmos/group/v1/events.proto, cosmos/group/v1/genesis.proto, cosmos/group/v1/query.proto, cosmos/group/v1/tx.proto, cosmos/group/v1/types.proto
 # plugin: python-betterproto
 # This file has been @generated
-from dataclasses import dataclass
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from dataclasses import dataclass
+else:
+    from pydantic.dataclasses import dataclass
+
 from datetime import datetime, timedelta
 from typing import TYPE_CHECKING, Dict, List, Optional
 
@@ -58,8 +65,8 @@ class ProposalStatus(betterproto.Enum):
 
     PROPOSAL_STATUS_REJECTED = 3
     """
-    Final status of a proposal when the final tally is done and the outcome
-    is rejected by the group policy's decision policy.
+    Final status of a proposal when the final tally is done and the outcome is
+    rejected by the group policy's decision policy.
     """
 
     PROPOSAL_STATUS_ABORTED = 4
@@ -70,8 +77,8 @@ class ProposalStatus(betterproto.Enum):
 
     PROPOSAL_STATUS_WITHDRAWN = 5
     """
-    A proposal can be withdrawn before the voting start time by the owner.
-    When this happens the final status is Withdrawn.
+    A proposal can be withdrawn before the voting start time by the owner. When
+    this happens the final status is Withdrawn.
     """
 
 
@@ -88,32 +95,35 @@ class ProposalExecutorResult(betterproto.Enum):
     """The executor was successful and proposed action updated state."""
 
     PROPOSAL_EXECUTOR_RESULT_FAILURE = 3
-    """The executor returned an error and proposed action didn't update state."""
+    """
+    The executor returned an error and proposed action didn't update state.
+    """
 
 
 class Exec(betterproto.Enum):
-    """Exec defines modes of execution of a proposal on creation or on new vote."""
+    """
+    Exec defines modes of execution of a proposal on creation or on new vote.
+    """
 
     EXEC_UNSPECIFIED = 0
     """
-    An empty value means that there should be a separate
-    MsgExec request for the proposal to execute.
+    An empty value means that there should be a separate MsgExec request for
+    the proposal to execute.
     """
 
     EXEC_TRY = 1
     """
-    Try to execute the proposal immediately.
-    If the proposal is not allowed per the DecisionPolicy,
-    the proposal will still be open and could
-    be executed at a later point.
+    Try to execute the proposal immediately. If the proposal is not allowed per
+    the DecisionPolicy, the proposal will still be open and could be executed
+    at a later point.
     """
 
 
 @dataclass(eq=False, repr=False)
 class Member(betterproto.Message):
     """
-    Member represents a group member with an account address,
-    non-zero weight, metadata and added_at timestamp.
+    Member represents a group member with an account address, non-zero weight,
+    metadata and added_at timestamp.
     """
 
     address: str = betterproto.string_field(1)
@@ -133,8 +143,8 @@ class Member(betterproto.Message):
 class MemberRequest(betterproto.Message):
     """
     MemberRequest represents a group member to be used in Msg server requests.
-    Contrary to `Member`, it doesn't have any `added_at` field
-    since this field cannot be set as part of requests.
+    Contrary to `Member`, it doesn't have any `added_at` field since this field
+    cannot be set as part of requests.
     """
 
     address: str = betterproto.string_field(1)
@@ -150,12 +160,11 @@ class MemberRequest(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class ThresholdDecisionPolicy(betterproto.Message):
     """
-    ThresholdDecisionPolicy is a decision policy where a proposal passes when it
-    satisfies the two following conditions:
-    1. The sum of all `YES` voter's weights is greater or equal than the defined
-       `threshold`.
-    2. The voting and execution periods of the proposal respect the parameters
-       given by `windows`.
+    ThresholdDecisionPolicy is a decision policy where a proposal passes when
+    it satisfies the two following conditions: 1. The sum of all `YES` voter's
+    weights is greater or equal than the defined    `threshold`. 2. The voting
+    and execution periods of the proposal respect the parameters    given by
+    `windows`.
     """
 
     threshold: str = betterproto.string_field(1)
@@ -172,17 +181,16 @@ class ThresholdDecisionPolicy(betterproto.Message):
 class PercentageDecisionPolicy(betterproto.Message):
     """
     PercentageDecisionPolicy is a decision policy where a proposal passes when
-    it satisfies the two following conditions:
-    1. The percentage of all `YES` voters' weights out of the total group weight
-       is greater or equal than the given `percentage`.
-    2. The voting and execution periods of the proposal respect the parameters
-       given by `windows`.
+    it satisfies the two following conditions: 1. The percentage of all `YES`
+    voters' weights out of the total group weight    is greater or equal than
+    the given `percentage`. 2. The voting and execution periods of the proposal
+    respect the parameters    given by `windows`.
     """
 
     percentage: str = betterproto.string_field(1)
     """
-    percentage is the minimum percentage of the weighted sum of `YES` votes must
-    meet for a proposal to succeed.
+    percentage is the minimum percentage of the weighted sum of `YES` votes
+    must meet for a proposal to succeed.
     """
 
     windows: "DecisionPolicyWindows" = betterproto.message_field(2)
@@ -191,34 +199,37 @@ class PercentageDecisionPolicy(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class DecisionPolicyWindows(betterproto.Message):
-    """DecisionPolicyWindows defines the different windows for voting and execution."""
+    """
+    DecisionPolicyWindows defines the different windows for voting and
+    execution.
+    """
 
     voting_period: timedelta = betterproto.message_field(1)
     """
-    voting_period is the duration from submission of a proposal to the end of voting
-    period
-    Within this times votes can be submitted with MsgVote.
+    voting_period is the duration from submission of a proposal to the end of
+    voting period Within this times votes can be submitted with MsgVote.
     """
 
     min_execution_period: timedelta = betterproto.message_field(2)
     """
     min_execution_period is the minimum duration after the proposal submission
     where members can start sending MsgExec. This means that the window for
-    sending a MsgExec transaction is:
-    `[ submission + min_execution_period ; submission + voting_period +
-    max_execution_period]`
-    where max_execution_period is a app-specific config, defined in the keeper.
-    If not set, min_execution_period will default to 0.
-    Please make sure to set a `min_execution_period` that is smaller than
-    `voting_period + max_execution_period`, or else the above execution window
-    is empty, meaning that all proposals created with this decision policy
-    won't be able to be executed.
+    sending a MsgExec transaction is: `[ submission + min_execution_period ;
+    submission + voting_period + max_execution_period]` where
+    max_execution_period is a app-specific config, defined in the keeper. If
+    not set, min_execution_period will default to 0. Please make sure to set a
+    `min_execution_period` that is smaller than `voting_period +
+    max_execution_period`, or else the above execution window is empty, meaning
+    that all proposals created with this decision policy won't be able to be
+    executed.
     """
 
 
 @dataclass(eq=False, repr=False)
 class GroupInfo(betterproto.Message):
-    """GroupInfo represents the high-level on-chain information for a group."""
+    """
+    GroupInfo represents the high-level on-chain information for a group.
+    """
 
     id: int = betterproto.uint64_field(1)
     """id is the unique ID of the group."""
@@ -232,9 +243,9 @@ class GroupInfo(betterproto.Message):
     version: int = betterproto.uint64_field(4)
     """
     version is used to track changes to a group's membership structure that
-    would break existing proposals. Whenever any members weight is changed,
-    or any member is added or removed this version is incremented and will
-    cause proposals based on older versions of this group to fail
+    would break existing proposals. Whenever any members weight is changed, or
+    any member is added or removed this version is incremented and will cause
+    proposals based on older versions of this group to fail
     """
 
     total_weight: str = betterproto.string_field(5)
@@ -246,7 +257,9 @@ class GroupInfo(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class GroupMember(betterproto.Message):
-    """GroupMember represents the relationship between a group and a member."""
+    """
+    GroupMember represents the relationship between a group and a member.
+    """
 
     group_id: int = betterproto.uint64_field(1)
     """group_id is the unique ID of the group."""
@@ -258,7 +271,8 @@ class GroupMember(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class GroupPolicyInfo(betterproto.Message):
     """
-    GroupPolicyInfo represents the high-level on-chain information for a group policy.
+    GroupPolicyInfo represents the high-level on-chain information for a group
+    policy.
     """
 
     address: str = betterproto.string_field(1)
@@ -272,31 +286,33 @@ class GroupPolicyInfo(betterproto.Message):
 
     metadata: str = betterproto.string_field(4)
     """
-    metadata is any arbitrary metadata attached to the group policy.
-    the recommended format of the metadata is to be found here:
+    metadata is any arbitrary metadata attached to the group policy. the
+    recommended format of the metadata is to be found here:
     https://docs.cosmos.network/v0.47/modules/group#decision-policy-1
     """
 
     version: int = betterproto.uint64_field(5)
     """
-    version is used to track changes to a group's GroupPolicyInfo structure that
-    would create a different result on a running proposal.
+    version is used to track changes to a group's GroupPolicyInfo structure
+    that would create a different result on a running proposal.
     """
 
     decision_policy: "betterproto_lib_google_protobuf.Any" = betterproto.message_field(6)
     """decision_policy specifies the group policy's decision policy."""
 
     created_at: datetime = betterproto.message_field(7)
-    """created_at is a timestamp specifying when a group policy was created."""
+    """
+    created_at is a timestamp specifying when a group policy was created.
+    """
 
 
 @dataclass(eq=False, repr=False)
 class Proposal(betterproto.Message):
     """
-    Proposal defines a group proposal. Any member of a group can submit a proposal
-    for a group policy to decide upon.
-    A proposal consists of a set of `sdk.Msg`s that will be executed if the proposal
-    passes as well as some optional metadata associated with the proposal.
+    Proposal defines a group proposal. Any member of a group can submit a
+    proposal for a group policy to decide upon. A proposal consists of a set of
+    `sdk.Msg`s that will be executed if the proposal passes as well as some
+    optional metadata associated with the proposal.
     """
 
     id: int = betterproto.uint64_field(1)
@@ -307,8 +323,8 @@ class Proposal(betterproto.Message):
 
     metadata: str = betterproto.string_field(3)
     """
-    metadata is any arbitrary metadata attached to the proposal.
-    the recommended format of the metadata is to be found here:
+    metadata is any arbitrary metadata attached to the proposal. the
+    recommended format of the metadata is to be found here:
     https://docs.cosmos.network/v0.47/modules/group#proposal-4
     """
 
@@ -320,22 +336,22 @@ class Proposal(betterproto.Message):
 
     group_version: int = betterproto.uint64_field(6)
     """
-    group_version tracks the version of the group at proposal submission.
-    This field is here for informational purposes only.
+    group_version tracks the version of the group at proposal submission. This
+    field is here for informational purposes only.
     """
 
     group_policy_version: int = betterproto.uint64_field(7)
     """
-    group_policy_version tracks the version of the group policy at proposal submission.
-    When a decision policy is changed, existing proposals from previous policy
-    versions will become invalid with the `ABORTED` status.
+    group_policy_version tracks the version of the group policy at proposal
+    submission. When a decision policy is changed, existing proposals from
+    previous policy versions will become invalid with the `ABORTED` status.
     This field is here for informational purposes only.
     """
 
     status: "ProposalStatus" = betterproto.enum_field(8)
     """
-    status represents the high level position in the life cycle of the proposal. Initial
-    value is Submitted.
+    status represents the high level position in the life cycle of the
+    proposal. Initial value is Submitted.
     """
 
     final_tally_result: "TallyResult" = betterproto.message_field(9)
@@ -348,40 +364,37 @@ class Proposal(betterproto.Message):
 
     voting_period_end: datetime = betterproto.message_field(10)
     """
-    voting_period_end is the timestamp before which voting must be done.
-    Unless a successful MsgExec is called before (to execute a proposal whose
-    tally is successful before the voting period ends), tallying will be done
-    at this point, and the `final_tally_result`and `status` fields will be
-    accordingly updated.
+    voting_period_end is the timestamp before which voting must be done. Unless
+    a successful MsgExec is called before (to execute a proposal whose tally is
+    successful before the voting period ends), tallying will be done at this
+    point, and the `final_tally_result`and `status` fields will be accordingly
+    updated.
     """
 
     executor_result: "ProposalExecutorResult" = betterproto.enum_field(11)
     """
-    executor_result is the final result of the proposal execution. Initial value is
-    NotRun.
+    executor_result is the final result of the proposal execution. Initial
+    value is NotRun.
     """
 
     messages: List["betterproto_lib_google_protobuf.Any"] = betterproto.message_field(12)
     """
-    messages is a list of `sdk.Msg`s that will be executed if the proposal passes.
+    messages is a list of `sdk.Msg`s that will be executed if the proposal
+    passes.
     """
 
     title: str = betterproto.string_field(13)
-    """
-    title is the title of the proposal
-    Since: cosmos-sdk 0.47
-    """
+    """title is the title of the proposal Since: cosmos-sdk 0.47"""
 
     summary: str = betterproto.string_field(14)
-    """
-    summary is a short summary of the proposal
-    Since: cosmos-sdk 0.47
-    """
+    """summary is a short summary of the proposal Since: cosmos-sdk 0.47"""
 
 
 @dataclass(eq=False, repr=False)
 class TallyResult(betterproto.Message):
-    """TallyResult represents the sum of weighted votes for each vote option."""
+    """
+    TallyResult represents the sum of weighted votes for each vote option.
+    """
 
     yes_count: str = betterproto.string_field(1)
     """yes_count is the weighted sum of yes votes."""
@@ -434,7 +447,9 @@ class EventUpdateGroup(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class EventCreateGroupPolicy(betterproto.Message):
-    """EventCreateGroupPolicy is an event emitted when a group policy is created."""
+    """
+    EventCreateGroupPolicy is an event emitted when a group policy is created.
+    """
 
     address: str = betterproto.string_field(1)
     """address is the account address of the group policy."""
@@ -442,7 +457,9 @@ class EventCreateGroupPolicy(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class EventUpdateGroupPolicy(betterproto.Message):
-    """EventUpdateGroupPolicy is an event emitted when a group policy is updated."""
+    """
+    EventUpdateGroupPolicy is an event emitted when a group policy is updated.
+    """
 
     address: str = betterproto.string_field(1)
     """address is the account address of the group policy."""
@@ -458,7 +475,9 @@ class EventSubmitProposal(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class EventWithdrawProposal(betterproto.Message):
-    """EventWithdrawProposal is an event emitted when a proposal is withdrawn."""
+    """
+    EventWithdrawProposal is an event emitted when a proposal is withdrawn.
+    """
 
     proposal_id: int = betterproto.uint64_field(1)
     """proposal_id is the unique ID of the proposal."""
@@ -488,7 +507,9 @@ class EventExec(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class EventLeaveGroup(betterproto.Message):
-    """EventLeaveGroup is an event emitted when group member leaves the group."""
+    """
+    EventLeaveGroup is an event emitted when group member leaves the group.
+    """
 
     group_id: int = betterproto.uint64_field(1)
     """group_id is the unique ID of the group."""
@@ -506,8 +527,8 @@ class EventProposalPruned(betterproto.Message):
 
     status: "ProposalStatus" = betterproto.enum_field(2)
     """
-    status is the proposal status (UNSPECIFIED, SUBMITTED, ACCEPTED, REJECTED, ABORTED,
-    WITHDRAWN).
+    status is the proposal status (UNSPECIFIED, SUBMITTED, ACCEPTED, REJECTED,
+    ABORTED, WITHDRAWN).
     """
 
     tally_result: "TallyResult" = betterproto.message_field(3)
@@ -520,8 +541,8 @@ class GenesisState(betterproto.Message):
 
     group_seq: int = betterproto.uint64_field(1)
     """
-    group_seq is the group table orm.Sequence,
-    it is used to get the next group ID.
+    group_seq is the group table orm.Sequence, it is used to get the next group
+    ID.
     """
 
     groups: List["GroupInfo"] = betterproto.message_field(2)
@@ -532,8 +553,8 @@ class GenesisState(betterproto.Message):
 
     group_policy_seq: int = betterproto.uint64_field(4)
     """
-    group_policy_seq is the group policy table orm.Sequence,
-    it is used to generate the next group policy account address.
+    group_policy_seq is the group policy table orm.Sequence, it is used to
+    generate the next group policy account address.
     """
 
     group_policies: List["GroupPolicyInfo"] = betterproto.message_field(5)
@@ -541,8 +562,8 @@ class GenesisState(betterproto.Message):
 
     proposal_seq: int = betterproto.uint64_field(6)
     """
-    proposal_seq is the proposal table orm.Sequence,
-    it is used to get the next proposal ID.
+    proposal_seq is the proposal table orm.Sequence, it is used to get the next
+    proposal ID.
     """
 
     proposals: List["Proposal"] = betterproto.message_field(7)
@@ -570,7 +591,9 @@ class QueryGroupInfoResponse(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class QueryGroupPolicyInfoRequest(betterproto.Message):
-    """QueryGroupPolicyInfoRequest is the Query/GroupPolicyInfo request type."""
+    """
+    QueryGroupPolicyInfoRequest is the Query/GroupPolicyInfo request type.
+    """
 
     address: str = betterproto.string_field(1)
     """address is the account address of the group policy."""
@@ -578,7 +601,9 @@ class QueryGroupPolicyInfoRequest(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class QueryGroupPolicyInfoResponse(betterproto.Message):
-    """QueryGroupPolicyInfoResponse is the Query/GroupPolicyInfo response type."""
+    """
+    QueryGroupPolicyInfoResponse is the Query/GroupPolicyInfo response type.
+    """
 
     info: "GroupPolicyInfo" = betterproto.message_field(1)
     """info is the GroupPolicyInfo of the group policy."""
@@ -597,7 +622,9 @@ class QueryGroupMembersRequest(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class QueryGroupMembersResponse(betterproto.Message):
-    """QueryGroupMembersResponse is the Query/GroupMembersResponse response type."""
+    """
+    QueryGroupMembersResponse is the Query/GroupMembersResponse response type.
+    """
 
     members: List["GroupMember"] = betterproto.message_field(1)
     """members are the members of the group with given group_id."""
@@ -619,7 +646,10 @@ class QueryGroupsByAdminRequest(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class QueryGroupsByAdminResponse(betterproto.Message):
-    """QueryGroupsByAdminResponse is the Query/GroupsByAdminResponse response type."""
+    """
+    QueryGroupsByAdminResponse is the Query/GroupsByAdminResponse response
+    type.
+    """
 
     groups: List["GroupInfo"] = betterproto.message_field(1)
     """groups are the groups info with the provided admin."""
@@ -631,7 +661,8 @@ class QueryGroupsByAdminResponse(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class QueryGroupPoliciesByGroupRequest(betterproto.Message):
     """
-    QueryGroupPoliciesByGroupRequest is the Query/GroupPoliciesByGroup request type.
+    QueryGroupPoliciesByGroupRequest is the Query/GroupPoliciesByGroup request
+    type.
     """
 
     group_id: int = betterproto.uint64_field(1)
@@ -644,12 +675,14 @@ class QueryGroupPoliciesByGroupRequest(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class QueryGroupPoliciesByGroupResponse(betterproto.Message):
     """
-    QueryGroupPoliciesByGroupResponse is the Query/GroupPoliciesByGroup response type.
+    QueryGroupPoliciesByGroupResponse is the Query/GroupPoliciesByGroup
+    response type.
     """
 
     group_policies: List["GroupPolicyInfo"] = betterproto.message_field(1)
     """
-    group_policies are the group policies info associated with the provided group.
+    group_policies are the group policies info associated with the provided
+    group.
     """
 
     pagination: "__base_query_v1_beta1__.PageResponse" = betterproto.message_field(2)
@@ -659,7 +692,8 @@ class QueryGroupPoliciesByGroupResponse(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class QueryGroupPoliciesByAdminRequest(betterproto.Message):
     """
-    QueryGroupPoliciesByAdminRequest is the Query/GroupPoliciesByAdmin request type.
+    QueryGroupPoliciesByAdminRequest is the Query/GroupPoliciesByAdmin request
+    type.
     """
 
     admin: str = betterproto.string_field(1)
@@ -672,7 +706,8 @@ class QueryGroupPoliciesByAdminRequest(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class QueryGroupPoliciesByAdminResponse(betterproto.Message):
     """
-    QueryGroupPoliciesByAdminResponse is the Query/GroupPoliciesByAdmin response type.
+    QueryGroupPoliciesByAdminResponse is the Query/GroupPoliciesByAdmin
+    response type.
     """
 
     group_policies: List["GroupPolicyInfo"] = betterproto.message_field(1)
@@ -701,11 +736,14 @@ class QueryProposalResponse(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class QueryProposalsByGroupPolicyRequest(betterproto.Message):
     """
-    QueryProposalsByGroupPolicyRequest is the Query/ProposalByGroupPolicy request type.
+    QueryProposalsByGroupPolicyRequest is the Query/ProposalByGroupPolicy
+    request type.
     """
 
     address: str = betterproto.string_field(1)
-    """address is the account address of the group policy related to proposals."""
+    """
+    address is the account address of the group policy related to proposals.
+    """
 
     pagination: "__base_query_v1_beta1__.PageRequest" = betterproto.message_field(2)
     """pagination defines an optional pagination for the request."""
@@ -714,8 +752,8 @@ class QueryProposalsByGroupPolicyRequest(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class QueryProposalsByGroupPolicyResponse(betterproto.Message):
     """
-    QueryProposalsByGroupPolicyResponse is the Query/ProposalByGroupPolicy response
-    type.
+    QueryProposalsByGroupPolicyResponse is the Query/ProposalByGroupPolicy
+    response type.
     """
 
     proposals: List["Proposal"] = betterproto.message_field(1)
@@ -728,7 +766,8 @@ class QueryProposalsByGroupPolicyResponse(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class QueryVoteByProposalVoterRequest(betterproto.Message):
     """
-    QueryVoteByProposalVoterRequest is the Query/VoteByProposalVoter request type.
+    QueryVoteByProposalVoterRequest is the Query/VoteByProposalVoter request
+    type.
     """
 
     proposal_id: int = betterproto.uint64_field(1)
@@ -741,7 +780,8 @@ class QueryVoteByProposalVoterRequest(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class QueryVoteByProposalVoterResponse(betterproto.Message):
     """
-    QueryVoteByProposalVoterResponse is the Query/VoteByProposalVoter response type.
+    QueryVoteByProposalVoterResponse is the Query/VoteByProposalVoter response
+    type.
     """
 
     vote: "Vote" = betterproto.message_field(1)
@@ -750,7 +790,9 @@ class QueryVoteByProposalVoterResponse(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class QueryVotesByProposalRequest(betterproto.Message):
-    """QueryVotesByProposalRequest is the Query/VotesByProposal request type."""
+    """
+    QueryVotesByProposalRequest is the Query/VotesByProposal request type.
+    """
 
     proposal_id: int = betterproto.uint64_field(1)
     """proposal_id is the unique ID of a proposal."""
@@ -761,7 +803,9 @@ class QueryVotesByProposalRequest(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class QueryVotesByProposalResponse(betterproto.Message):
-    """QueryVotesByProposalResponse is the Query/VotesByProposal response type."""
+    """
+    QueryVotesByProposalResponse is the Query/VotesByProposal response type.
+    """
 
     votes: List["Vote"] = betterproto.message_field(1)
     """votes are the list of votes for given proposal_id."""
@@ -805,7 +849,9 @@ class QueryGroupsByMemberRequest(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class QueryGroupsByMemberResponse(betterproto.Message):
-    """QueryGroupsByMemberResponse is the Query/GroupsByMember response type."""
+    """
+    QueryGroupsByMemberResponse is the Query/GroupsByMember response type.
+    """
 
     groups: List["GroupInfo"] = betterproto.message_field(1)
     """groups are the groups info with the provided group member."""
@@ -833,8 +879,8 @@ class QueryTallyResultResponse(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class QueryGroupsRequest(betterproto.Message):
     """
-    QueryGroupsRequest is the Query/Groups request type.
-    Since: cosmos-sdk 0.47.1
+    QueryGroupsRequest is the Query/Groups request type. Since: cosmos-sdk
+    0.47.1
     """
 
     pagination: "__base_query_v1_beta1__.PageRequest" = betterproto.message_field(2)
@@ -844,8 +890,8 @@ class QueryGroupsRequest(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class QueryGroupsResponse(betterproto.Message):
     """
-    QueryGroupsResponse is the Query/Groups response type.
-    Since: cosmos-sdk 0.47.1
+    QueryGroupsResponse is the Query/Groups response type. Since: cosmos-sdk
+    0.47.1
     """
 
     groups: List["GroupInfo"] = betterproto.message_field(1)
@@ -889,14 +935,16 @@ class MsgUpdateGroupMembers(betterproto.Message):
 
     member_updates: List["MemberRequest"] = betterproto.message_field(3)
     """
-    member_updates is the list of members to update,
-    set weight to 0 to remove a member.
+    member_updates is the list of members to update, set weight to 0 to remove
+    a member.
     """
 
 
 @dataclass(eq=False, repr=False)
 class MsgUpdateGroupMembersResponse(betterproto.Message):
-    """MsgUpdateGroupMembersResponse is the Msg/UpdateGroupMembers response type."""
+    """
+    MsgUpdateGroupMembersResponse is the Msg/UpdateGroupMembers response type.
+    """
 
     pass
 
@@ -917,7 +965,9 @@ class MsgUpdateGroupAdmin(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class MsgUpdateGroupAdminResponse(betterproto.Message):
-    """MsgUpdateGroupAdminResponse is the Msg/UpdateGroupAdmin response type."""
+    """
+    MsgUpdateGroupAdminResponse is the Msg/UpdateGroupAdmin response type.
+    """
 
     pass
 
@@ -938,7 +988,10 @@ class MsgUpdateGroupMetadata(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class MsgUpdateGroupMetadataResponse(betterproto.Message):
-    """MsgUpdateGroupMetadataResponse is the Msg/UpdateGroupMetadata response type."""
+    """
+    MsgUpdateGroupMetadataResponse is the Msg/UpdateGroupMetadata response
+    type.
+    """
 
     pass
 
@@ -962,7 +1015,9 @@ class MsgCreateGroupPolicy(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class MsgCreateGroupPolicyResponse(betterproto.Message):
-    """MsgCreateGroupPolicyResponse is the Msg/CreateGroupPolicy response type."""
+    """
+    MsgCreateGroupPolicyResponse is the Msg/CreateGroupPolicy response type.
+    """
 
     address: str = betterproto.string_field(1)
     """address is the account address of the newly created group policy."""
@@ -970,7 +1025,9 @@ class MsgCreateGroupPolicyResponse(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class MsgUpdateGroupPolicyAdmin(betterproto.Message):
-    """MsgUpdateGroupPolicyAdmin is the Msg/UpdateGroupPolicyAdmin request type."""
+    """
+    MsgUpdateGroupPolicyAdmin is the Msg/UpdateGroupPolicyAdmin request type.
+    """
 
     admin: str = betterproto.string_field(1)
     """admin is the account address of the group admin."""
@@ -985,7 +1042,8 @@ class MsgUpdateGroupPolicyAdmin(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class MsgUpdateGroupPolicyAdminResponse(betterproto.Message):
     """
-    MsgUpdateGroupPolicyAdminResponse is the Msg/UpdateGroupPolicyAdmin response type.
+    MsgUpdateGroupPolicyAdminResponse is the Msg/UpdateGroupPolicyAdmin
+    response type.
     """
 
     pass
@@ -993,7 +1051,9 @@ class MsgUpdateGroupPolicyAdminResponse(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class MsgCreateGroupWithPolicy(betterproto.Message):
-    """MsgCreateGroupWithPolicy is the Msg/CreateGroupWithPolicy request type."""
+    """
+    MsgCreateGroupWithPolicy is the Msg/CreateGroupWithPolicy request type.
+    """
 
     admin: str = betterproto.string_field(1)
     """admin is the account address of the group and group policy admin."""
@@ -1005,13 +1065,15 @@ class MsgCreateGroupWithPolicy(betterproto.Message):
     """group_metadata is any arbitrary metadata attached to the group."""
 
     group_policy_metadata: str = betterproto.string_field(4)
-    """group_policy_metadata is any arbitrary metadata attached to the group policy."""
+    """
+    group_policy_metadata is any arbitrary metadata attached to the group
+    policy.
+    """
 
     group_policy_as_admin: bool = betterproto.bool_field(5)
     """
-    group_policy_as_admin is a boolean field, if set to true, the group policy account
-    address will be used as group
-    and group policy admin.
+    group_policy_as_admin is a boolean field, if set to true, the group policy
+    account address will be used as group and group policy admin.
     """
 
     decision_policy: "betterproto_lib_google_protobuf.Any" = betterproto.message_field(6)
@@ -1021,7 +1083,8 @@ class MsgCreateGroupWithPolicy(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class MsgCreateGroupWithPolicyResponse(betterproto.Message):
     """
-    MsgCreateGroupWithPolicyResponse is the Msg/CreateGroupWithPolicy response type.
+    MsgCreateGroupWithPolicyResponse is the Msg/CreateGroupWithPolicy response
+    type.
     """
 
     group_id: int = betterproto.uint64_field(1)
@@ -1029,15 +1092,16 @@ class MsgCreateGroupWithPolicyResponse(betterproto.Message):
 
     group_policy_address: str = betterproto.string_field(2)
     """
-    group_policy_address is the account address of the newly created group policy.
+    group_policy_address is the account address of the newly created group
+    policy.
     """
 
 
 @dataclass(eq=False, repr=False)
 class MsgUpdateGroupPolicyDecisionPolicy(betterproto.Message):
     """
-    MsgUpdateGroupPolicyDecisionPolicy is the Msg/UpdateGroupPolicyDecisionPolicy
-    request type.
+    MsgUpdateGroupPolicyDecisionPolicy is the
+    Msg/UpdateGroupPolicyDecisionPolicy request type.
     """
 
     admin: str = betterproto.string_field(1)
@@ -1063,7 +1127,8 @@ class MsgUpdateGroupPolicyDecisionPolicyResponse(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class MsgUpdateGroupPolicyMetadata(betterproto.Message):
     """
-    MsgUpdateGroupPolicyMetadata is the Msg/UpdateGroupPolicyMetadata request type.
+    MsgUpdateGroupPolicyMetadata is the Msg/UpdateGroupPolicyMetadata request
+    type.
     """
 
     admin: str = betterproto.string_field(1)
@@ -1079,8 +1144,8 @@ class MsgUpdateGroupPolicyMetadata(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class MsgUpdateGroupPolicyMetadataResponse(betterproto.Message):
     """
-    MsgUpdateGroupPolicyMetadataResponse is the Msg/UpdateGroupPolicyMetadata response
-    type.
+    MsgUpdateGroupPolicyMetadataResponse is the Msg/UpdateGroupPolicyMetadata
+    response type.
     """
 
     pass
@@ -1095,8 +1160,8 @@ class MsgSubmitProposal(betterproto.Message):
 
     proposers: List[str] = betterproto.string_field(2)
     """
-    proposers are the account addresses of the proposers.
-    Proposers signatures will be counted as yes votes.
+    proposers are the account addresses of the proposers. Proposers signatures
+    will be counted as yes votes.
     """
 
     metadata: str = betterproto.string_field(3)
@@ -1104,27 +1169,22 @@ class MsgSubmitProposal(betterproto.Message):
 
     messages: List["betterproto_lib_google_protobuf.Any"] = betterproto.message_field(4)
     """
-    messages is a list of `sdk.Msg`s that will be executed if the proposal passes.
+    messages is a list of `sdk.Msg`s that will be executed if the proposal
+    passes.
     """
 
     exec: "Exec" = betterproto.enum_field(5)
     """
-    exec defines the mode of execution of the proposal,
-    whether it should be executed immediately on creation or not.
-    If so, proposers signatures are considered as Yes votes.
+    exec defines the mode of execution of the proposal, whether it should be
+    executed immediately on creation or not. If so, proposers signatures are
+    considered as Yes votes.
     """
 
     title: str = betterproto.string_field(6)
-    """
-    title is the title of the proposal.
-    Since: cosmos-sdk 0.47
-    """
+    """title is the title of the proposal. Since: cosmos-sdk 0.47"""
 
     summary: str = betterproto.string_field(7)
-    """
-    summary is the summary of the proposal.
-    Since: cosmos-sdk 0.47
-    """
+    """summary is the summary of the proposal. Since: cosmos-sdk 0.47"""
 
 
 @dataclass(eq=False, repr=False)
@@ -1144,13 +1204,16 @@ class MsgWithdrawProposal(betterproto.Message):
 
     address: str = betterproto.string_field(2)
     """
-    address is the admin of the group policy or one of the proposer of the proposal.
+    address is the admin of the group policy or one of the proposer of the
+    proposal.
     """
 
 
 @dataclass(eq=False, repr=False)
 class MsgWithdrawProposalResponse(betterproto.Message):
-    """MsgWithdrawProposalResponse is the Msg/WithdrawProposal response type."""
+    """
+    MsgWithdrawProposalResponse is the Msg/WithdrawProposal response type.
+    """
 
     pass
 
@@ -1173,8 +1236,8 @@ class MsgVote(betterproto.Message):
 
     exec: "Exec" = betterproto.enum_field(5)
     """
-    exec defines whether the proposal should be executed
-    immediately after voting or not.
+    exec defines whether the proposal should be executed immediately after
+    voting or not.
     """
 
 
@@ -2209,3 +2272,48 @@ class MsgBase(ServiceBase):
                 MsgLeaveGroupResponse,
             ),
         }
+
+
+Member.__pydantic_model__.update_forward_refs()  # type: ignore
+ThresholdDecisionPolicy.__pydantic_model__.update_forward_refs()  # type: ignore
+PercentageDecisionPolicy.__pydantic_model__.update_forward_refs()  # type: ignore
+DecisionPolicyWindows.__pydantic_model__.update_forward_refs()  # type: ignore
+GroupInfo.__pydantic_model__.update_forward_refs()  # type: ignore
+GroupMember.__pydantic_model__.update_forward_refs()  # type: ignore
+GroupPolicyInfo.__pydantic_model__.update_forward_refs()  # type: ignore
+Proposal.__pydantic_model__.update_forward_refs()  # type: ignore
+Vote.__pydantic_model__.update_forward_refs()  # type: ignore
+EventExec.__pydantic_model__.update_forward_refs()  # type: ignore
+EventProposalPruned.__pydantic_model__.update_forward_refs()  # type: ignore
+GenesisState.__pydantic_model__.update_forward_refs()  # type: ignore
+QueryGroupInfoResponse.__pydantic_model__.update_forward_refs()  # type: ignore
+QueryGroupPolicyInfoResponse.__pydantic_model__.update_forward_refs()  # type: ignore
+QueryGroupMembersRequest.__pydantic_model__.update_forward_refs()  # type: ignore
+QueryGroupMembersResponse.__pydantic_model__.update_forward_refs()  # type: ignore
+QueryGroupsByAdminRequest.__pydantic_model__.update_forward_refs()  # type: ignore
+QueryGroupsByAdminResponse.__pydantic_model__.update_forward_refs()  # type: ignore
+QueryGroupPoliciesByGroupRequest.__pydantic_model__.update_forward_refs()  # type: ignore
+QueryGroupPoliciesByGroupResponse.__pydantic_model__.update_forward_refs()  # type: ignore
+QueryGroupPoliciesByAdminRequest.__pydantic_model__.update_forward_refs()  # type: ignore
+QueryGroupPoliciesByAdminResponse.__pydantic_model__.update_forward_refs()  # type: ignore
+QueryProposalResponse.__pydantic_model__.update_forward_refs()  # type: ignore
+QueryProposalsByGroupPolicyRequest.__pydantic_model__.update_forward_refs()  # type: ignore
+QueryProposalsByGroupPolicyResponse.__pydantic_model__.update_forward_refs()  # type: ignore
+QueryVoteByProposalVoterResponse.__pydantic_model__.update_forward_refs()  # type: ignore
+QueryVotesByProposalRequest.__pydantic_model__.update_forward_refs()  # type: ignore
+QueryVotesByProposalResponse.__pydantic_model__.update_forward_refs()  # type: ignore
+QueryVotesByVoterRequest.__pydantic_model__.update_forward_refs()  # type: ignore
+QueryVotesByVoterResponse.__pydantic_model__.update_forward_refs()  # type: ignore
+QueryGroupsByMemberRequest.__pydantic_model__.update_forward_refs()  # type: ignore
+QueryGroupsByMemberResponse.__pydantic_model__.update_forward_refs()  # type: ignore
+QueryTallyResultResponse.__pydantic_model__.update_forward_refs()  # type: ignore
+QueryGroupsRequest.__pydantic_model__.update_forward_refs()  # type: ignore
+QueryGroupsResponse.__pydantic_model__.update_forward_refs()  # type: ignore
+MsgCreateGroup.__pydantic_model__.update_forward_refs()  # type: ignore
+MsgUpdateGroupMembers.__pydantic_model__.update_forward_refs()  # type: ignore
+MsgCreateGroupPolicy.__pydantic_model__.update_forward_refs()  # type: ignore
+MsgCreateGroupWithPolicy.__pydantic_model__.update_forward_refs()  # type: ignore
+MsgUpdateGroupPolicyDecisionPolicy.__pydantic_model__.update_forward_refs()  # type: ignore
+MsgSubmitProposal.__pydantic_model__.update_forward_refs()  # type: ignore
+MsgVote.__pydantic_model__.update_forward_refs()  # type: ignore
+MsgExecResponse.__pydantic_model__.update_forward_refs()  # type: ignore

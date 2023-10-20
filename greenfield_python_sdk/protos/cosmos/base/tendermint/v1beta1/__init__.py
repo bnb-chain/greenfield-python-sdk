@@ -2,7 +2,14 @@
 # sources: cosmos/base/tendermint/v1beta1/query.proto, cosmos/base/tendermint/v1beta1/types.proto
 # plugin: python-betterproto
 # This file has been @generated
-from dataclasses import dataclass
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from dataclasses import dataclass
+else:
+    from pydantic.dataclasses import dataclass
+
 from datetime import datetime
 from typing import TYPE_CHECKING, Dict, List, Optional
 
@@ -25,8 +32,8 @@ if TYPE_CHECKING:
 @dataclass(eq=False, repr=False)
 class Block(betterproto.Message):
     """
-    Block is tendermint type Block, with the Header proposer address
-    field converted to hex string.
+    Block is tendermint type Block, with the Header proposer address field
+    converted to hex string.
     """
 
     header: "Header" = betterproto.message_field(1)
@@ -62,11 +69,11 @@ class Header(betterproto.Message):
     evidence_hash: bytes = betterproto.bytes_field(13)
     """consensus info"""
 
-    proposer_address: bytes = betterproto.bytes_field(14)  # DO NOT CHANGE !!
+    proposer_address: str = betterproto.string_field(14)
     """
-    proposer_address is the original block proposer address, formatted as a hex string.
-    In Tendermint, this type is `bytes`, but in the SDK, we convert it to a hex string
-    for better UX.
+    proposer_address is the original block proposer address, formatted as a hex
+    string. In Tendermint, this type is `bytes`, but in the SDK, we convert it
+    to a hex string for better UX.
     """
 
 
@@ -132,8 +139,8 @@ class Validator(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class GetBlockByHeightRequest(betterproto.Message):
     """
-    GetBlockByHeightRequest is the request type for the Query/GetBlockByHeight RPC
-    method.
+    GetBlockByHeightRequest is the request type for the Query/GetBlockByHeight
+    RPC method.
     """
 
     height: int = betterproto.int64_field(1)
@@ -142,8 +149,8 @@ class GetBlockByHeightRequest(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class GetBlockByHeightResponse(betterproto.Message):
     """
-    GetBlockByHeightResponse is the response type for the Query/GetBlockByHeight RPC
-    method.
+    GetBlockByHeightResponse is the response type for the
+    Query/GetBlockByHeight RPC method.
     """
 
     block_id: "____tendermint_types__.BlockId" = betterproto.message_field(1)
@@ -157,7 +164,8 @@ class GetBlockByHeightResponse(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class GetLatestBlockRequest(betterproto.Message):
     """
-    GetLatestBlockRequest is the request type for the Query/GetLatestBlock RPC method.
+    GetLatestBlockRequest is the request type for the Query/GetLatestBlock RPC
+    method.
     """
 
     pass
@@ -166,11 +174,12 @@ class GetLatestBlockRequest(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class GetLatestBlockResponse(betterproto.Message):
     """
-    GetLatestBlockResponse is the response type for the Query/GetLatestBlock RPC method.
+    GetLatestBlockResponse is the response type for the Query/GetLatestBlock
+    RPC method.
     """
 
     block_id: "____tendermint_types__.BlockId" = betterproto.message_field(1)
-    block: "Block" = betterproto.message_field(2)
+    block: "____tendermint_types__.Block" = betterproto.message_field(2)
     """Deprecated: please use `sdk_block` instead"""
 
     sdk_block: "Block" = betterproto.message_field(3)
@@ -179,21 +188,29 @@ class GetLatestBlockResponse(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class GetSyncingRequest(betterproto.Message):
-    """GetSyncingRequest is the request type for the Query/GetSyncing RPC method."""
+    """
+    GetSyncingRequest is the request type for the Query/GetSyncing RPC method.
+    """
 
     pass
 
 
 @dataclass(eq=False, repr=False)
 class GetSyncingResponse(betterproto.Message):
-    """GetSyncingResponse is the response type for the Query/GetSyncing RPC method."""
+    """
+    GetSyncingResponse is the response type for the Query/GetSyncing RPC
+    method.
+    """
 
     syncing: bool = betterproto.bool_field(1)
 
 
 @dataclass(eq=False, repr=False)
 class GetNodeInfoRequest(betterproto.Message):
-    """GetNodeInfoRequest is the request type for the Query/GetNodeInfo RPC method."""
+    """
+    GetNodeInfoRequest is the request type for the Query/GetNodeInfo RPC
+    method.
+    """
 
     pass
 
@@ -201,7 +218,8 @@ class GetNodeInfoRequest(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class GetNodeInfoResponse(betterproto.Message):
     """
-    GetNodeInfoResponse is the response type for the Query/GetNodeInfo RPC method.
+    GetNodeInfoResponse is the response type for the Query/GetNodeInfo RPC
+    method.
     """
 
     default_node_info: "____tendermint_p2_p__.DefaultNodeInfo" = betterproto.message_field(1)
@@ -239,7 +257,10 @@ class Module(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class AbciQueryRequest(betterproto.Message):
-    """ABCIQueryRequest defines the request structure for the ABCIQuery gRPC query."""
+    """
+    ABCIQueryRequest defines the request structure for the ABCIQuery gRPC
+    query.
+    """
 
     data: bytes = betterproto.bytes_field(1)
     path: str = betterproto.string_field(2)
@@ -250,9 +271,9 @@ class AbciQueryRequest(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class AbciQueryResponse(betterproto.Message):
     """
-    ABCIQueryResponse defines the response structure for the ABCIQuery gRPC query.
-    Note: This type is a duplicate of the ResponseQuery proto type defined in
-    Tendermint.
+    ABCIQueryResponse defines the response structure for the ABCIQuery gRPC
+    query. Note: This type is a duplicate of the ResponseQuery proto type
+    defined in Tendermint.
     """
 
     code: int = betterproto.uint32_field(1)
@@ -269,10 +290,10 @@ class AbciQueryResponse(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class ProofOp(betterproto.Message):
     """
-    ProofOp defines an operation used for calculating Merkle root. The data could
-    be arbitrary format, providing necessary data for example neighbouring node
-    hash.
-    Note: This type is a duplicate of the ProofOp proto type defined in Tendermint.
+    ProofOp defines an operation used for calculating Merkle root. The data
+    could be arbitrary format, providing necessary data for example
+    neighbouring node hash. Note: This type is a duplicate of the ProofOp proto
+    type defined in Tendermint.
     """
 
     type: str = betterproto.string_field(1)
@@ -283,8 +304,8 @@ class ProofOp(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class ProofOps(betterproto.Message):
     """
-    ProofOps is Merkle proof defined by the list of ProofOps.
-    Note: This type is a duplicate of the ProofOps proto type defined in Tendermint.
+    ProofOps is Merkle proof defined by the list of ProofOps. Note: This type
+    is a duplicate of the ProofOps proto type defined in Tendermint.
     """
 
     ops: List["ProofOp"] = betterproto.message_field(1)
@@ -395,6 +416,7 @@ class ServiceStub(betterproto.ServiceStub):
 
     async def abci_query(
         self,
+        abci_query_request: "AbciQueryRequest",
         *,
         timeout: Optional[float] = None,
         deadline: Optional["Deadline"] = None,
@@ -435,7 +457,7 @@ class ServiceBase(ServiceBase):
     ) -> "GetValidatorSetByHeightResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    async def abci_query(self) -> "AbciQueryResponse":
+    async def abci_query(self, abci_query_request: "AbciQueryRequest") -> "AbciQueryResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
     async def __rpc_get_node_info(
@@ -532,3 +554,18 @@ class ServiceBase(ServiceBase):
                 AbciQueryResponse,
             ),
         }
+
+
+Block.__pydantic_model__.update_forward_refs()  # type: ignore
+Header.__pydantic_model__.update_forward_refs()  # type: ignore
+GetValidatorSetByHeightRequest.__pydantic_model__.update_forward_refs()  # type: ignore
+GetValidatorSetByHeightResponse.__pydantic_model__.update_forward_refs()  # type: ignore
+GetLatestValidatorSetRequest.__pydantic_model__.update_forward_refs()  # type: ignore
+GetLatestValidatorSetResponse.__pydantic_model__.update_forward_refs()  # type: ignore
+Validator.__pydantic_model__.update_forward_refs()  # type: ignore
+GetBlockByHeightResponse.__pydantic_model__.update_forward_refs()  # type: ignore
+GetLatestBlockResponse.__pydantic_model__.update_forward_refs()  # type: ignore
+GetNodeInfoResponse.__pydantic_model__.update_forward_refs()  # type: ignore
+VersionInfo.__pydantic_model__.update_forward_refs()  # type: ignore
+AbciQueryResponse.__pydantic_model__.update_forward_refs()  # type: ignore
+ProofOps.__pydantic_model__.update_forward_refs()  # type: ignore

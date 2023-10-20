@@ -2,7 +2,13 @@
 # sources: cosmos/crypto/eth/ethsecp256k1/keys.proto
 # plugin: python-betterproto
 # This file has been @generated
-from dataclasses import dataclass
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from dataclasses import dataclass
+else:
+    from pydantic.dataclasses import dataclass
 
 import betterproto
 

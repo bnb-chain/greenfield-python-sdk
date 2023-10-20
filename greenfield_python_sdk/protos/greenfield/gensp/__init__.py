@@ -2,7 +2,14 @@
 # sources: greenfield/gensp/genesis.proto, greenfield/gensp/params.proto, greenfield/gensp/query.proto, greenfield/gensp/tx.proto
 # plugin: python-betterproto
 # This file has been @generated
-from dataclasses import dataclass
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from dataclasses import dataclass
+else:
+    from pydantic.dataclasses import dataclass
+
 from typing import TYPE_CHECKING, Dict, List, Optional
 
 import betterproto
@@ -18,8 +25,8 @@ if TYPE_CHECKING:
 @dataclass(eq=False, repr=False)
 class GenesisState(betterproto.Message):
     """
-    GenesisState defines the gensp module's genesis state.
-    GenesisState defines the raw genesis transaction in JSON.
+    GenesisState defines the gensp module's genesis state. GenesisState defines
+    the raw genesis transaction in JSON.
     """
 
     gensp_txs: List[bytes] = betterproto.bytes_field(1)
@@ -42,7 +49,9 @@ class QueryParamsRequest(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class QueryParamsResponse(betterproto.Message):
-    """QueryParamsResponse is response type for the Query/Params RPC method."""
+    """
+    QueryParamsResponse is response type for the Query/Params RPC method.
+    """
 
     params: "Params" = betterproto.message_field(1)
     """params holds all the parameters of this module."""
@@ -94,3 +103,6 @@ class QueryBase(ServiceBase):
 class MsgBase(ServiceBase):
     def __mapping__(self) -> Dict[str, grpclib.const.Handler]:
         return {}
+
+
+QueryParamsResponse.__pydantic_model__.update_forward_refs()  # type: ignore

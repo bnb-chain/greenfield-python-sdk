@@ -2,7 +2,14 @@
 # sources: cosmos/slashing/v1beta1/genesis.proto, cosmos/slashing/v1beta1/query.proto, cosmos/slashing/v1beta1/slashing.proto, cosmos/slashing/v1beta1/tx.proto
 # plugin: python-betterproto
 # This file has been @generated
-from dataclasses import dataclass
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from dataclasses import dataclass
+else:
+    from pydantic.dataclasses import dataclass
+
 from datetime import datetime, timedelta
 from typing import TYPE_CHECKING, Dict, List, Optional
 
@@ -21,8 +28,8 @@ if TYPE_CHECKING:
 @dataclass(eq=False, repr=False)
 class ValidatorSigningInfo(betterproto.Message):
     """
-    ValidatorSigningInfo defines a validator's signing info for monitoring their
-    liveness activity.
+    ValidatorSigningInfo defines a validator's signing info for monitoring
+    their liveness activity.
     """
 
     address: str = betterproto.string_field(1)
@@ -31,25 +38,28 @@ class ValidatorSigningInfo(betterproto.Message):
 
     index_offset: int = betterproto.int64_field(3)
     """
-    Index which is incremented each time the validator was a bonded
-    in a block and may have signed a precommit or not. This in conjunction with the
-    `SignedBlocksWindow` param determines the index in the `MissedBlocksBitArray`.
+    Index which is incremented each time the validator was a bonded in a block
+    and may have signed a precommit or not. This in conjunction with the
+    `SignedBlocksWindow` param determines the index in the
+    `MissedBlocksBitArray`.
     """
 
     jailed_until: datetime = betterproto.message_field(4)
-    """Timestamp until which the validator is jailed due to liveness downtime."""
+    """
+    Timestamp until which the validator is jailed due to liveness downtime.
+    """
 
     tombstoned: bool = betterproto.bool_field(5)
     """
-    Whether or not a validator has been tombstoned (killed out of validator set). It is
-    set
-    once the validator commits an equivocation or for any other configured misbehiavor.
+    Whether or not a validator has been tombstoned (killed out of validator
+    set). It is set once the validator commits an equivocation or for any other
+    configured misbehiavor.
     """
 
     missed_blocks_counter: int = betterproto.int64_field(6)
     """
-    A counter kept to avoid unnecessary array reads.
-    Note that `Sum(MissedBlocksBitArray)` always equals `MissedBlocksCounter`.
+    A counter kept to avoid unnecessary array reads. Note that
+    `Sum(MissedBlocksBitArray)` always equals `MissedBlocksCounter`.
     """
 
 
@@ -79,8 +89,8 @@ class GenesisState(betterproto.Message):
 
     missed_blocks: List["ValidatorMissedBlocks"] = betterproto.message_field(3)
     """
-    missed_blocks represents a map between validator addresses and their
-    missed blocks.
+    missed_blocks represents a map between validator addresses and their missed
+    blocks.
     """
 
 
@@ -92,7 +102,9 @@ class SigningInfo(betterproto.Message):
     """address is the validator address."""
 
     validator_signing_info: "ValidatorSigningInfo" = betterproto.message_field(2)
-    """validator_signing_info represents the signing info of this validator."""
+    """
+    validator_signing_info represents the signing info of this validator.
+    """
 
 
 @dataclass(eq=False, repr=False)
@@ -122,14 +134,18 @@ class MissedBlock(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class QueryParamsRequest(betterproto.Message):
-    """QueryParamsRequest is the request type for the Query/Params RPC method"""
+    """
+    QueryParamsRequest is the request type for the Query/Params RPC method
+    """
 
     pass
 
 
 @dataclass(eq=False, repr=False)
 class QueryParamsResponse(betterproto.Message):
-    """QueryParamsResponse is the response type for the Query/Params RPC method"""
+    """
+    QueryParamsResponse is the response type for the Query/Params RPC method
+    """
 
     params: "Params" = betterproto.message_field(1)
 
@@ -169,8 +185,8 @@ class QuerySigningInfosRequest(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class QuerySigningInfosResponse(betterproto.Message):
     """
-    QuerySigningInfosResponse is the response type for the Query/SigningInfos RPC
-    method
+    QuerySigningInfosResponse is the response type for the Query/SigningInfos
+    RPC method
     """
 
     info: List["ValidatorSigningInfo"] = betterproto.message_field(1)
@@ -196,8 +212,8 @@ class MsgUnjailResponse(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class MsgUpdateParams(betterproto.Message):
     """
-    MsgUpdateParams is the Msg/UpdateParams request type.
-    Since: cosmos-sdk 0.47
+    MsgUpdateParams is the Msg/UpdateParams request type. Since: cosmos-sdk
+    0.47
     """
 
     authority: str = betterproto.string_field(1)
@@ -208,8 +224,8 @@ class MsgUpdateParams(betterproto.Message):
 
     params: "Params" = betterproto.message_field(2)
     """
-    params defines the x/slashing parameters to update.
-    NOTE: All parameters must be supplied.
+    params defines the x/slashing parameters to update. NOTE: All parameters
+    must be supplied.
     """
 
 
@@ -217,8 +233,7 @@ class MsgUpdateParams(betterproto.Message):
 class MsgUpdateParamsResponse(betterproto.Message):
     """
     MsgUpdateParamsResponse defines the response structure for executing a
-    MsgUpdateParams message.
-    Since: cosmos-sdk 0.47
+    MsgUpdateParams message. Since: cosmos-sdk 0.47
     """
 
     pass
@@ -449,3 +464,15 @@ class MsgBase(ServiceBase):
                 MsgImpeachResponse,
             ),
         }
+
+
+ValidatorSigningInfo.__pydantic_model__.update_forward_refs()  # type: ignore
+Params.__pydantic_model__.update_forward_refs()  # type: ignore
+GenesisState.__pydantic_model__.update_forward_refs()  # type: ignore
+SigningInfo.__pydantic_model__.update_forward_refs()  # type: ignore
+ValidatorMissedBlocks.__pydantic_model__.update_forward_refs()  # type: ignore
+QueryParamsResponse.__pydantic_model__.update_forward_refs()  # type: ignore
+QuerySigningInfoResponse.__pydantic_model__.update_forward_refs()  # type: ignore
+QuerySigningInfosRequest.__pydantic_model__.update_forward_refs()  # type: ignore
+QuerySigningInfosResponse.__pydantic_model__.update_forward_refs()  # type: ignore
+MsgUpdateParams.__pydantic_model__.update_forward_refs()  # type: ignore

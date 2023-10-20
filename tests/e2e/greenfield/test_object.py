@@ -56,14 +56,14 @@ async def test_create_object():
         buckets = [bucket.bucket_info.bucket_name for bucket in bucket_list]
         for bucket_name in buckets:
             list_object = await client.object.list_objects(bucket_name, ListObjectsOptions())
-
-            for object_name in list_object.objects:
-                tx_hash = await client.object.delete_object(
-                    bucket_name,
-                    object_name,
-                )
-                assert tx_hash
-                await client.basic.wait_for_tx(hash=tx_hash)
+            if list_object.key_count > 0:
+                for object in list_object.objects:
+                    tx_hash = await client.object.delete_object(
+                        bucket_name,
+                        object.object_name,
+                    )
+                    assert tx_hash
+                    await client.basic.wait_for_tx(hash=tx_hash)
 
             tx_hash = await client.bucket.delete_bucket(bucket_name)
             assert tx_hash
@@ -112,7 +112,7 @@ async def test_create_object():
         assert object_id.object_name == object_name
         assert isinstance(object_id, ObjectInfo)
 
-        await asyncio.sleep(2)
+        await asyncio.sleep(9)
         info, object = await client.object.get_object(bucket_name, object_name, GetObjectOption())
         assert object
         assert info
@@ -125,7 +125,7 @@ async def test_create_object():
         assert list_object
         assert list_object.name == bucket_name
         assert list_object.key_count == 1
-        assert object_name in list_object.objects
+        assert object_name in list_object.objects[0].object_name
 
         tx_hash = await client.object.delete_object(
             bucket_name,
@@ -188,7 +188,7 @@ async def test_update_object():
         )
         assert put_object == "Object added successfully"
 
-        await asyncio.sleep(2)
+        await asyncio.sleep(5)
         tx_hash = await client.object.update_object_visibility(
             bucket_name,
             object_name,
@@ -274,7 +274,6 @@ async def test_put_object_policy():
                     ActionType.ACTION_CREATE_OBJECT,
                     ActionType.ACTION_DELETE_OBJECT,
                 ],
-                resources=[f"grn:o::{bucket_name}/{object_name}"],
             )
         ]
         principal = Principal(type=PrincipalType.PRINCIPAL_TYPE_GNFD_ACCOUNT, value=principal_key_manager.address)
@@ -467,7 +466,7 @@ async def test_upload_file():
         )
         assert fput_object == "Object added successfully"
 
-        await asyncio.sleep(6)
+        await asyncio.sleep(8)
         await client.object.fget_object(bucket_name, object_name, DOWNLOADING_FILE_DIRECTORY, GetObjectOption())
         assert os.path.exists(DOWNLOADING_FILE_DIRECTORY)
         file = open(DOWNLOADING_FILE_DIRECTORY, "r")

@@ -1,9 +1,12 @@
 from typing import List
 
+import html_to_json
+
 from greenfield_python_sdk.models.group import GroupsResult, ListGroupsOptions
 from greenfield_python_sdk.models.request import RequestMeta
 from greenfield_python_sdk.protos.greenfield.storage import SourceType
 from greenfield_python_sdk.storage_provider.request import Client
+from greenfield_python_sdk.storage_provider.utils import convert_key, convert_value
 
 
 class Group:
@@ -53,5 +56,19 @@ class Group:
         ).model_dump()
 
         response = await self.client.prepare_request(base_url, request_metadata, request_metadata["query_parameters"])
-        data = await response.json()
-        return data["groups"]
+        list_group_info = html_to_json.convert(await response.text())["gfspgetgrouplistresponse"][0]
+        groups = []
+        if "groups" in list_group_info:
+            list_groups = list_group_info["groups"]
+            for _, group_info in enumerate(list_groups):
+                converted_data = {
+                    convert_key(key): convert_value(key, value) if value[0] else "" for key, value in group_info.items()
+                }
+                groups.append(converted_data)
+            list_group_info.pop("groups")
+            list_group_info = {convert_key(key): convert_value(key, value) for key, value in list_group_info.items()}
+            list_group_info["groups"] = groups
+        else:
+            list_group_info = {convert_key(key): convert_value(key, value) for key, value in list_group_info.items()}
+            list_group_info["groups"] = []
+        return list_group_info["groups"]

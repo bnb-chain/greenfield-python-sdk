@@ -2,7 +2,14 @@
 # sources: greenfield/sp/authz.proto, greenfield/sp/events.proto, greenfield/sp/genesis.proto, greenfield/sp/params.proto, greenfield/sp/query.proto, greenfield/sp/tx.proto, greenfield/sp/types.proto
 # plugin: python-betterproto
 # This file has been @generated
-from dataclasses import dataclass
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from dataclasses import dataclass
+else:
+    from pydantic.dataclasses import dataclass
+
 from typing import TYPE_CHECKING, Dict, List, Optional
 
 import betterproto
@@ -24,7 +31,7 @@ class Status(betterproto.Enum):
     STATUS_IN_SERVICE = 0
     STATUS_IN_JAILED = 1
     STATUS_GRACEFUL_EXITING = 2
-    STATUS_OUT_OF_SERVICE = 3
+    STATUS_IN_MAINTENANCE = 3
 
 
 @dataclass(eq=False, repr=False)
@@ -33,9 +40,9 @@ class DepositAuthorization(betterproto.Message):
 
     max_deposit: "__cosmos_base_v1_beta1__.Coin" = betterproto.message_field(1)
     """
-    max_deposit specifies the maximum amount of tokens can be deposit to a storage
-    provider. If it is
-    empty, there is no spend limit and any amount of coins can be deposit.
+    max_deposit specifies the maximum amount of tokens can be deposit to a
+    storage provider. If it is empty, there is no spend limit and any amount of
+    coins can be deposit.
     """
 
     sp_address: str = betterproto.string_field(2)
@@ -50,7 +57,9 @@ class Description(betterproto.Message):
     """moniker defines a human-readable name for the storage provider"""
 
     identity: str = betterproto.string_field(2)
-    """identity defines an optional identity signature (ex. UPort or Keybase)."""
+    """
+    identity defines an optional identity signature (ex. UPort or Keybase).
+    """
 
     website: str = betterproto.string_field(3)
     """website defines an optional website link."""
@@ -67,57 +76,65 @@ class StorageProvider(betterproto.Message):
     """StorageProvider defines the meta info of storage provider"""
 
     id: int = betterproto.uint32_field(1)
-    """// id is the identifier of the storage provider, used in virtual group"""
+    """
+    // id is the identifier of the storage provider, used in virtual group
+    """
 
     operator_address: str = betterproto.string_field(2)
     """
-    operator_address defines the account address of the storage provider's operator; It
-    also is the unique index key of sp.
+    operator_address defines the account address of the storage provider's
+    operator; It also is the unique index key of sp.
     """
 
     funding_address: str = betterproto.string_field(3)
     """
-    funding_address defines one of the storage provider's accounts which is used to
-    deposit and reward.
+    funding_address defines one of the storage provider's accounts which is
+    used to deposit and reward.
     """
 
     seal_address: str = betterproto.string_field(4)
     """
-    seal_address defines one of the storage provider's accounts which is used to
-    SealObject
+    seal_address defines one of the storage provider's accounts which is used
+    to SealObject
     """
 
     approval_address: str = betterproto.string_field(5)
     """
-    approval_address defines one of the storage provider's accounts which is used to
-    approve use's createBucket/createObject request
+    approval_address defines one of the storage provider's accounts which is
+    used to approve use's createBucket/createObject request
     """
 
     gc_address: str = betterproto.string_field(6)
     """
-    gc_address defines one of the storage provider's accounts which is used for gc
-    purpose.
+    gc_address defines one of the storage provider's accounts which is used for
+    gc purpose.
     """
 
-    total_deposit: str = betterproto.string_field(7)
+    maintenance_address: str = betterproto.string_field(7)
     """
-    total_deposit defines the number of tokens deposited by this storage provider for
-    staking.
+    maintenance_address defines one of the storage provider's accounts which is
+    used for testing while in maintenance mode
     """
 
-    status: "Status" = betterproto.enum_field(8)
+    total_deposit: str = betterproto.string_field(8)
+    """
+    total_deposit defines the number of tokens deposited by this storage
+    provider for staking.
+    """
+
+    status: "Status" = betterproto.enum_field(9)
     """status defines the current service status of this storage provider"""
 
-    endpoint: str = betterproto.string_field(9)
+    endpoint: str = betterproto.string_field(10)
     """endpoint define the storage provider's network service address"""
 
-    description: "Description" = betterproto.message_field(10)
+    description: "Description" = betterproto.message_field(11)
     """description defines the description terms for the storage provider."""
 
-    bls_key: bytes = betterproto.bytes_field(11)
+    bls_key: bytes = betterproto.bytes_field(12)
     """
-    bls_key defines the bls pub key of the Storage provider for sealing object and
-    completing migration
+    bls_key defines the bls pub key of the Storage provider for sealing object
+    and completing migration
     """
 
 
@@ -148,64 +165,109 @@ class SpStoragePrice(betterproto.Message):
 
 
 @dataclass(eq=False, repr=False)
-class SecondarySpStorePrice(betterproto.Message):
-    """global secondary sp store price, the price for all secondary sps"""
+class GlobalSpStorePrice(betterproto.Message):
+    """global sp store price, the price for all sps"""
 
     update_time_sec: int = betterproto.int64_field(1)
     """update time, unix timestamp in seconds"""
 
-    store_price: str = betterproto.string_field(2)
-    """store price, in bnb wei per charge byte"""
+    read_price: str = betterproto.string_field(2)
+    """read price, in bnb wei per charge byte"""
+
+    primary_store_price: str = betterproto.string_field(3)
+    """primary store price, in bnb wei per charge byte"""
+
+    secondary_store_price: str = betterproto.string_field(4)
+    """secondary store price, in bnb wei per charge byte"""
+
+
+@dataclass(eq=False, repr=False)
+class SpMaintenanceStats(betterproto.Message):
+    records: List["MaintenanceRecord"] = betterproto.message_field(1)
+
+
+@dataclass(eq=False, repr=False)
+class MaintenanceRecord(betterproto.Message):
+    """
+    MaintenanceRecord is to keep track of every time a sp request to be in
+    Maintenance mode
+    """
+
+    height: int = betterproto.int64_field(1)
+    """block height that request to be in Maintenance mode"""
+
+    request_duration: int = betterproto.int64_field(2)
+    """request duration"""
+
+    actual_duration: int = betterproto.int64_field(3)
+    """actual duration"""
+
+    request_at: int = betterproto.int64_field(4)
+    """request timestamp"""
 
 
 @dataclass(eq=False, repr=False)
 class EventCreateStorageProvider(betterproto.Message):
     """
-    EventCreateStorageProvider is emitted when there is a storage provider created
+    EventCreateStorageProvider is emitted when there is a storage provider
+    created
     """
 
     sp_id: int = betterproto.uint32_field(1)
-    """sp_id defines the identifier of storage provider which generated on-chain"""
+    """
+    sp_id defines the identifier of storage provider which generated on-chain
+    """
 
     sp_address: str = betterproto.string_field(2)
     """sp_address is the operator address of the storage provider"""
 
     funding_address: str = betterproto.string_field(3)
-    """funding_address is the funding account address of the storage provider"""
+    """
+    funding_address is the funding account address of the storage provider
+    """
 
     seal_address: str = betterproto.string_field(4)
     """seal_address is the account address for SealObject Tx"""
 
     approval_address: str = betterproto.string_field(5)
     """
-    approval_address is the account address for approve create bucket/object signature
+    approval_address is the account address for approve create bucket/object
+    signature
     """
 
     gc_address: str = betterproto.string_field(6)
     """
-    gc_address defines one of the storage provider's accounts which is used for gc
-    purpose
+    gc_address defines one of the storage provider's accounts which is used for
+    gc purpose
     """
 
-    endpoint: str = betterproto.string_field(7)
-    """endpoint is the domain name address used by SP to provide storage services"""
-
-    total_deposit: "__cosmos_base_v1_beta1__.Coin" = betterproto.message_field(8)
+    maintenance_address: str = betterproto.string_field(7)
     """
-    total_deposit is the token coin that the storage provider deposit to the storage
-    module
+    maintenance_address defines one of the storage provider's accounts which is
+    used for testing while in maintenance mode
     """
 
-    status: "Status" = betterproto.enum_field(9)
+    endpoint: str = betterproto.string_field(8)
+    """
+    endpoint is the domain name address used by SP to provide storage services
+    """
+
+    total_deposit: "__cosmos_base_v1_beta1__.Coin" = betterproto.message_field(9)
+    """
+    total_deposit is the token coin that the storage provider deposit to the
+    storage module
+    """
+
+    status: "Status" = betterproto.enum_field(10)
     """status defines the status of the storage provider"""
 
-    description: "Description" = betterproto.message_field(10)
+    description: "Description" = betterproto.message_field(11)
     """description defines the description terms for the storage provider"""
 
-    bls_key: str = betterproto.string_field(11)
+    bls_key: str = betterproto.string_field(12)
     """
-    bls_key defines the bls pub key owned by storage provider used when sealing object
-    and completing migration
+    bls_key defines the bls pub key owned by storage provider used when sealing
+    object and completing migration
     """
 
 
@@ -214,7 +276,9 @@ class EventEditStorageProvider(betterproto.Message):
     """EventEditStorageProvider is emitted when SP's metadata is edited."""
 
     sp_id: int = betterproto.uint32_field(1)
-    """sp_id defines the identifier of storage provider which generated on-chain"""
+    """
+    sp_id defines the identifier of storage provider which generated on-chain
+    """
 
     sp_address: str = betterproto.string_field(2)
     """sp_address is the operator address of the storage provider"""
@@ -230,18 +294,26 @@ class EventEditStorageProvider(betterproto.Message):
 
     approval_address: str = betterproto.string_field(6)
     """
-    approval_address is the account address for approve create bucket/object signature
+    approval_address is the account address for approve create bucket/object
+    signature
     """
 
     gc_address: str = betterproto.string_field(7)
     """
-    gc_address defines one of the storage provider's accounts which is used for gc
-    purpose
+    gc_address defines one of the storage provider's accounts which is used for
+    gc purpose
     """
 
-    bls_key: str = betterproto.string_field(8)
+    maintenance_address: str = betterproto.string_field(8)
     """
-    bls_key defines the bls pub key owned by storage provider used when sealing object
+    maintenance_address defines one of the storage provider's accounts which is
+    used for testing while in maintenance mode
+    """
+
+    bls_key: str = betterproto.string_field(9)
+    """
+    bls_key defines the bls pub key owned by storage provider used when sealing
+    object
     """
 
 
@@ -250,13 +322,17 @@ class EventDeposit(betterproto.Message):
     """EventDeposit is emitted when sp deposit tokens."""
 
     funding_address: str = betterproto.string_field(1)
-    """funding_address is the funding account address of the storage provider"""
+    """
+    funding_address is the funding account address of the storage provider
+    """
 
     deposit: str = betterproto.string_field(2)
     """deposit is the token coin deposited this message"""
 
     total_deposit: str = betterproto.string_field(3)
-    """total_deposit is the total token coins this storage provider deposited"""
+    """
+    total_deposit is the total token coins this storage provider deposited
+    """
 
 
 @dataclass(eq=False, repr=False)
@@ -278,12 +354,40 @@ class EventSpStoragePriceUpdate(betterproto.Message):
 
 
 @dataclass(eq=False, repr=False)
-class EventSecondarySpStorePriceUpdate(betterproto.Message):
+class EventGlobalSpStorePriceUpdate(betterproto.Message):
     update_time_sec: int = betterproto.int64_field(1)
     """update time, in unix timestamp"""
 
-    store_price: str = betterproto.string_field(2)
-    """store price, in bnb wei per charge byte"""
+    read_price: str = betterproto.string_field(2)
+    """read price, in bnb wei per charge byte"""
+
+    primary_store_price: str = betterproto.string_field(3)
+    """primary store price, in bnb wei per charge byte"""
+
+    secondary_store_price: str = betterproto.string_field(4)
+    """secondary store price, in bnb wei per charge byte"""
+
+
+@dataclass(eq=False, repr=False)
+class EventUpdateStorageProviderStatus(betterproto.Message):
+    """
+    EventUpdateStorageProviderStatus is emitted when the SP update its status
+    successfully
+    """
+
+    sp_id: int = betterproto.uint32_field(1)
+    """
+    sp_id defines the identifier of storage provider which generated on-chain
+    """
+
+    sp_address: str = betterproto.string_field(2)
+    """sp_address is the operator address of the storage provider"""
+
+    pre_status: str = betterproto.string_field(3)
+    """pre status"""
+
+    new_status: str = betterproto.string_field(4)
+    """new status"""
 
 
 @dataclass(eq=False, repr=False)
@@ -294,12 +398,41 @@ class Params(betterproto.Message):
     """deposit_denom defines the staking coin denomination."""
 
     min_deposit: str = betterproto.string_field(2)
-    """min_deposit defines the minimum deposit amount for storage providers."""
+    """
+    min_deposit defines the minimum deposit amount for storage providers.
+    """
 
     secondary_sp_store_price_ratio: str = betterproto.string_field(3)
     """
-    the ratio of the store price of the secondary sp to the primary sp, the default
-    value is 80%
+    the ratio of the store price of the secondary sp to the primary sp, the
+    default value is 80%
+    """
+
+    num_of_historical_blocks_for_maintenance_records: int = betterproto.int64_field(4)
+    """previous blocks that be traced back to for maintenance_records"""
+
+    maintenance_duration_quota: int = betterproto.int64_field(5)
+    """
+    the max duration that a SP can be in_maintenance within
+    num_of_historical_blocks_for_maintenance_records
+    """
+
+    num_of_lockup_blocks_for_maintenance: int = betterproto.int64_field(6)
+    """
+    the number of blocks to be wait for sp to be in maintenance mode again if
+    already requested
+    """
+
+    update_global_price_interval: int = betterproto.uint64_field(7)
+    """
+    the time interval to update global storage price, if it is not set then the
+    price will be updated at the first block of each natural month
+    """
+
+    update_price_disallowed_days: int = betterproto.uint32_field(8)
+    """
+    the days counting backwards from end of a month in which a sp cannot update
+    its price
     """
 
 
@@ -323,7 +456,9 @@ class QueryParamsRequest(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class QueryParamsResponse(betterproto.Message):
-    """QueryParamsResponse is response type for the Query/Params RPC method."""
+    """
+    QueryParamsResponse is response type for the Query/Params RPC method.
+    """
 
     params: "Params" = betterproto.message_field(1)
     """params holds all the parameters of this module."""
@@ -345,28 +480,27 @@ class QueryStorageProvidersResponse(betterproto.Message):
 
 
 @dataclass(eq=False, repr=False)
-class QueryGetSpStoragePriceByTimeRequest(betterproto.Message):
+class QuerySpStoragePriceRequest(betterproto.Message):
     sp_addr: str = betterproto.string_field(1)
     """operator address of sp"""
 
-    timestamp: int = betterproto.int64_field(2)
-    """unix timestamp in seconds. If it's 0, it will return the latest price."""
-
 
 @dataclass(eq=False, repr=False)
-class QueryGetSpStoragePriceByTimeResponse(betterproto.Message):
+class QuerySpStoragePriceResponse(betterproto.Message):
     sp_storage_price: "SpStoragePrice" = betterproto.message_field(1)
 
 
 @dataclass(eq=False, repr=False)
-class QueryGetSecondarySpStorePriceByTimeRequest(betterproto.Message):
+class QueryGlobalSpStorePriceByTimeRequest(betterproto.Message):
     timestamp: int = betterproto.int64_field(1)
-    """unix timestamp in seconds. If it's 0, it will return the latest price."""
+    """
+    unix timestamp in seconds. If it's 0, it will return the latest price.
+    """
 
 
 @dataclass(eq=False, repr=False)
-class QueryGetSecondarySpStorePriceByTimeResponse(betterproto.Message):
-    secondary_sp_store_price: "SecondarySpStorePrice" = betterproto.message_field(1)
+class QueryGlobalSpStorePriceByTimeResponse(betterproto.Message):
+    global_sp_store_price: "GlobalSpStorePrice" = betterproto.message_field(1)
 
 
 @dataclass(eq=False, repr=False)
@@ -390,19 +524,32 @@ class QueryStorageProviderByOperatorAddressResponse(betterproto.Message):
 
 
 @dataclass(eq=False, repr=False)
+class QueryStorageProviderMaintenanceRecordsRequest(betterproto.Message):
+    operator_address: str = betterproto.string_field(1)
+
+
+@dataclass(eq=False, repr=False)
+class QueryStorageProviderMaintenanceRecordsResponse(betterproto.Message):
+    records: List["MaintenanceRecord"] = betterproto.message_field(1)
+
+
+@dataclass(eq=False, repr=False)
 class MsgCreateStorageProvider(betterproto.Message):
-    """MsgCreateStorageProvider defines message for creating a new storage provider."""
+    """
+    MsgCreateStorageProvider defines message for creating a new storage
+    provider.
+    """
 
     creator: str = betterproto.string_field(1)
     """creator is the msg signer"""
 
     description: "Description" = betterproto.message_field(2)
-    """description defines the description terms for the validator."""
+    """description defines the description terms for the storage provider."""
 
     sp_address: str = betterproto.string_field(3)
     """
-    sp_address defines the address of the sp's operator; It also is the unqiue index key
-    of sp.
+    sp_address defines the address of the sp's operator; It also is the unqiue
+    index key of sp.
     """
 
     funding_address: str = betterproto.string_field(4)
@@ -412,7 +559,9 @@ class MsgCreateStorageProvider(betterproto.Message):
     """
 
     seal_address: str = betterproto.string_field(5)
-    """seal_address is the account address of the storage provider for sealObject"""
+    """
+    seal_address is the account address of the storage provider for sealObject
+    """
 
     approval_address: str = betterproto.string_field(6)
     """
@@ -422,36 +571,44 @@ class MsgCreateStorageProvider(betterproto.Message):
 
     gc_address: str = betterproto.string_field(7)
     """
-    gc_address defines one of the storage provider's accounts which is used for gc
-    purpose.
+    gc_address defines one of the storage provider's accounts which is used for
+    gc purpose.
     """
 
-    endpoint: str = betterproto.string_field(8)
+    maintenance_address: str = betterproto.string_field(8)
+    """
+    maintenance_address defines one of the storage provider's accounts which is
+    used for testing while in maintenance mode
+    """
+
+    endpoint: str = betterproto.string_field(9)
     """endpoint is the service address of the storage provider"""
 
-    deposit: "__cosmos_base_v1_beta1__.Coin" = betterproto.message_field(9)
+    deposit: "__cosmos_base_v1_beta1__.Coin" = betterproto.message_field(10)
     """deposit define the deposit token"""
 
-    read_price: str = betterproto.string_field(10)
+    read_price: str = betterproto.string_field(11)
     """read price, in bnb wei per charge byte"""
 
-    free_read_quota: int = betterproto.uint64_field(11)
+    free_read_quota: int = betterproto.uint64_field(12)
     """free read quota, in byte"""
 
-    store_price: str = betterproto.string_field(12)
+    store_price: str = betterproto.string_field(13)
     """store price, in bnb wei per charge byte"""
 
-    bls_key: str = betterproto.string_field(13)
-    """bls_key defines the bls pub key of the Storage provider for sealing object"""
+    bls_key: str = betterproto.string_field(14)
+    """
+    bls_key defines the bls pub key of the Storage provider for sealing object
+    """
 
-    bls_proof: str = betterproto.string_field(14)
+    bls_proof: str = betterproto.string_field(15)
 
 
 @dataclass(eq=False, repr=False)
 class MsgCreateStorageProviderResponse(betterproto.Message):
     """
-    MsgCreateStorageProviderResponse defines the Msg/CreateStorageProvider response
-    type.
+    MsgCreateStorageProviderResponse defines the Msg/CreateStorageProvider
+    response type.
     """
 
     pass
@@ -489,7 +646,9 @@ class MsgEditStorageProvider(betterproto.Message):
     endpoint: str = betterproto.string_field(2)
     description: "Description" = betterproto.message_field(3)
     seal_address: str = betterproto.string_field(4)
-    """seal_address is the account address of the storage provider for sealObject"""
+    """
+    seal_address is the account address of the storage provider for sealObject
+    """
 
     approval_address: str = betterproto.string_field(5)
     """
@@ -499,20 +658,29 @@ class MsgEditStorageProvider(betterproto.Message):
 
     gc_address: str = betterproto.string_field(6)
     """
-    gc_address defines one of the storage provider's accounts which is used for gc
-    purpose
+    gc_address defines one of the storage provider's accounts which is used for
+    gc purpose
     """
 
-    bls_key: str = betterproto.string_field(7)
-    """bls_key defines the bls pub key of the Storage provider for sealing object"""
+    maintenance_address: str = betterproto.string_field(7)
+    """
+    maintenance_address defines one of the storage provider's accounts which is
+    used for testing while in maintenance mode
+    """
 
-    bls_proof: str = betterproto.string_field(8)
+    bls_key: str = betterproto.string_field(8)
+    """
+    bls_key defines the bls pub key of the Storage provider for sealing object
+    """
+
+    bls_proof: str = betterproto.string_field(9)
 
 
 @dataclass(eq=False, repr=False)
 class MsgEditStorageProviderResponse(betterproto.Message):
     """
-    MsgEditStorageProviderResponse defines the Msg/EditStorageProvider response type.
+    MsgEditStorageProviderResponse defines the Msg/EditStorageProvider response
+    type.
     """
 
     pass
@@ -550,8 +718,8 @@ class MsgUpdateParams(betterproto.Message):
 
     params: "Params" = betterproto.message_field(2)
     """
-    params defines the x/sp parameters to update.
-    NOTE: All parameters must be supplied.
+    params defines the x/sp parameters to update. NOTE: All parameters must be
+    supplied.
     """
 
 
@@ -560,6 +728,33 @@ class MsgUpdateParamsResponse(betterproto.Message):
     """
     MsgUpdateParamsResponse defines the response structure for executing a
     MsgUpdateParams message.
+    """
+
+    pass
+
+
+@dataclass(eq=False, repr=False)
+class MsgUpdateStorageProviderStatus(betterproto.Message):
+    """
+    MsgUpdateStorageProviderStatus is used to update the status of a SP by
+    itself
+    """
+
+    sp_address: str = betterproto.string_field(1)
+    """sp_address defines the operator address"""
+
+    status: "Status" = betterproto.enum_field(2)
+    """status defines the desired status be update to."""
+
+    duration: int = betterproto.int64_field(3)
+    """duration defines the time requested in desired status"""
+
+
+@dataclass(eq=False, repr=False)
+class MsgUpdateStorageProviderStatusResponse(betterproto.Message):
+    """
+    MsgUpdateStorageProviderStatusResponse defines the
+    MsgUpdateStorageProviderStatus response type.
     """
 
     pass
@@ -600,35 +795,35 @@ class QueryStub(betterproto.ServiceStub):
             metadata=metadata,
         )
 
-    async def query_get_sp_storage_price_by_time(
+    async def query_sp_storage_price(
         self,
-        query_get_sp_storage_price_by_time_request: "QueryGetSpStoragePriceByTimeRequest",
+        query_sp_storage_price_request: "QuerySpStoragePriceRequest",
         *,
         timeout: Optional[float] = None,
         deadline: Optional["Deadline"] = None,
         metadata: Optional["MetadataLike"] = None
-    ) -> "QueryGetSpStoragePriceByTimeResponse":
+    ) -> "QuerySpStoragePriceResponse":
         return await self._unary_unary(
-            "/greenfield.sp.Query/QueryGetSpStoragePriceByTime",
-            query_get_sp_storage_price_by_time_request,
-            QueryGetSpStoragePriceByTimeResponse,
+            "/greenfield.sp.Query/QuerySpStoragePrice",
+            query_sp_storage_price_request,
+            QuerySpStoragePriceResponse,
             timeout=timeout,
             deadline=deadline,
             metadata=metadata,
         )
 
-    async def query_get_secondary_sp_store_price_by_time(
+    async def query_global_sp_store_price_by_time(
         self,
-        query_get_secondary_sp_store_price_by_time_request: "QueryGetSecondarySpStorePriceByTimeRequest",
+        query_global_sp_store_price_by_time_request: "QueryGlobalSpStorePriceByTimeRequest",
         *,
         timeout: Optional[float] = None,
         deadline: Optional["Deadline"] = None,
         metadata: Optional["MetadataLike"] = None
-    ) -> "QueryGetSecondarySpStorePriceByTimeResponse":
+    ) -> "QueryGlobalSpStorePriceByTimeResponse":
         return await self._unary_unary(
-            "/greenfield.sp.Query/QueryGetSecondarySpStorePriceByTime",
-            query_get_secondary_sp_store_price_by_time_request,
-            QueryGetSecondarySpStorePriceByTimeResponse,
+            "/greenfield.sp.Query/QueryGlobalSpStorePriceByTime",
+            query_global_sp_store_price_by_time_request,
+            QueryGlobalSpStorePriceByTimeResponse,
             timeout=timeout,
             deadline=deadline,
             metadata=metadata,
@@ -663,6 +858,23 @@ class QueryStub(betterproto.ServiceStub):
             "/greenfield.sp.Query/StorageProviderByOperatorAddress",
             query_storage_provider_by_operator_address_request,
             QueryStorageProviderByOperatorAddressResponse,
+            timeout=timeout,
+            deadline=deadline,
+            metadata=metadata,
+        )
+
+    async def storage_provider_maintenance_records_by_operator_address(
+        self,
+        query_storage_provider_maintenance_records_request: "QueryStorageProviderMaintenanceRecordsRequest",
+        *,
+        timeout: Optional[float] = None,
+        deadline: Optional["Deadline"] = None,
+        metadata: Optional["MetadataLike"] = None
+    ) -> "QueryStorageProviderMaintenanceRecordsResponse":
+        return await self._unary_unary(
+            "/greenfield.sp.Query/StorageProviderMaintenanceRecordsByOperatorAddress",
+            query_storage_provider_maintenance_records_request,
+            QueryStorageProviderMaintenanceRecordsResponse,
             timeout=timeout,
             deadline=deadline,
             metadata=metadata,
@@ -738,6 +950,23 @@ class MsgStub(betterproto.ServiceStub):
             metadata=metadata,
         )
 
+    async def update_sp_status(
+        self,
+        msg_update_storage_provider_status: "MsgUpdateStorageProviderStatus",
+        *,
+        timeout: Optional[float] = None,
+        deadline: Optional["Deadline"] = None,
+        metadata: Optional["MetadataLike"] = None
+    ) -> "MsgUpdateStorageProviderStatusResponse":
+        return await self._unary_unary(
+            "/greenfield.sp.Msg/UpdateSpStatus",
+            msg_update_storage_provider_status,
+            MsgUpdateStorageProviderStatusResponse,
+            timeout=timeout,
+            deadline=deadline,
+            metadata=metadata,
+        )
+
     async def update_params(
         self,
         msg_update_params: "MsgUpdateParams",
@@ -765,16 +994,15 @@ class QueryBase(ServiceBase):
     ) -> "QueryStorageProvidersResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    async def query_get_sp_storage_price_by_time(
-        self,
-        query_get_sp_storage_price_by_time_request: "QueryGetSpStoragePriceByTimeRequest",
-    ) -> "QueryGetSpStoragePriceByTimeResponse":
+    async def query_sp_storage_price(
+        self, query_sp_storage_price_request: "QuerySpStoragePriceRequest"
+    ) -> "QuerySpStoragePriceResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    async def query_get_secondary_sp_store_price_by_time(
+    async def query_global_sp_store_price_by_time(
         self,
-        query_get_secondary_sp_store_price_by_time_request: "QueryGetSecondarySpStorePriceByTimeRequest",
-    ) -> "QueryGetSecondarySpStorePriceByTimeResponse":
+        query_global_sp_store_price_by_time_request: "QueryGlobalSpStorePriceByTimeRequest",
+    ) -> "QueryGlobalSpStorePriceByTimeResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
     async def storage_provider(
@@ -786,6 +1014,12 @@ class QueryBase(ServiceBase):
         self,
         query_storage_provider_by_operator_address_request: "QueryStorageProviderByOperatorAddressRequest",
     ) -> "QueryStorageProviderByOperatorAddressResponse":
+        raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
+
+    async def storage_provider_maintenance_records_by_operator_address(
+        self,
+        query_storage_provider_maintenance_records_request: "QueryStorageProviderMaintenanceRecordsRequest",
+    ) -> "QueryStorageProviderMaintenanceRecordsResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
     async def __rpc_params(self, stream: "grpclib.server.Stream[QueryParamsRequest, QueryParamsResponse]") -> None:
@@ -801,20 +1035,20 @@ class QueryBase(ServiceBase):
         response = await self.storage_providers(request)
         await stream.send_message(response)
 
-    async def __rpc_query_get_sp_storage_price_by_time(
+    async def __rpc_query_sp_storage_price(
         self,
-        stream: "grpclib.server.Stream[QueryGetSpStoragePriceByTimeRequest, QueryGetSpStoragePriceByTimeResponse]",
+        stream: "grpclib.server.Stream[QuerySpStoragePriceRequest, QuerySpStoragePriceResponse]",
     ) -> None:
         request = await stream.recv_message()
-        response = await self.query_get_sp_storage_price_by_time(request)
+        response = await self.query_sp_storage_price(request)
         await stream.send_message(response)
 
-    async def __rpc_query_get_secondary_sp_store_price_by_time(
+    async def __rpc_query_global_sp_store_price_by_time(
         self,
-        stream: "grpclib.server.Stream[QueryGetSecondarySpStorePriceByTimeRequest, QueryGetSecondarySpStorePriceByTimeResponse]",
+        stream: "grpclib.server.Stream[QueryGlobalSpStorePriceByTimeRequest, QueryGlobalSpStorePriceByTimeResponse]",
     ) -> None:
         request = await stream.recv_message()
-        response = await self.query_get_secondary_sp_store_price_by_time(request)
+        response = await self.query_global_sp_store_price_by_time(request)
         await stream.send_message(response)
 
     async def __rpc_storage_provider(
@@ -833,6 +1067,14 @@ class QueryBase(ServiceBase):
         response = await self.storage_provider_by_operator_address(request)
         await stream.send_message(response)
 
+    async def __rpc_storage_provider_maintenance_records_by_operator_address(
+        self,
+        stream: "grpclib.server.Stream[QueryStorageProviderMaintenanceRecordsRequest, QueryStorageProviderMaintenanceRecordsResponse]",
+    ) -> None:
+        request = await stream.recv_message()
+        response = await self.storage_provider_maintenance_records_by_operator_address(request)
+        await stream.send_message(response)
+
     def __mapping__(self) -> Dict[str, grpclib.const.Handler]:
         return {
             "/greenfield.sp.Query/Params": grpclib.const.Handler(
@@ -847,17 +1089,17 @@ class QueryBase(ServiceBase):
                 QueryStorageProvidersRequest,
                 QueryStorageProvidersResponse,
             ),
-            "/greenfield.sp.Query/QueryGetSpStoragePriceByTime": grpclib.const.Handler(
-                self.__rpc_query_get_sp_storage_price_by_time,
+            "/greenfield.sp.Query/QuerySpStoragePrice": grpclib.const.Handler(
+                self.__rpc_query_sp_storage_price,
                 grpclib.const.Cardinality.UNARY_UNARY,
-                QueryGetSpStoragePriceByTimeRequest,
-                QueryGetSpStoragePriceByTimeResponse,
+                QuerySpStoragePriceRequest,
+                QuerySpStoragePriceResponse,
             ),
-            "/greenfield.sp.Query/QueryGetSecondarySpStorePriceByTime": grpclib.const.Handler(
-                self.__rpc_query_get_secondary_sp_store_price_by_time,
+            "/greenfield.sp.Query/QueryGlobalSpStorePriceByTime": grpclib.const.Handler(
+                self.__rpc_query_global_sp_store_price_by_time,
                 grpclib.const.Cardinality.UNARY_UNARY,
-                QueryGetSecondarySpStorePriceByTimeRequest,
-                QueryGetSecondarySpStorePriceByTimeResponse,
+                QueryGlobalSpStorePriceByTimeRequest,
+                QueryGlobalSpStorePriceByTimeResponse,
             ),
             "/greenfield.sp.Query/StorageProvider": grpclib.const.Handler(
                 self.__rpc_storage_provider,
@@ -870,6 +1112,12 @@ class QueryBase(ServiceBase):
                 grpclib.const.Cardinality.UNARY_UNARY,
                 QueryStorageProviderByOperatorAddressRequest,
                 QueryStorageProviderByOperatorAddressResponse,
+            ),
+            "/greenfield.sp.Query/StorageProviderMaintenanceRecordsByOperatorAddress": grpclib.const.Handler(
+                self.__rpc_storage_provider_maintenance_records_by_operator_address,
+                grpclib.const.Cardinality.UNARY_UNARY,
+                QueryStorageProviderMaintenanceRecordsRequest,
+                QueryStorageProviderMaintenanceRecordsResponse,
             ),
         }
 
@@ -891,6 +1139,11 @@ class MsgBase(ServiceBase):
     async def update_sp_storage_price(
         self, msg_update_sp_storage_price: "MsgUpdateSpStoragePrice"
     ) -> "MsgUpdateSpStoragePriceResponse":
+        raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
+
+    async def update_sp_status(
+        self, msg_update_storage_provider_status: "MsgUpdateStorageProviderStatus"
+    ) -> "MsgUpdateStorageProviderStatusResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
     async def update_params(self, msg_update_params: "MsgUpdateParams") -> "MsgUpdateParamsResponse":
@@ -923,6 +1176,14 @@ class MsgBase(ServiceBase):
     ) -> None:
         request = await stream.recv_message()
         response = await self.update_sp_storage_price(request)
+        await stream.send_message(response)
+
+    async def __rpc_update_sp_status(
+        self,
+        stream: "grpclib.server.Stream[MsgUpdateStorageProviderStatus, MsgUpdateStorageProviderStatusResponse]",
+    ) -> None:
+        request = await stream.recv_message()
+        response = await self.update_sp_status(request)
         await stream.send_message(response)
 
     async def __rpc_update_params(
@@ -958,6 +1219,12 @@ class MsgBase(ServiceBase):
                 MsgUpdateSpStoragePrice,
                 MsgUpdateSpStoragePriceResponse,
             ),
+            "/greenfield.sp.Msg/UpdateSpStatus": grpclib.const.Handler(
+                self.__rpc_update_sp_status,
+                grpclib.const.Cardinality.UNARY_UNARY,
+                MsgUpdateStorageProviderStatus,
+                MsgUpdateStorageProviderStatusResponse,
+            ),
             "/greenfield.sp.Msg/UpdateParams": grpclib.const.Handler(
                 self.__rpc_update_params,
                 grpclib.const.Cardinality.UNARY_UNARY,
@@ -965,3 +1232,25 @@ class MsgBase(ServiceBase):
                 MsgUpdateParamsResponse,
             ),
         }
+
+
+DepositAuthorization.__pydantic_model__.update_forward_refs()  # type: ignore
+StorageProvider.__pydantic_model__.update_forward_refs()  # type: ignore
+RewardInfo.__pydantic_model__.update_forward_refs()  # type: ignore
+SpMaintenanceStats.__pydantic_model__.update_forward_refs()  # type: ignore
+EventCreateStorageProvider.__pydantic_model__.update_forward_refs()  # type: ignore
+EventEditStorageProvider.__pydantic_model__.update_forward_refs()  # type: ignore
+GenesisState.__pydantic_model__.update_forward_refs()  # type: ignore
+QueryParamsResponse.__pydantic_model__.update_forward_refs()  # type: ignore
+QueryStorageProvidersRequest.__pydantic_model__.update_forward_refs()  # type: ignore
+QueryStorageProvidersResponse.__pydantic_model__.update_forward_refs()  # type: ignore
+QuerySpStoragePriceResponse.__pydantic_model__.update_forward_refs()  # type: ignore
+QueryGlobalSpStorePriceByTimeResponse.__pydantic_model__.update_forward_refs()  # type: ignore
+QueryStorageProviderResponse.__pydantic_model__.update_forward_refs()  # type: ignore
+QueryStorageProviderByOperatorAddressResponse.__pydantic_model__.update_forward_refs()  # type: ignore
+QueryStorageProviderMaintenanceRecordsResponse.__pydantic_model__.update_forward_refs()  # type: ignore
+MsgCreateStorageProvider.__pydantic_model__.update_forward_refs()  # type: ignore
+MsgDeposit.__pydantic_model__.update_forward_refs()  # type: ignore
+MsgEditStorageProvider.__pydantic_model__.update_forward_refs()  # type: ignore
+MsgUpdateParams.__pydantic_model__.update_forward_refs()  # type: ignore
+MsgUpdateStorageProviderStatus.__pydantic_model__.update_forward_refs()  # type: ignore

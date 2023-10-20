@@ -2,7 +2,13 @@
 # sources: cosmos/crypto/secp256r1/keys.proto
 # plugin: python-betterproto
 # This file has been @generated
-from dataclasses import dataclass
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from dataclasses import dataclass
+else:
+    from pydantic.dataclasses import dataclass
 
 import betterproto
 
@@ -13,8 +19,9 @@ class PubKey(betterproto.Message):
 
     key: bytes = betterproto.bytes_field(1)
     """
-    Point on secp256r1 curve in a compressed representation as specified in section
-    4.3.6 of ANSI X9.62: https://webstore.ansi.org/standards/ascx9/ansix9621998
+    Point on secp256r1 curve in a compressed representation as specified in
+    section 4.3.6 of ANSI X9.62:
+    https://webstore.ansi.org/standards/ascx9/ansix9621998
     """
 
 

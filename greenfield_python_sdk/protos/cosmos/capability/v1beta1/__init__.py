@@ -2,7 +2,14 @@
 # sources: cosmos/capability/v1beta1/capability.proto, cosmos/capability/v1beta1/genesis.proto
 # plugin: python-betterproto
 # This file has been @generated
-from dataclasses import dataclass
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from dataclasses import dataclass
+else:
+    from pydantic.dataclasses import dataclass
+
 from typing import List
 
 import betterproto
@@ -41,7 +48,9 @@ class CapabilityOwners(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class GenesisOwners(betterproto.Message):
-    """GenesisOwners defines the capability owners with their corresponding index."""
+    """
+    GenesisOwners defines the capability owners with their corresponding index.
+    """
 
     index: int = betterproto.uint64_field(1)
     """index is the index of the capability owner."""
@@ -59,6 +68,11 @@ class GenesisState(betterproto.Message):
 
     owners: List["GenesisOwners"] = betterproto.message_field(2)
     """
-    owners represents a map from index to owners of the capability index
-    index key is string to allow amino marshalling.
+    owners represents a map from index to owners of the capability index index
+    key is string to allow amino marshalling.
     """
+
+
+CapabilityOwners.__pydantic_model__.update_forward_refs()  # type: ignore
+GenesisOwners.__pydantic_model__.update_forward_refs()  # type: ignore
+GenesisState.__pydantic_model__.update_forward_refs()  # type: ignore

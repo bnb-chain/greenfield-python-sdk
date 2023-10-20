@@ -2,7 +2,13 @@
 # sources: tendermint/p2p/types.proto
 # plugin: python-betterproto
 # This file has been @generated
-from dataclasses import dataclass
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from dataclasses import dataclass
+else:
+    from pydantic.dataclasses import dataclass
 
 import betterproto
 
@@ -37,3 +43,6 @@ class DefaultNodeInfo(betterproto.Message):
 class DefaultNodeInfoOther(betterproto.Message):
     tx_index: str = betterproto.string_field(1)
     rpc_address: str = betterproto.string_field(2)
+
+
+DefaultNodeInfo.__pydantic_model__.update_forward_refs()  # type: ignore

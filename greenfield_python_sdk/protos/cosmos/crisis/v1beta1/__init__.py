@@ -2,7 +2,14 @@
 # sources: cosmos/crisis/v1beta1/genesis.proto, cosmos/crisis/v1beta1/tx.proto
 # plugin: python-betterproto
 # This file has been @generated
-from dataclasses import dataclass
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from dataclasses import dataclass
+else:
+    from pydantic.dataclasses import dataclass
+
 from typing import TYPE_CHECKING, Dict, Optional
 
 import betterproto
@@ -23,18 +30,20 @@ class GenesisState(betterproto.Message):
 
     constant_fee: "__base_v1_beta1__.Coin" = betterproto.message_field(3)
     """
-    constant_fee is the fee used to verify the invariant in the crisis
-    module.
+    constant_fee is the fee used to verify the invariant in the crisis module.
     """
 
 
 @dataclass(eq=False, repr=False)
 class MsgVerifyInvariant(betterproto.Message):
-    """MsgVerifyInvariant represents a message to verify a particular invariance."""
+    """
+    MsgVerifyInvariant represents a message to verify a particular invariance.
+    """
 
     sender: str = betterproto.string_field(1)
     """
-    sender is the account address of private key to send coins to fee collector account.
+    sender is the account address of private key to send coins to fee collector
+    account.
     """
 
     invariant_module_name: str = betterproto.string_field(2)
@@ -46,7 +55,9 @@ class MsgVerifyInvariant(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class MsgVerifyInvariantResponse(betterproto.Message):
-    """MsgVerifyInvariantResponse defines the Msg/VerifyInvariant response type."""
+    """
+    MsgVerifyInvariantResponse defines the Msg/VerifyInvariant response type.
+    """
 
     pass
 
@@ -54,8 +65,8 @@ class MsgVerifyInvariantResponse(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class MsgUpdateParams(betterproto.Message):
     """
-    MsgUpdateParams is the Msg/UpdateParams request type.
-    Since: cosmos-sdk 0.47
+    MsgUpdateParams is the Msg/UpdateParams request type. Since: cosmos-sdk
+    0.47
     """
 
     authority: str = betterproto.string_field(1)
@@ -72,8 +83,7 @@ class MsgUpdateParams(betterproto.Message):
 class MsgUpdateParamsResponse(betterproto.Message):
     """
     MsgUpdateParamsResponse defines the response structure for executing a
-    MsgUpdateParams message.
-    Since: cosmos-sdk 0.47
+    MsgUpdateParams message. Since: cosmos-sdk 0.47
     """
 
     pass
@@ -152,3 +162,7 @@ class MsgBase(ServiceBase):
                 MsgUpdateParamsResponse,
             ),
         }
+
+
+GenesisState.__pydantic_model__.update_forward_refs()  # type: ignore
+MsgUpdateParams.__pydantic_model__.update_forward_refs()  # type: ignore

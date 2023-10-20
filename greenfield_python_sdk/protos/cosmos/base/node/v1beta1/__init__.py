@@ -2,7 +2,14 @@
 # sources: cosmos/base/node/v1beta1/query.proto
 # plugin: python-betterproto
 # This file has been @generated
-from dataclasses import dataclass
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from dataclasses import dataclass
+else:
+    from pydantic.dataclasses import dataclass
+
 from typing import TYPE_CHECKING, Dict, Optional
 
 import betterproto
@@ -17,14 +24,18 @@ if TYPE_CHECKING:
 
 @dataclass(eq=False, repr=False)
 class ConfigRequest(betterproto.Message):
-    """ConfigRequest defines the request structure for the Config gRPC query."""
+    """
+    ConfigRequest defines the request structure for the Config gRPC query.
+    """
 
     pass
 
 
 @dataclass(eq=False, repr=False)
 class ConfigResponse(betterproto.Message):
-    """ConfigResponse defines the response structure for the Config gRPC query."""
+    """
+    ConfigResponse defines the response structure for the Config gRPC query.
+    """
 
     minimum_gas_price: str = betterproto.string_field(1)
 

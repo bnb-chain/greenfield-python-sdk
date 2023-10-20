@@ -2,7 +2,14 @@
 # sources: cosmos/oracle/v1/event.proto, cosmos/oracle/v1/genesis.proto, cosmos/oracle/v1/oracle.proto, cosmos/oracle/v1/query.proto, cosmos/oracle/v1/tx.proto
 # plugin: python-betterproto
 # This file has been @generated
-from dataclasses import dataclass
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from dataclasses import dataclass
+else:
+    from pydantic.dataclasses import dataclass
+
 from typing import TYPE_CHECKING, Dict, List, Optional
 
 import betterproto
@@ -62,15 +69,16 @@ class Params(betterproto.Message):
 
     relayer_reward_share: int = betterproto.uint32_field(3)
     """
-    Reward share for the relayer sends the claim message,
-    the other relayers signed the bls message will share the reward evenly.
+    Reward share for the relayer sends the claim message, the other relayers
+    signed the bls message will share the reward evenly.
     """
 
 
 @dataclass(eq=False, repr=False)
 class RelayInterval(betterproto.Message):
     """
-    RelayInterval holds start and end(exclusive) time of in-turn relayer, [start, end)
+    RelayInterval holds start and end(exclusive) time of in-turn relayer,
+    [start, end)
     """
 
     start: int = betterproto.uint64_field(1)
@@ -87,14 +95,18 @@ class GenesisState(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class QueryParamsRequest(betterproto.Message):
-    """QueryParamsRequest is the request type for the Query/Params RPC method."""
+    """
+    QueryParamsRequest is the request type for the Query/Params RPC method.
+    """
 
     pass
 
 
 @dataclass(eq=False, repr=False)
 class QueryParamsResponse(betterproto.Message):
-    """QueryParamsResponse is the response type for the Query/Params RPC method."""
+    """
+    QueryParamsResponse is the response type for the Query/Params RPC method.
+    """
 
     params: "Params" = betterproto.message_field(1)
     """params defines the parameters of the module."""
@@ -103,8 +115,8 @@ class QueryParamsResponse(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class QueryInturnRelayerRequest(betterproto.Message):
     """
-    QueryInturnRelayerRequest is the request type for the Query In-turn relayer RPC
-    method.
+    QueryInturnRelayerRequest is the request type for the Query In-turn relayer
+    RPC method.
     """
 
     pass
@@ -113,8 +125,8 @@ class QueryInturnRelayerRequest(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class QueryInturnRelayerResponse(betterproto.Message):
     """
-    QueryInturnRelayerResponse is the response type for the Query In-turn relayer RPC
-    method.
+    QueryInturnRelayerResponse is the response type for the Query In-turn
+    relayer RPC method.
     """
 
     bls_pub_key: str = betterproto.string_field(1)
@@ -169,8 +181,8 @@ class MsgUpdateParams(betterproto.Message):
 
     params: "Params" = betterproto.message_field(2)
     """
-    params defines the x/crosschain parameters to update.
-    NOTE: All parameters must be supplied.
+    params defines the x/crosschain parameters to update. NOTE: All parameters
+    must be supplied.
     """
 
 
@@ -329,3 +341,9 @@ class MsgBase(ServiceBase):
                 MsgUpdateParamsResponse,
             ),
         }
+
+
+GenesisState.__pydantic_model__.update_forward_refs()  # type: ignore
+QueryParamsResponse.__pydantic_model__.update_forward_refs()  # type: ignore
+QueryInturnRelayerResponse.__pydantic_model__.update_forward_refs()  # type: ignore
+MsgUpdateParams.__pydantic_model__.update_forward_refs()  # type: ignore

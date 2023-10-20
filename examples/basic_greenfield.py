@@ -56,20 +56,20 @@ async def main():
 
         logging.info(f"---> Put Object <---")
         put_object = await client.object.put_object(
-            bucket_name=bucket_name,
-            object_name=object_name,
+            bucket_name,
+            object_name,
             object_size=content.getbuffer().nbytes,
             reader=content.getvalue(),
             opts=PutObjectOptions()
         )
         logging.info(f"Result: {put_object}\n\n")
 
-        await asyncio.sleep(6)
+        await asyncio.sleep(8)
 
         logging.info(f"---> Get Object <---")
         get_object = await client.object.get_object(
-            bucket_name=bucket_name,
-            object_name=object_name,
+            bucket_name,
+            object_name,
             opts=GetObjectOption()
         )
         logging.info(f"Result: {get_object}\n\n")

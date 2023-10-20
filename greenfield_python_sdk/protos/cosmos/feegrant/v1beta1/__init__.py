@@ -2,7 +2,14 @@
 # sources: cosmos/feegrant/v1beta1/feegrant.proto, cosmos/feegrant/v1beta1/genesis.proto, cosmos/feegrant/v1beta1/query.proto, cosmos/feegrant/v1beta1/tx.proto
 # plugin: python-betterproto
 # This file has been @generated
-from dataclasses import dataclass
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from dataclasses import dataclass
+else:
+    from pydantic.dataclasses import dataclass
+
 from datetime import datetime, timedelta
 from typing import TYPE_CHECKING, Dict, List, Optional
 
@@ -23,15 +30,15 @@ if TYPE_CHECKING:
 @dataclass(eq=False, repr=False)
 class BasicAllowance(betterproto.Message):
     """
-    BasicAllowance implements Allowance with a one-time grant of coins
-    that optionally expires. The grantee can use up to SpendLimit to cover fees.
+    BasicAllowance implements Allowance with a one-time grant of coins that
+    optionally expires. The grantee can use up to SpendLimit to cover fees.
     """
 
     spend_limit: List["__base_v1_beta1__.Coin"] = betterproto.message_field(1)
     """
-    spend_limit specifies the maximum amount of coins that can be spent
-    by this allowance and will be updated as coins are spent. If it is
-    empty, there is no spend limit and any amount of coins can be spent.
+    spend_limit specifies the maximum amount of coins that can be spent by this
+    allowance and will be updated as coins are spent. If it is empty, there is
+    no spend limit and any amount of coins can be spent.
     """
 
     expiration: datetime = betterproto.message_field(2)
@@ -41,8 +48,8 @@ class BasicAllowance(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class PeriodicAllowance(betterproto.Message):
     """
-    PeriodicAllowance extends Allowance to allow for both a maximum cap,
-    as well as a limit per time period.
+    PeriodicAllowance extends Allowance to allow for both a maximum cap, as
+    well as a limit per time period.
     """
 
     basic: "BasicAllowance" = betterproto.message_field(1)
@@ -50,8 +57,8 @@ class PeriodicAllowance(betterproto.Message):
 
     period: timedelta = betterproto.message_field(2)
     """
-    period specifies the time duration in which period_spend_limit coins can
-    be spent before that allowance is reset
+    period specifies the time duration in which period_spend_limit coins can be
+    spent before that allowance is reset
     """
 
     period_spend_limit: List["__base_v1_beta1__.Coin"] = betterproto.message_field(3)
@@ -62,8 +69,8 @@ class PeriodicAllowance(betterproto.Message):
 
     period_can_spend: List["__base_v1_beta1__.Coin"] = betterproto.message_field(4)
     """
-    period_can_spend is the number of coins left to be spent before the period_reset
-    time
+    period_can_spend is the number of coins left to be spent before the
+    period_reset time
     """
 
     period_reset: datetime = betterproto.message_field(5)
@@ -76,13 +83,17 @@ class PeriodicAllowance(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class AllowedMsgAllowance(betterproto.Message):
-    """AllowedMsgAllowance creates allowance only for specified message types."""
+    """
+    AllowedMsgAllowance creates allowance only for specified message types.
+    """
 
     allowance: "betterproto_lib_google_protobuf.Any" = betterproto.message_field(1)
     """allowance can be any of basic and periodic fee allowance."""
 
     allowed_messages: List[str] = betterproto.string_field(2)
-    """allowed_messages are the messages for which the grantee has the access."""
+    """
+    allowed_messages are the messages for which the grantee has the access.
+    """
 
 
 @dataclass(eq=False, repr=False)
@@ -90,12 +101,14 @@ class Grant(betterproto.Message):
     """Grant is stored in the KVStore to record a grant with full context"""
 
     granter: str = betterproto.string_field(1)
-    """granter is the address of the user granting an allowance of their funds."""
+    """
+    granter is the address of the user granting an allowance of their funds.
+    """
 
     grantee: str = betterproto.string_field(2)
     """
-    grantee is the address of the user being granted an allowance of another user's
-    funds.
+    grantee is the address of the user being granted an allowance of another
+    user's funds.
     """
 
     allowance: "betterproto_lib_google_protobuf.Any" = betterproto.message_field(3)
@@ -104,29 +117,37 @@ class Grant(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class GenesisState(betterproto.Message):
-    """GenesisState contains a set of fee allowances, persisted from the store"""
+    """
+    GenesisState contains a set of fee allowances, persisted from the store
+    """
 
     allowances: List["Grant"] = betterproto.message_field(1)
 
 
 @dataclass(eq=False, repr=False)
 class QueryAllowanceRequest(betterproto.Message):
-    """QueryAllowanceRequest is the request type for the Query/Allowance RPC method."""
+    """
+    QueryAllowanceRequest is the request type for the Query/Allowance RPC
+    method.
+    """
 
     granter: str = betterproto.string_field(1)
-    """granter is the address of the user granting an allowance of their funds."""
+    """
+    granter is the address of the user granting an allowance of their funds.
+    """
 
     grantee: str = betterproto.string_field(2)
     """
-    grantee is the address of the user being granted an allowance of another user's
-    funds.
+    grantee is the address of the user being granted an allowance of another
+    user's funds.
     """
 
 
 @dataclass(eq=False, repr=False)
 class QueryAllowanceResponse(betterproto.Message):
     """
-    QueryAllowanceResponse is the response type for the Query/Allowance RPC method.
+    QueryAllowanceResponse is the response type for the Query/Allowance RPC
+    method.
     """
 
     allowance: "Grant" = betterproto.message_field(1)
@@ -136,7 +157,8 @@ class QueryAllowanceResponse(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class QueryAllowancesRequest(betterproto.Message):
     """
-    QueryAllowancesRequest is the request type for the Query/Allowances RPC method.
+    QueryAllowancesRequest is the request type for the Query/Allowances RPC
+    method.
     """
 
     grantee: str = betterproto.string_field(1)
@@ -147,7 +169,8 @@ class QueryAllowancesRequest(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class QueryAllowancesResponse(betterproto.Message):
     """
-    QueryAllowancesResponse is the response type for the Query/Allowances RPC method.
+    QueryAllowancesResponse is the response type for the Query/Allowances RPC
+    method.
     """
 
     allowances: List["Grant"] = betterproto.message_field(1)
@@ -161,8 +184,7 @@ class QueryAllowancesResponse(betterproto.Message):
 class QueryAllowancesByGranterRequest(betterproto.Message):
     """
     QueryAllowancesByGranterRequest is the request type for the
-    Query/AllowancesByGranter RPC method.
-    Since: cosmos-sdk 0.46
+    Query/AllowancesByGranter RPC method. Since: cosmos-sdk 0.46
     """
 
     granter: str = betterproto.string_field(1)
@@ -174,8 +196,7 @@ class QueryAllowancesByGranterRequest(betterproto.Message):
 class QueryAllowancesByGranterResponse(betterproto.Message):
     """
     QueryAllowancesByGranterResponse is the response type for the
-    Query/AllowancesByGranter RPC method.
-    Since: cosmos-sdk 0.46
+    Query/AllowancesByGranter RPC method. Since: cosmos-sdk 0.46
     """
 
     allowances: List["Grant"] = betterproto.message_field(1)
@@ -188,17 +209,19 @@ class QueryAllowancesByGranterResponse(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class MsgGrantAllowance(betterproto.Message):
     """
-    MsgGrantAllowance adds permission for Grantee to spend up to Allowance
-    of fees from the account of Granter.
+    MsgGrantAllowance adds permission for Grantee to spend up to Allowance of
+    fees from the account of Granter.
     """
 
     granter: str = betterproto.string_field(1)
-    """granter is the address of the user granting an allowance of their funds."""
+    """
+    granter is the address of the user granting an allowance of their funds.
+    """
 
     grantee: str = betterproto.string_field(2)
     """
-    grantee is the address of the user being granted an allowance of another user's
-    funds.
+    grantee is the address of the user being granted an allowance of another
+    user's funds.
     """
 
     allowance: "betterproto_lib_google_protobuf.Any" = betterproto.message_field(3)
@@ -208,7 +231,8 @@ class MsgGrantAllowance(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class MsgGrantAllowanceResponse(betterproto.Message):
     """
-    MsgGrantAllowanceResponse defines the Msg/GrantAllowanceResponse response type.
+    MsgGrantAllowanceResponse defines the Msg/GrantAllowanceResponse response
+    type.
     """
 
     pass
@@ -216,22 +240,27 @@ class MsgGrantAllowanceResponse(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class MsgRevokeAllowance(betterproto.Message):
-    """MsgRevokeAllowance removes any existing Allowance from Granter to Grantee."""
+    """
+    MsgRevokeAllowance removes any existing Allowance from Granter to Grantee.
+    """
 
     granter: str = betterproto.string_field(1)
-    """granter is the address of the user granting an allowance of their funds."""
+    """
+    granter is the address of the user granting an allowance of their funds.
+    """
 
     grantee: str = betterproto.string_field(2)
     """
-    grantee is the address of the user being granted an allowance of another user's
-    funds.
+    grantee is the address of the user being granted an allowance of another
+    user's funds.
     """
 
 
 @dataclass(eq=False, repr=False)
 class MsgRevokeAllowanceResponse(betterproto.Message):
     """
-    MsgRevokeAllowanceResponse defines the Msg/RevokeAllowanceResponse response type.
+    MsgRevokeAllowanceResponse defines the Msg/RevokeAllowanceResponse response
+    type.
     """
 
     pass
@@ -423,3 +452,16 @@ class MsgBase(ServiceBase):
                 MsgRevokeAllowanceResponse,
             ),
         }
+
+
+BasicAllowance.__pydantic_model__.update_forward_refs()  # type: ignore
+PeriodicAllowance.__pydantic_model__.update_forward_refs()  # type: ignore
+AllowedMsgAllowance.__pydantic_model__.update_forward_refs()  # type: ignore
+Grant.__pydantic_model__.update_forward_refs()  # type: ignore
+GenesisState.__pydantic_model__.update_forward_refs()  # type: ignore
+QueryAllowanceResponse.__pydantic_model__.update_forward_refs()  # type: ignore
+QueryAllowancesRequest.__pydantic_model__.update_forward_refs()  # type: ignore
+QueryAllowancesResponse.__pydantic_model__.update_forward_refs()  # type: ignore
+QueryAllowancesByGranterRequest.__pydantic_model__.update_forward_refs()  # type: ignore
+QueryAllowancesByGranterResponse.__pydantic_model__.update_forward_refs()  # type: ignore
+MsgGrantAllowance.__pydantic_model__.update_forward_refs()  # type: ignore

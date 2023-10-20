@@ -2,10 +2,18 @@
 # sources: tendermint/crypto/keys.proto, tendermint/crypto/proof.proto
 # plugin: python-betterproto
 # This file has been @generated
-from dataclasses import dataclass
-from typing import List
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from dataclasses import dataclass
+else:
+    from pydantic.dataclasses import dataclass
+
+from typing import List, Optional
 
 import betterproto
+from pydantic import root_validator
 
 
 @dataclass(eq=False, repr=False)
@@ -35,9 +43,9 @@ class DominoOp(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class ProofOp(betterproto.Message):
     """
-    ProofOp defines an operation used for calculating Merkle root
-    The data could be arbitrary format, providing nessecary data
-    for example neighbouring node hash
+    ProofOp defines an operation used for calculating Merkle root The data
+    could be arbitrary format, providing nessecary data for example
+    neighbouring node hash
     """
 
     type: str = betterproto.string_field(1)
@@ -56,5 +64,13 @@ class ProofOps(betterproto.Message):
 class PublicKey(betterproto.Message):
     """PublicKey defines the keys available for use with Validators"""
 
-    ed25519: bytes = betterproto.bytes_field(1, group="sum")
-    secp256_k1: bytes = betterproto.bytes_field(2, group="sum")
+    ed25519: Optional[bytes] = betterproto.bytes_field(1, optional=True, group="sum")
+    secp256_k1: Optional[bytes] = betterproto.bytes_field(2, optional=True, group="sum")
+
+    @root_validator()
+    def check_oneof(cls, values):
+        return cls._validate_field_groups(values)
+
+
+ValueOp.__pydantic_model__.update_forward_refs()  # type: ignore
+ProofOps.__pydantic_model__.update_forward_refs()  # type: ignore

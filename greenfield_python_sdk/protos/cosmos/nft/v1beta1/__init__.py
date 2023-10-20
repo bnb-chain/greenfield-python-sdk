@@ -2,7 +2,14 @@
 # sources: cosmos/nft/v1beta1/event.proto, cosmos/nft/v1beta1/genesis.proto, cosmos/nft/v1beta1/nft.proto, cosmos/nft/v1beta1/query.proto, cosmos/nft/v1beta1/tx.proto
 # plugin: python-betterproto
 # This file has been @generated
-from dataclasses import dataclass
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from dataclasses import dataclass
+else:
+    from pydantic.dataclasses import dataclass
+
 from typing import TYPE_CHECKING, Dict, List, Optional
 
 import betterproto
@@ -69,12 +76,14 @@ class Class(betterproto.Message):
 
     id: str = betterproto.string_field(1)
     """
-    id defines the unique identifier of the NFT classification, similar to the contract
-    address of ERC721
+    id defines the unique identifier of the NFT classification, similar to the
+    contract address of ERC721
     """
 
     name: str = betterproto.string_field(2)
-    """name defines the human-readable name of the NFT classification. Optional"""
+    """
+    name defines the human-readable name of the NFT classification. Optional
+    """
 
     symbol: str = betterproto.string_field(3)
     """symbol is an abbreviated name for nft classification. Optional"""
@@ -84,8 +93,8 @@ class Class(betterproto.Message):
 
     uri: str = betterproto.string_field(5)
     """
-    uri for the class metadata stored off chain. It can define schema for Class and NFT
-    `Data` attributes. Optional
+    uri for the class metadata stored off chain. It can define schema for Class
+    and NFT `Data` attributes. Optional
     """
 
     uri_hash: str = betterproto.string_field(6)
@@ -100,7 +109,9 @@ class Nft(betterproto.Message):
     """NFT defines the NFT."""
 
     class_id: str = betterproto.string_field(1)
-    """class_id associated with the NFT, similar to the contract address of ERC721"""
+    """
+    class_id associated with the NFT, similar to the contract address of ERC721
+    """
 
     id: str = betterproto.string_field(2)
     """id is a unique identifier of the NFT"""
@@ -139,7 +150,9 @@ class Entry(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class QueryBalanceRequest(betterproto.Message):
-    """QueryBalanceRequest is the request type for the Query/Balance RPC method"""
+    """
+    QueryBalanceRequest is the request type for the Query/Balance RPC method
+    """
 
     class_id: str = betterproto.string_field(1)
     """class_id associated with the nft"""
@@ -150,7 +163,9 @@ class QueryBalanceRequest(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class QueryBalanceResponse(betterproto.Message):
-    """QueryBalanceResponse is the response type for the Query/Balance RPC method"""
+    """
+    QueryBalanceResponse is the response type for the Query/Balance RPC method
+    """
 
     amount: int = betterproto.uint64_field(1)
     """amount is the number of all NFTs of a given class owned by the owner"""
@@ -169,7 +184,9 @@ class QueryOwnerRequest(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class QueryOwnerResponse(betterproto.Message):
-    """QueryOwnerResponse is the response type for the Query/Owner RPC method"""
+    """
+    QueryOwnerResponse is the response type for the Query/Owner RPC method
+    """
 
     owner: str = betterproto.string_field(1)
     """owner is the owner address of the nft"""
@@ -177,7 +194,9 @@ class QueryOwnerResponse(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class QuerySupplyRequest(betterproto.Message):
-    """QuerySupplyRequest is the request type for the Query/Supply RPC method"""
+    """
+    QuerySupplyRequest is the request type for the Query/Supply RPC method
+    """
 
     class_id: str = betterproto.string_field(1)
     """class_id associated with the nft"""
@@ -185,7 +204,9 @@ class QuerySupplyRequest(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class QuerySupplyResponse(betterproto.Message):
-    """QuerySupplyResponse is the response type for the Query/Supply RPC method"""
+    """
+    QuerySupplyResponse is the response type for the Query/Supply RPC method
+    """
 
     amount: int = betterproto.uint64_field(1)
     """amount is the number of all NFTs from the given class"""
@@ -207,7 +228,9 @@ class QueryNfTsRequest(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class QueryNfTsResponse(betterproto.Message):
-    """QueryNFTsResponse is the response type for the Query/NFTs RPC methods"""
+    """
+    QueryNFTsResponse is the response type for the Query/NFTs RPC methods
+    """
 
     nfts: List["Nft"] = betterproto.message_field(1)
     """NFT defines the NFT"""
@@ -245,7 +268,9 @@ class QueryClassRequest(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class QueryClassResponse(betterproto.Message):
-    """QueryClassResponse is the response type for the Query/Class RPC method"""
+    """
+    QueryClassResponse is the response type for the Query/Class RPC method
+    """
 
     class_: "Class" = betterproto.message_field(1)
     """class defines the class of the nft type."""
@@ -253,7 +278,9 @@ class QueryClassResponse(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class QueryClassesRequest(betterproto.Message):
-    """QueryClassesRequest is the request type for the Query/Classes RPC method"""
+    """
+    QueryClassesRequest is the request type for the Query/Classes RPC method
+    """
 
     pagination: "__base_query_v1_beta1__.PageRequest" = betterproto.message_field(1)
     """pagination defines an optional pagination for the request."""
@@ -261,7 +288,9 @@ class QueryClassesRequest(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class QueryClassesResponse(betterproto.Message):
-    """QueryClassesResponse is the response type for the Query/Classes RPC method"""
+    """
+    QueryClassesResponse is the response type for the Query/Classes RPC method
+    """
 
     classes: List["Class"] = betterproto.message_field(1)
     """class defines the class of the nft type."""
@@ -273,13 +302,14 @@ class QueryClassesResponse(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class MsgSend(betterproto.Message):
     """
-    MsgSend represents a message to send a nft from one account to another account.
+    MsgSend represents a message to send a nft from one account to another
+    account.
     """
 
     class_id: str = betterproto.string_field(1)
     """
-    class_id defines the unique identifier of the nft classification, similar to the
-    contract address of ERC721
+    class_id defines the unique identifier of the nft classification, similar
+    to the contract address of ERC721
     """
 
     id: str = betterproto.string_field(2)
@@ -353,6 +383,7 @@ class QueryStub(betterproto.ServiceStub):
 
     async def nf_ts(
         self,
+        query_nf_ts_request: "QueryNfTsRequest",
         *,
         timeout: Optional[float] = None,
         deadline: Optional["Deadline"] = None,
@@ -369,6 +400,7 @@ class QueryStub(betterproto.ServiceStub):
 
     async def nft(
         self,
+        query_nft_request: "QueryNftRequest",
         *,
         timeout: Optional[float] = None,
         deadline: Optional["Deadline"] = None,
@@ -447,10 +479,10 @@ class QueryBase(ServiceBase):
     async def supply(self, query_supply_request: "QuerySupplyRequest") -> "QuerySupplyResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    async def nf_ts(self) -> "QueryNfTsResponse":
+    async def nf_ts(self, query_nf_ts_request: "QueryNfTsRequest") -> "QueryNfTsResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    async def nft(self) -> "QueryNftResponse":
+    async def nft(self, query_nft_request: "QueryNftRequest") -> "QueryNftResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
     async def class_(self, query_class_request: "QueryClassRequest") -> "QueryClassResponse":
@@ -559,3 +591,15 @@ class MsgBase(ServiceBase):
                 MsgSendResponse,
             ),
         }
+
+
+Class.__pydantic_model__.update_forward_refs()  # type: ignore
+Nft.__pydantic_model__.update_forward_refs()  # type: ignore
+GenesisState.__pydantic_model__.update_forward_refs()  # type: ignore
+Entry.__pydantic_model__.update_forward_refs()  # type: ignore
+QueryNfTsRequest.__pydantic_model__.update_forward_refs()  # type: ignore
+QueryNfTsResponse.__pydantic_model__.update_forward_refs()  # type: ignore
+QueryNftResponse.__pydantic_model__.update_forward_refs()  # type: ignore
+QueryClassResponse.__pydantic_model__.update_forward_refs()  # type: ignore
+QueryClassesRequest.__pydantic_model__.update_forward_refs()  # type: ignore
+QueryClassesResponse.__pydantic_model__.update_forward_refs()  # type: ignore

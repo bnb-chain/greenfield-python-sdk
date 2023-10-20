@@ -16,8 +16,6 @@ from greenfield_python_sdk.protos.greenfield.storage import (
     QueryHeadObjectResponse,
     QueryListBucketsRequest,
     QueryListBucketsResponse,
-    QueryListGroupRequest,
-    QueryListGroupResponse,
     QueryListObjectsByBucketIdRequest,
     QueryListObjectsRequest,
     QueryListObjectsResponse,
@@ -96,10 +94,6 @@ class Storage:
 
     async def get_head_group(self, request: QueryHeadGroupRequest) -> QueryHeadGroupResponse:
         response = await self.query_stub.head_group(request)
-        return response
-
-    async def list_group(self, request: QueryListGroupRequest) -> QueryListGroupResponse:
-        response = await self.query_stub.list_group(request)
         return response
 
     async def get_head_group_member(self, request: QueryHeadGroupMemberRequest) -> QueryHeadGroupMemberResponse:

@@ -2,7 +2,14 @@
 # sources: cosmos/params/v1beta1/params.proto, cosmos/params/v1beta1/query.proto
 # plugin: python-betterproto
 # This file has been @generated
-from dataclasses import dataclass
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from dataclasses import dataclass
+else:
+    from pydantic.dataclasses import dataclass
+
 from typing import TYPE_CHECKING, Dict, List, Optional
 
 import betterproto
@@ -17,7 +24,10 @@ if TYPE_CHECKING:
 
 @dataclass(eq=False, repr=False)
 class ParameterChangeProposal(betterproto.Message):
-    """ParameterChangeProposal defines a proposal to change one or more parameters."""
+    """
+    ParameterChangeProposal defines a proposal to change one or more
+    parameters.
+    """
 
     title: str = betterproto.string_field(1)
     description: str = betterproto.string_field(2)
@@ -49,7 +59,9 @@ class QueryParamsRequest(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class QueryParamsResponse(betterproto.Message):
-    """QueryParamsResponse is response type for the Query/Params RPC method."""
+    """
+    QueryParamsResponse is response type for the Query/Params RPC method.
+    """
 
     param: "ParamChange" = betterproto.message_field(1)
     """param defines the queried parameter."""
@@ -58,9 +70,8 @@ class QueryParamsResponse(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class QuerySubspacesRequest(betterproto.Message):
     """
-    QuerySubspacesRequest defines a request type for querying for all registered
-    subspaces and all keys for a subspace.
-    Since: cosmos-sdk 0.46
+    QuerySubspacesRequest defines a request type for querying for all
+    registered subspaces and all keys for a subspace. Since: cosmos-sdk 0.46
     """
 
     pass
@@ -70,8 +81,7 @@ class QuerySubspacesRequest(betterproto.Message):
 class QuerySubspacesResponse(betterproto.Message):
     """
     QuerySubspacesResponse defines the response types for querying for all
-    registered subspaces and all keys for a subspace.
-    Since: cosmos-sdk 0.46
+    registered subspaces and all keys for a subspace. Since: cosmos-sdk 0.46
     """
 
     subspaces: List["Subspace"] = betterproto.message_field(1)
@@ -81,8 +91,7 @@ class QuerySubspacesResponse(betterproto.Message):
 class Subspace(betterproto.Message):
     """
     Subspace defines a parameter subspace name and all the keys that exist for
-    the subspace.
-    Since: cosmos-sdk 0.46
+    the subspace. Since: cosmos-sdk 0.46
     """
 
     subspace: str = betterproto.string_field(1)
@@ -160,3 +169,8 @@ class QueryBase(ServiceBase):
                 QuerySubspacesResponse,
             ),
         }
+
+
+ParameterChangeProposal.__pydantic_model__.update_forward_refs()  # type: ignore
+QueryParamsResponse.__pydantic_model__.update_forward_refs()  # type: ignore
+QuerySubspacesResponse.__pydantic_model__.update_forward_refs()  # type: ignore

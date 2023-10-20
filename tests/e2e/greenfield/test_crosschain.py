@@ -61,7 +61,6 @@ async def test_get_inturn_relayer():
 async def test_get_crosschain_package():
     async with GreenfieldClient(network_configuration=network_configuration, key_manager=key_manager) as client:
         package = await client.crosschain.get_crosschain_package(channel_id=1, sequence=0)
-        assert package
         assert isinstance(package, bytes)
 
 

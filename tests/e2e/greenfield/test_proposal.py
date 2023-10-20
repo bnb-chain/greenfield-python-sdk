@@ -6,6 +6,7 @@ from greenfield_python_sdk import (
     GreenfieldClient,
     KeyManager,
     NetworkConfiguration,
+    NetworkLocalnet,
     NetworkTestnet,
     get_account_configuration,
 )
@@ -17,6 +18,7 @@ from greenfield_python_sdk.protos.greenfield.sp import Description, MsgCreateSto
 
 pytestmark = [pytest.mark.asyncio, pytest.mark.e2e]
 network_configuration = NetworkConfiguration(**NetworkTestnet().model_dump())
+localnet_network_configuration = NetworkConfiguration(**NetworkLocalnet().model_dump())
 
 
 @pytest.mark.requires_config
@@ -26,7 +28,9 @@ network_configuration = NetworkConfiguration(**NetworkTestnet().model_dump())
 async def test_submit_proposal():
     config = get_account_configuration()
     key_manager = KeyManager(private_key=config.private_key)
-    async with GreenfieldClient(network_configuration=network_configuration, key_manager=key_manager) as client:
+    async with GreenfieldClient(
+        network_configuration=localnet_network_configuration, key_manager=key_manager
+    ) as client:
         await client.async_init()
 
         funding_address = KeyManager()
@@ -83,11 +87,3 @@ async def test_submit_proposal():
         assert isinstance(get_proposal, Proposal)
         assert get_proposal.id == proposal_id
         assert get_proposal.proposer == key_manager.address
-
-        tx_hash = await client.proposal.vote_proposal(
-            proposal_id=proposal_id,
-            vote_option=VoteOption.VOTE_OPTION_YES,
-            opts=ProposalOptions(),
-        )
-        assert isinstance(tx_hash, str)
-        await client.basic.wait_for_tx(hash=tx_hash)

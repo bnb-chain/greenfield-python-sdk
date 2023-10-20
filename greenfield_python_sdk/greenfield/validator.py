@@ -66,6 +66,7 @@ class Validator:
         relayer_address: str,
         challenger_address: str,
         bls_key: str,
+        bls_proof: str,
         proposal_deposit_amount: str,
         proposal_title: str,
         proposal_summary: str,
@@ -86,6 +87,7 @@ class Validator:
             relayer_address=relayer_address,
             challenger_address=challenger_address,
             bls_key=bls_key,
+            bls_proof=bls_proof,
         )
 
         wrapped_message = AnyMessage(type_url=CREATE_VALIDATOR, value=bytes(message))

@@ -2,7 +2,14 @@
 # sources: cosmos/group/module/v1/module.proto
 # plugin: python-betterproto
 # This file has been @generated
-from dataclasses import dataclass
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from dataclasses import dataclass
+else:
+    from pydantic.dataclasses import dataclass
+
 from datetime import timedelta
 
 import betterproto
@@ -14,14 +21,16 @@ class Module(betterproto.Message):
 
     max_execution_period: timedelta = betterproto.message_field(1)
     """
-    max_execution_period defines the max duration after a proposal's voting period ends
-    that members can send a MsgExec
-    to execute the proposal.
+    max_execution_period defines the max duration after a proposal's voting
+    period ends that members can send a MsgExec to execute the proposal.
     """
 
     max_metadata_len: int = betterproto.uint64_field(2)
     """
-    max_metadata_len defines the max length of the metadata bytes field for various
-    entities within the group module.
-    Defaults to 255 if not explicitly set.
+    max_metadata_len defines the max length of the metadata bytes field for
+    various entities within the group module. Defaults to 255 if not explicitly
+    set.
     """
+
+
+Module.__pydantic_model__.update_forward_refs()  # type: ignore

@@ -8,7 +8,7 @@ from greenfield_python_sdk import (
     get_account_configuration,
 )
 from greenfield_python_sdk.greenfield.account import BaseAccount, Coin, PaymentAccount
-from greenfield_python_sdk.protos.cosmos.base.query.v1beta1 import PageRequest as Pagination
+from greenfield_python_sdk.models.account import PaginationParams
 from greenfield_python_sdk.protos.cosmos.crypto.secp256k1 import PubKey
 
 pytestmark = [pytest.mark.asyncio, pytest.mark.e2e]
@@ -67,7 +67,7 @@ async def test_get_all_payment_accounts_pagination():
     async with GreenfieldClient(network_configuration=network_configuration, key_manager=key_manager) as client:
         # Test pagination limit
         accounts_0, pagination_response_0 = await client.account.get_all_payment_accounts(
-            pagination=Pagination(limit=3)
+            pagination=PaginationParams(limit=3)
         )
         assert accounts_0
         assert isinstance(accounts_0[0], PaymentAccount)
@@ -75,7 +75,7 @@ async def test_get_all_payment_accounts_pagination():
 
         # Test pagination limit + next_key
         accounts_1, pagination_response_1 = await client.account.get_all_payment_accounts(
-            pagination=Pagination(limit=3, key=pagination_response_0.next_key)
+            pagination=PaginationParams(limit=3, key=pagination_response_0.next_key)
         )
 
         assert accounts_1
@@ -89,7 +89,7 @@ async def test_get_all_payment_accounts_pagination():
 async def test_get_payment_account():
     # Depends on get_all_payment_accounts
     async with GreenfieldClient(network_configuration=network_configuration, key_manager=key_manager) as client:
-        accounts, _ = await client.account.get_all_payment_accounts(pagination=Pagination(limit=1))
+        accounts, _ = await client.account.get_all_payment_accounts(pagination=PaginationParams(limit=1))
         assert accounts
         assert isinstance(accounts[0], PaymentAccount)
 
@@ -102,7 +102,7 @@ async def test_get_payment_account():
 async def test_get_payment_accounts_by_owner():
     # Depends on get_all_payment_accounts
     async with GreenfieldClient(network_configuration=network_configuration, key_manager=key_manager) as client:
-        accounts_0, _ = await client.account.get_all_payment_accounts(pagination=Pagination(limit=1))
+        accounts_0, _ = await client.account.get_all_payment_accounts(pagination=PaginationParams(limit=1))
         assert accounts_0
         assert isinstance(accounts_0[0], PaymentAccount)
 

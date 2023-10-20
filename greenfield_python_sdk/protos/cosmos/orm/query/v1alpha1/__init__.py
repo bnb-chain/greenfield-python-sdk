@@ -3,7 +3,13 @@
 # plugin: python-betterproto
 # This file has been @generated
 import builtins
-from dataclasses import dataclass
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from dataclasses import dataclass
+else:
+    from pydantic.dataclasses import dataclass
+
 from datetime import datetime, timedelta
 from typing import TYPE_CHECKING, Dict, List, Optional
 
@@ -11,6 +17,7 @@ import betterproto
 import betterproto.lib.google.protobuf as betterproto_lib_google_protobuf
 import grpclib
 from betterproto.grpc.grpclib_server import ServiceBase
+from pydantic import root_validator
 
 from ....base.query import v1beta1 as ___base_query_v1_beta1__
 
@@ -26,13 +33,14 @@ class GetRequest(betterproto.Message):
 
     message_name: str = betterproto.string_field(1)
     """
-    message_name is the fully-qualified message name of the ORM table being queried.
+    message_name is the fully-qualified message name of the ORM table being
+    queried.
     """
 
     index: str = betterproto.string_field(2)
     """
-    index is the index fields expression used in orm definitions. If it
-    is empty, the table's primary key is assumed. If it is non-empty, it must
+    index is the index fields expression used in orm definitions. If it is
+    empty, the table's primary key is assumed. If it is non-empty, it must
     refer to an unique index.
     """
 
@@ -61,23 +69,28 @@ class ListRequest(betterproto.Message):
 
     message_name: str = betterproto.string_field(1)
     """
-    message_name is the fully-qualified message name of the ORM table being queried.
+    message_name is the fully-qualified message name of the ORM table being
+    queried.
     """
 
     index: str = betterproto.string_field(2)
     """
-    index is the index fields expression used in orm definitions. If it
-    is empty, the table's primary key is assumed.
+    index is the index fields expression used in orm definitions. If it is
+    empty, the table's primary key is assumed.
     """
 
-    prefix: "ListRequestPrefix" = betterproto.message_field(3, group="query")
+    prefix: Optional["ListRequestPrefix"] = betterproto.message_field(3, optional=True, group="query")
     """prefix defines a prefix query."""
 
-    range: "ListRequestRange" = betterproto.message_field(4, group="query")
+    range: Optional["ListRequestRange"] = betterproto.message_field(4, optional=True, group="query")
     """range defines a range query."""
 
     pagination: "___base_query_v1_beta1__.PageRequest" = betterproto.message_field(5)
     """pagination is the pagination request."""
+
+    @root_validator()
+    def check_oneof(cls, values):
+        return cls._validate_field_groups(values)
 
 
 @dataclass(eq=False, repr=False)
@@ -86,9 +99,9 @@ class ListRequestPrefix(betterproto.Message):
 
     values: List["IndexValue"] = betterproto.message_field(1)
     """
-    values specifies the index values for the prefix query.
-    It is valid to special a partial prefix with fewer values than
-    the number of fields in the index.
+    values specifies the index values for the prefix query. It is valid to
+    special a partial prefix with fewer values than the number of fields in the
+    index.
     """
 
 
@@ -98,16 +111,14 @@ class ListRequestRange(betterproto.Message):
 
     start: List["IndexValue"] = betterproto.message_field(1)
     """
-    start specifies the starting index values for the range query.
-    It is valid to provide fewer values than the number of fields in the
-    index.
+    start specifies the starting index values for the range query. It is valid
+    to provide fewer values than the number of fields in the index.
     """
 
     end: List["IndexValue"] = betterproto.message_field(2)
     """
-    end specifies the inclusive ending index values for the range query.
-    It is valid to provide fewer values than the number of fields in the
-    index.
+    end specifies the inclusive ending index values for the range query. It is
+    valid to provide fewer values than the number of fields in the index.
     """
 
 
@@ -124,37 +135,43 @@ class ListResponse(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class IndexValue(betterproto.Message):
-    """IndexValue represents the value of a field in an ORM index expression."""
-
-    uint: int = betterproto.uint64_field(1, group="value")
     """
-    uint specifies a value for an uint32, fixed32, uint64, or fixed64
-    index field.
+    IndexValue represents the value of a field in an ORM index expression.
     """
 
-    int: builtins.int = betterproto.int64_field(2, group="value")
+    uint: Optional[int] = betterproto.uint64_field(1, optional=True, group="value")
     """
-    int64 specifies a value for an int32, sfixed32, int64, or sfixed64
-    index field.
+    uint specifies a value for an uint32, fixed32, uint64, or fixed64 index
+    field.
     """
 
-    str: builtins.str = betterproto.string_field(3, group="value")
+    int: Optional[builtins.int] = betterproto.int64_field(2, optional=True, group="value")
+    """
+    int64 specifies a value for an int32, sfixed32, int64, or sfixed64 index
+    field.
+    """
+
+    str: Optional[builtins.str] = betterproto.string_field(3, optional=True, group="value")
     """str specifies a value for a string index field."""
 
-    bytes: builtins.bytes = betterproto.bytes_field(4, group="value")
+    bytes: Optional[builtins.bytes] = betterproto.bytes_field(4, optional=True, group="value")
     """bytes specifies a value for a bytes index field."""
 
-    enum: builtins.str = betterproto.string_field(5, group="value")
+    enum: Optional[builtins.str] = betterproto.string_field(5, optional=True, group="value")
     """enum specifies a value for an enum index field."""
 
-    bool: builtins.bool = betterproto.bool_field(6, group="value")
+    bool: Optional[builtins.bool] = betterproto.bool_field(6, optional=True, group="value")
     """bool specifies a value for a bool index field."""
 
-    timestamp: datetime = betterproto.message_field(7, group="value")
+    timestamp: Optional[datetime] = betterproto.message_field(7, optional=True, group="value")
     """timestamp specifies a value for a timestamp index field."""
 
-    duration: timedelta = betterproto.message_field(8, group="value")
+    duration: Optional[timedelta] = betterproto.message_field(8, optional=True, group="value")
     """duration specifies a value for a duration index field."""
+
+    @root_validator()
+    def check_oneof(cls, values):
+        return cls._validate_field_groups(values)
 
 
 class QueryStub(betterproto.ServiceStub):
@@ -225,3 +242,12 @@ class QueryBase(ServiceBase):
                 ListResponse,
             ),
         }
+
+
+GetRequest.__pydantic_model__.update_forward_refs()  # type: ignore
+GetResponse.__pydantic_model__.update_forward_refs()  # type: ignore
+ListRequest.__pydantic_model__.update_forward_refs()  # type: ignore
+ListRequestPrefix.__pydantic_model__.update_forward_refs()  # type: ignore
+ListRequestRange.__pydantic_model__.update_forward_refs()  # type: ignore
+ListResponse.__pydantic_model__.update_forward_refs()  # type: ignore
+IndexValue.__pydantic_model__.update_forward_refs()  # type: ignore

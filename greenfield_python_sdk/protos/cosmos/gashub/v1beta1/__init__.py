@@ -2,12 +2,20 @@
 # sources: cosmos/gashub/v1beta1/event.proto, cosmos/gashub/v1beta1/gashub.proto, cosmos/gashub/v1beta1/genesis.proto, cosmos/gashub/v1beta1/query.proto, cosmos/gashub/v1beta1/tx.proto
 # plugin: python-betterproto
 # This file has been @generated
-from dataclasses import dataclass
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from dataclasses import dataclass
+else:
+    from pydantic.dataclasses import dataclass
+
 from typing import TYPE_CHECKING, Dict, List, Optional
 
 import betterproto
 import grpclib
 from betterproto.grpc.grpclib_server import ServiceBase
+from pydantic import root_validator
 
 from ...base.query import v1beta1 as __base_query_v1_beta1__
 
@@ -19,7 +27,9 @@ if TYPE_CHECKING:
 
 @dataclass(eq=False, repr=False)
 class EventUpdateMsgGasParams(betterproto.Message):
-    """EventUpdateMsgGasParams is emitted when updating a message's gas params"""
+    """
+    EventUpdateMsgGasParams is emitted when updating a message's gas params
+    """
 
     msg_type_url: str = betterproto.string_field(1)
     """msg_type_url is the type url of the message"""
@@ -39,7 +49,9 @@ class Params(betterproto.Message):
     """max_tx_size is the maximum size of a transaction's bytes."""
 
     min_gas_per_byte: int = betterproto.uint64_field(2)
-    """min_gas_per_byte is the minimum gas to be paid per byte of a transaction's"""
+    """
+    min_gas_per_byte is the minimum gas to be paid per byte of a transaction's
+    """
 
 
 @dataclass(eq=False, repr=False)
@@ -47,17 +59,27 @@ class MsgGasParams(betterproto.Message):
     """MsgGasParams defines gas consumption for a msg type"""
 
     msg_type_url: str = betterproto.string_field(1)
-    fixed_type: "MsgGasParamsFixedGasParams" = betterproto.message_field(2, group="gas_params")
+    fixed_type: Optional["MsgGasParamsFixedGasParams"] = betterproto.message_field(2, optional=True, group="gas_params")
     """fixed_type specifies fixed type gas params."""
 
-    grant_type: "MsgGasParamsDynamicGasParams" = betterproto.message_field(3, group="gas_params")
+    grant_type: Optional["MsgGasParamsDynamicGasParams"] = betterproto.message_field(
+        3, optional=True, group="gas_params"
+    )
     """grant_type specifies dynamic type gas params for msg/grant."""
 
-    multi_send_type: "MsgGasParamsDynamicGasParams" = betterproto.message_field(4, group="gas_params")
+    multi_send_type: Optional["MsgGasParamsDynamicGasParams"] = betterproto.message_field(
+        4, optional=True, group="gas_params"
+    )
     """grant_type specifies dynamic type gas params for msg/multiSend."""
 
-    grant_allowance_type: "MsgGasParamsDynamicGasParams" = betterproto.message_field(5, group="gas_params")
+    grant_allowance_type: Optional["MsgGasParamsDynamicGasParams"] = betterproto.message_field(
+        5, optional=True, group="gas_params"
+    )
     """grant_type specifies dynamic type gas params for msg/grantAllowance."""
+
+    @root_validator()
+    def check_oneof(cls, values):
+        return cls._validate_field_groups(values)
 
 
 @dataclass(eq=False, repr=False)
@@ -92,7 +114,10 @@ class GenesisState(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class QueryParamsRequest(betterproto.Message):
-    """QueryParamsRequest defines the request type for querying x/gashub parameters."""
+    """
+    QueryParamsRequest defines the request type for querying x/gashub
+    parameters.
+    """
 
     pass
 
@@ -100,7 +125,8 @@ class QueryParamsRequest(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class QueryParamsResponse(betterproto.Message):
     """
-    QueryParamsResponse defines the response type for querying x/gashub parameters.
+    QueryParamsResponse defines the response type for querying x/gashub
+    parameters.
     """
 
     params: "Params" = betterproto.message_field(1)
@@ -109,14 +135,14 @@ class QueryParamsResponse(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class QueryMsgGasParamsRequest(betterproto.Message):
     """
-    QueryMsgGasParamsRequest defines the RPC request for looking up MsgGasParams
-    entries.
+    QueryMsgGasParamsRequest defines the RPC request for looking up
+    MsgGasParams entries.
     """
 
     msg_type_urls: List[str] = betterproto.string_field(1)
     """
-    msg_type_urls is the specific type urls you want look up. Leave empty to get all
-    entries.
+    msg_type_urls is the specific type urls you want look up. Leave empty to
+    get all entries.
     """
 
     pagination: "__base_query_v1_beta1__.PageRequest" = betterproto.message_field(99)
@@ -128,7 +154,9 @@ class QueryMsgGasParamsRequest(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class QueryMsgGasParamsResponse(betterproto.Message):
-    """QueryMsgGasParamsResponse defines the RPC response of a MsgGasParams query."""
+    """
+    QueryMsgGasParamsResponse defines the RPC response of a MsgGasParams query.
+    """
 
     msg_gas_params: List["MsgGasParams"] = betterproto.message_field(1)
     pagination: "__base_query_v1_beta1__.PageResponse" = betterproto.message_field(99)
@@ -150,8 +178,8 @@ class MsgUpdateParams(betterproto.Message):
 
     params: "Params" = betterproto.message_field(2)
     """
-    params defines the x/gashub parameters to update.
-    NOTE: All parameters must be supplied.
+    params defines the x/gashub parameters to update. NOTE: All parameters must
+    be supplied.
     """
 
 
@@ -168,10 +196,9 @@ class MsgUpdateParamsResponse(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class MsgSetMsgGasParams(betterproto.Message):
     """
-    MsgSetMsgGasParams is the Msg/SetMsgGasParams request type.
-    Only entries to add/update/delete need to be included.
-    Existing MsgGasParams entries that are not included in this
-    message are left unchanged.
+    MsgSetMsgGasParams is the Msg/SetMsgGasParams request type. Only entries to
+    add/update/delete need to be included. Existing MsgGasParams entries that
+    are not included in this message are left unchanged.
     """
 
     authority: str = betterproto.string_field(1)
@@ -180,15 +207,17 @@ class MsgSetMsgGasParams(betterproto.Message):
 
     delete_set: List[str] = betterproto.string_field(3)
     """
-    delete_set is a list of msg types that will have their MsgGasParams entries deleted.
-    If a msg type is included that doesn't have a MsgGasParams entry,
+    delete_set is a list of msg types that will have their MsgGasParams entries
+    deleted. If a msg type is included that doesn't have a MsgGasParams entry,
     it will be ignored.
     """
 
 
 @dataclass(eq=False, repr=False)
 class MsgSetMsgGasParamsResponse(betterproto.Message):
-    """MsgSetMsgGasParamsResponse defines the Msg/SetMsgGasParams response type."""
+    """
+    MsgSetMsgGasParamsResponse defines the Msg/SetMsgGasParams response type.
+    """
 
     pass
 
@@ -341,3 +370,12 @@ class MsgBase(ServiceBase):
                 MsgSetMsgGasParamsResponse,
             ),
         }
+
+
+MsgGasParams.__pydantic_model__.update_forward_refs()  # type: ignore
+GenesisState.__pydantic_model__.update_forward_refs()  # type: ignore
+QueryParamsResponse.__pydantic_model__.update_forward_refs()  # type: ignore
+QueryMsgGasParamsRequest.__pydantic_model__.update_forward_refs()  # type: ignore
+QueryMsgGasParamsResponse.__pydantic_model__.update_forward_refs()  # type: ignore
+MsgUpdateParams.__pydantic_model__.update_forward_refs()  # type: ignore
+MsgSetMsgGasParams.__pydantic_model__.update_forward_refs()  # type: ignore

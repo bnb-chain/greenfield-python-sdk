@@ -3,13 +3,25 @@ from functools import lru_cache
 from pydantic import BaseModel
 from pydantic_settings import BaseSettings
 
-GREENFIELD_VERSION = "v0.2.3"
+GREENFIELD_VERSION = "v1.0.0"
+
+
+class NetworkMainnet(BaseModel):
+    host: str = "https://greenfield-chain.bnbchain.org"
+    port: int = 443
+    chain_id: int = 1017
 
 
 class NetworkTestnet(BaseModel):
     host: str = "https://gnfd-testnet-fullnode-tendermint-us.bnbchain.org"
     port: int = 443
     chain_id: int = 5600
+
+
+class NetworkLocalnet(BaseModel):
+    host: str = "http://localhost"
+    port: int = 26750
+    chain_id: int = 9000
 
 
 class NetworkConfiguration(BaseSettings):

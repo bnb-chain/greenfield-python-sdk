@@ -2,7 +2,14 @@
 # sources: greenfield/challenge/events.proto, greenfield/challenge/genesis.proto, greenfield/challenge/params.proto, greenfield/challenge/query.proto, greenfield/challenge/tx.proto, greenfield/challenge/types.proto
 # plugin: python-betterproto
 # This file has been @generated
-from dataclasses import dataclass
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from dataclasses import dataclass
+else:
+    from pydantic.dataclasses import dataclass
+
 from typing import TYPE_CHECKING, Dict, List, Optional
 
 import betterproto
@@ -28,7 +35,8 @@ class VoteResult(betterproto.Enum):
 @dataclass(eq=False, repr=False)
 class Slash(betterproto.Message):
     """
-    Slash records the storage provider slashes, which will be pruned periodically.
+    Slash records the storage provider slashes, which will be pruned
+    periodically.
     """
 
     sp_id: int = betterproto.uint32_field(1)
@@ -66,9 +74,9 @@ class AttestedChallenge(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class AttestedChallengeIds(betterproto.Message):
     """
-    AttestedChallengeIds stored fixed number of the latest attested challenge ids.
-    To use the storage more efficiently, a circular queue will be constructed using
-    these fields.
+    AttestedChallengeIds stored fixed number of the latest attested challenge
+    ids. To use the storage more efficiently, a circular queue will be
+    constructed using these fields.
     """
 
     size: int = betterproto.uint64_field(1)
@@ -101,7 +109,9 @@ class EventStartChallenge(betterproto.Message):
     """The storage provider to be challenged."""
 
     redundancy_index: int = betterproto.int32_field(6)
-    """The redundancy index, which comes from the index of storage providers."""
+    """
+    The redundancy index, which comes from the index of storage providers.
+    """
 
     challenger_address: str = betterproto.string_field(7)
     """The challenger who submits the challenge."""
@@ -148,26 +158,26 @@ class Params(betterproto.Message):
 
     challenge_count_per_block: int = betterproto.uint64_field(1)
     """
-    Challenges which will be emitted in each block, including user submitted or randomly
-    triggered.
+    Challenges which will be emitted in each block, including user submitted or
+    randomly triggered.
     """
 
     challenge_keep_alive_period: int = betterproto.uint64_field(2)
     """
-    Challenges will be expired after the period, including user submitted or randomly
-    triggered.
+    Challenges will be expired after the period, including user submitted or
+    randomly triggered.
     """
 
     slash_cooling_off_period: int = betterproto.uint64_field(3)
     """
-    The count of blocks to stand for the period in which the same storage and object
-    info cannot be slashed again.
+    The count of blocks to stand for the period in which the same storage and
+    object info cannot be slashed again.
     """
 
     slash_amount_size_rate: str = betterproto.string_field(4)
     """
-    The slash coin amount will be calculated from the size of object info, and adjusted
-    by this rate.
+    The slash coin amount will be calculated from the size of object info, and
+    adjusted by this rate.
     """
 
     slash_amount_min: str = betterproto.string_field(5)
@@ -187,15 +197,17 @@ class Params(betterproto.Message):
 
     heartbeat_interval: int = betterproto.uint64_field(10)
     """
-    Heartbeat interval, based on challenge id, defines the frequency of heartbeat
-    attestation.
+    Heartbeat interval, based on challenge id, defines the frequency of
+    heartbeat attestation.
     """
 
     attestation_inturn_interval: int = betterproto.uint64_field(11)
     """The time duration for each submitter to submit attestations in turn."""
 
     attestation_kept_count: int = betterproto.uint64_field(12)
-    """The number of kept attested challenge ids, which can be queried by clients."""
+    """
+    The number of kept attested challenge ids, which can be queried by clients.
+    """
 
     sp_slash_max_amount: str = betterproto.string_field(13)
     """The max slash amount for a sp in a counting window."""
@@ -220,7 +232,9 @@ class QueryParamsRequest(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class QueryParamsResponse(betterproto.Message):
-    """QueryParamsResponse is response type for the Query/Params RPC method."""
+    """
+    QueryParamsResponse is response type for the Query/Params RPC method.
+    """
 
     params: "Params" = betterproto.message_field(1)
     """params holds all the parameters of this module."""
@@ -229,8 +243,8 @@ class QueryParamsResponse(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class QueryAttestedChallengeRequest(betterproto.Message):
     """
-    QueryAttestedChallengeRequest is request type for the Query/AttestedChallenge RPC
-    method.
+    QueryAttestedChallengeRequest is request type for the
+    Query/AttestedChallenge RPC method.
     """
 
     challenge_id: int = betterproto.uint64_field(1)
@@ -240,8 +254,8 @@ class QueryAttestedChallengeRequest(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class QueryAttestedChallengeResponse(betterproto.Message):
     """
-    QueryAttestedChallengeResponse is response type for the Query/AttestedChallenge RPC
-    method.
+    QueryAttestedChallengeResponse is response type for the
+    Query/AttestedChallenge RPC method.
     """
 
     challenge: "AttestedChallenge" = betterproto.message_field(1)
@@ -291,8 +305,8 @@ class QueryInturnAttestationSubmitterResponse(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class SubmitInterval(betterproto.Message):
     """
-    SubmitInterval holds start and end (exclusive) (i.e., [start, end)) time of in turn
-    attestation.
+    SubmitInterval holds start and end (exclusive) (i.e., [start, end)) time of
+    in turn attestation.
     """
 
     start: int = betterproto.uint64_field(1)
@@ -378,8 +392,8 @@ class MsgUpdateParams(betterproto.Message):
 
     params: "Params" = betterproto.message_field(2)
     """
-    params defines the x/challenge parameters to update.
-    NOTE: All parameters must be supplied.
+    params defines the x/challenge parameters to update. NOTE: All parameters
+    must be supplied.
     """
 
 
@@ -643,3 +657,15 @@ class MsgBase(ServiceBase):
                 MsgUpdateParamsResponse,
             ),
         }
+
+
+AttestedChallenge.__pydantic_model__.update_forward_refs()  # type: ignore
+AttestedChallengeIds.__pydantic_model__.update_forward_refs()  # type: ignore
+EventAttestChallenge.__pydantic_model__.update_forward_refs()  # type: ignore
+GenesisState.__pydantic_model__.update_forward_refs()  # type: ignore
+QueryParamsResponse.__pydantic_model__.update_forward_refs()  # type: ignore
+QueryAttestedChallengeResponse.__pydantic_model__.update_forward_refs()  # type: ignore
+QueryLatestAttestedChallengesResponse.__pydantic_model__.update_forward_refs()  # type: ignore
+QueryInturnAttestationSubmitterResponse.__pydantic_model__.update_forward_refs()  # type: ignore
+MsgAttest.__pydantic_model__.update_forward_refs()  # type: ignore
+MsgUpdateParams.__pydantic_model__.update_forward_refs()  # type: ignore

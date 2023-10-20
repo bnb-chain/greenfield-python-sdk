@@ -2,13 +2,20 @@
 # sources: greenfield/permission/common.proto, greenfield/permission/events.proto, greenfield/permission/genesis.proto, greenfield/permission/params.proto, greenfield/permission/query.proto, greenfield/permission/tx.proto, greenfield/permission/types.proto
 # plugin: python-betterproto
 # This file has been @generated
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from dataclasses import dataclass
+else:
+    from pydantic.dataclasses import dataclass
+
 from datetime import datetime
 from typing import TYPE_CHECKING, Dict, List, Optional
 
 import betterproto
 import grpclib
 from betterproto.grpc.grpclib_server import ServiceBase
-from pydantic.dataclasses import dataclass
 
 from .. import common as _common__
 from .. import resource as _resource__
@@ -21,7 +28,8 @@ if TYPE_CHECKING:
 
 class ActionType(betterproto.Enum):
     """
-    ActionType defines the operations you can execute in greenfield storage network
+    ActionType defines the operations you can execute in greenfield storage
+    network
     """
 
     ACTION_UNSPECIFIED = 0
@@ -41,7 +49,9 @@ class ActionType(betterproto.Enum):
 
 
 class Effect(betterproto.Enum):
-    """Effect define the effect of the operation permission, include Allow or deny"""
+    """
+    Effect define the effect of the operation permission, include Allow or deny
+    """
 
     EFFECT_UNSPECIFIED = 0
     EFFECT_ALLOW = 1
@@ -50,8 +60,8 @@ class Effect(betterproto.Enum):
 
 class PrincipalType(betterproto.Enum):
     """
-    PrincipalType refers to the identity type of system users or entities.
-    In Greenfield, it usually refers to accounts or groups.
+    PrincipalType refers to the identity type of system users or entities. In
+    Greenfield, it usually refers to accounts or groups.
     """
 
     PRINCIPAL_TYPE_UNSPECIFIED = 0
@@ -66,23 +76,23 @@ class Statement(betterproto.Message):
 
     actions: List["ActionType"] = betterproto.enum_field(2)
     """
-    action_type define the operation type you can act. greenfield defines a set of
-    permission
-    that you can specify in a permissionInfo. see ActionType enum for detail.
+    action_type define the operation type you can act. greenfield defines a set
+    of permission that you can specify in a permissionInfo. see ActionType enum
+    for detail.
     """
 
     resources: List[str] = betterproto.string_field(3)
     """
-    CAN ONLY USED IN bucket level. Support fuzzy match and limit to 5.
-    The sub-resource name must comply with the standard specified in the
-    greenfield/types/grn.go file for Greenfield resource names.
-    If the sub-resources include 'grn:o:{bucket_name}/*' in the statement, it indicates
-    that specific permissions is granted to all objects within the specified bucket.
-    If the sub-resources include 'grn:o:{bucket_name}/test_*' in the statement, it
-    indicates that specific permissions is granted to all objects with the `test_`
-    prefix within the specified bucket.
-    If the sub-resources is empty, when you need to operate(excluding CreateObject) a
-    specified subresource, it will be denied because it cannot match any subresource.
+    CAN ONLY USED IN bucket level. Support fuzzy match and limit to 5. The sub-
+    resource name must comply with the standard specified in the
+    greenfield/types/grn.go file for Greenfield resource names. If the sub-
+    resources include 'grn:o:{bucket_name}/*' in the statement, it indicates
+    that specific permissions is granted to all objects within the specified
+    bucket. If the sub-resources include 'grn:o:{bucket_name}/test_*' in the
+    statement, it indicates that specific permissions is granted to all objects
+    with the `test_` prefix within the specified bucket. If the sub-resources
+    is empty, when you need to operate(excluding CreateObject) a specified
+    subresource, it will be denied because it cannot match any subresource.
     """
 
     expiration_time: datetime = betterproto.message_field(4)
@@ -93,36 +103,41 @@ class Statement(betterproto.Message):
 
     limit_size: "_common__.UInt64Value" = betterproto.message_field(5)
     """
-    limit_size defines the total data size that is allowed to operate. If not explicitly
-    specified, it means it will not limit.
+    limit_size defines the total data size that is allowed to operate. If not
+    explicitly specified, it means it will not limit.
     """
 
 
 @dataclass(eq=False, repr=False)
 class Principal(betterproto.Message):
     """
-    Principal define the roles that can grant permissions. Currently, it can be account
-    or group.
+    Principal define the roles that can grant permissions. Currently, it can be
+    account or group.
     """
 
     type: "PrincipalType" = betterproto.enum_field(1)
     value: str = betterproto.string_field(2)
     """
-    When the type is an account, its value is sdk.AccAddress().String();
-    when the type is a group, its value is math.Uint().String()
+    When the type is an account, its value is sdk.AccAddress().String(); when
+    the type is a group, its value is math.Uint().String()
     """
 
 
 @dataclass(eq=False, repr=False)
 class Policy(betterproto.Message):
     id: str = betterproto.string_field(1)
-    """id is an unique u256 sequence for each policy. It also be used as NFT tokenID"""
+    """
+    id is an unique u256 sequence for each policy. It also be used as NFT
+    tokenID
+    """
 
     principal: "Principal" = betterproto.message_field(2)
     """principal defines the accounts/group which the permission grants to"""
 
     resource_type: "_resource__.ResourceType" = betterproto.enum_field(3)
-    """resource_type defines the type of resource that grants permission for"""
+    """
+    resource_type defines the type of resource that grants permission for
+    """
 
     resource_id: str = betterproto.string_field(4)
     """
@@ -139,25 +154,25 @@ class Policy(betterproto.Message):
     expiration_time: datetime = betterproto.message_field(6)
     """
     expiration_time defines the whole expiration time of all the statements.
-    Notices: Its priority is higher than the expiration time inside the Statement
+    Notices: Its priority is higher than the expiration time inside the
+    Statement
     """
 
 
 @dataclass(eq=False, repr=False)
 class PolicyGroup(betterproto.Message):
     """
-    PolicyGroup refers to a group of policies which grant permission to Group, which is
-    limited to MaxGroupNum (default 10).
-    This means that a single resource can only grant permission to 10 groups. The reason
-    for
-    this is to enable on-chain determination of whether an operator has permission
-    within a limited time.
+    PolicyGroup refers to a group of policies which grant permission to Group,
+    which is limited to MaxGroupNum (default 10). This means that a single
+    resource can only grant permission to 10 groups. The reason for this is to
+    enable on-chain determination of whether an operator has permission within
+    a limited time.
     """
 
     items: List["PolicyGroupItem"] = betterproto.message_field(1)
     """
-    items define a pair of policy_id and group_id. Each resource can only grant its own
-    permissions to a limited number of groups
+    items define a pair of policy_id and group_id. Each resource can only grant
+    its own permissions to a limited number of groups
     """
 
 
@@ -171,7 +186,8 @@ class PolicyGroupItem(betterproto.Message):
 class GroupMember(betterproto.Message):
     id: str = betterproto.string_field(1)
     """
-    id is an unique u256 sequence for each group member. It also be used as NFT tokenID
+    id is an unique u256 sequence for each group member. It also be used as NFT
+    tokenID
     """
 
     group_id: str = betterproto.string_field(2)
@@ -180,19 +196,25 @@ class GroupMember(betterproto.Message):
     member: str = betterproto.string_field(3)
     """member is the account address of the member"""
 
+    expiration_time: datetime = betterproto.message_field(4)
+    """expiration_time defines the expiration time of the group member"""
+
 
 @dataclass(eq=False, repr=False)
 class EventPutPolicy(betterproto.Message):
     policy_id: str = betterproto.string_field(1)
     """
-    policy_id is an unique u256 sequence for each policy. It also be used as NFT tokenID
+    policy_id is an unique u256 sequence for each policy. It also be used as
+    NFT tokenID
     """
 
     principal: "Principal" = betterproto.message_field(2)
     """principal defines the accounts/group which the permission grants to"""
 
     resource_type: "_resource__.ResourceType" = betterproto.enum_field(3)
-    """resource_type defines the type of resource that grants permission for"""
+    """
+    resource_type defines the type of resource that grants permission for
+    """
 
     resource_id: str = betterproto.string_field(4)
     """
@@ -209,7 +231,8 @@ class EventPutPolicy(betterproto.Message):
     expiration_time: datetime = betterproto.message_field(6)
     """
     expiration_time defines the whole expiration time of all the statements.
-    Notices: Its priority is higher than the expiration time inside the Statement
+    Notices: Its priority is higher than the expiration time inside the
+    Statement
     """
 
 
@@ -217,7 +240,8 @@ class EventPutPolicy(betterproto.Message):
 class EventDeletePolicy(betterproto.Message):
     policy_id: str = betterproto.string_field(1)
     """
-    policy_id is an unique u256 sequence for each policy. It also be used as NFT tokenID
+    policy_id is an unique u256 sequence for each policy. It also be used as
+    NFT tokenID
     """
 
 
@@ -227,16 +251,22 @@ class Params(betterproto.Message):
 
     maximum_statements_num: int = betterproto.uint64_field(1)
     """
-    maximum_statements_num defines the maximum number of statements allowed in a policy
+    maximum_statements_num defines the maximum number of statements allowed in
+    a policy
     """
 
     maximum_group_num: int = betterproto.uint64_field(2)
     """
-    maximum_group_num used to set the upper limit on the number of groups to which a
-    resource can grant access permissions.
-    By placing a cap on the number of group permissions, permission control policies can
-    be made more robust and better
-    enforced, thereby reducing the chances of DDos and other security incidents.
+    maximum_group_num used to set the upper limit on the number of groups to
+    which a resource can grant access permissions. By placing a cap on the
+    number of group permissions, permission control policies can be made more
+    robust and better enforced, thereby reducing the chances of DDos and other
+    security incidents.
+    """
+
+    maximum_remove_expired_policies_iteration: int = betterproto.uint64_field(3)
+    """
+    the maximum iteration number of `RemoveExpiredPolicies` loops in endblocker
     """
 
 
@@ -256,7 +286,9 @@ class QueryParamsRequest(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class QueryParamsResponse(betterproto.Message):
-    """QueryParamsResponse is response type for the Query/Params RPC method."""
+    """
+    QueryParamsResponse is response type for the Query/Params RPC method.
+    """
 
     params: "Params" = betterproto.message_field(1)
     """params holds all the parameters of this module."""
@@ -274,8 +306,8 @@ class MsgUpdateParams(betterproto.Message):
 
     params: "Params" = betterproto.message_field(2)
     """
-    params defines the x/permission parameters to update.
-    NOTE: All parameters must be supplied.
+    params defines the x/permission parameters to update. NOTE: All parameters
+    must be supplied.
     """
 
 
@@ -367,3 +399,14 @@ class MsgBase(ServiceBase):
                 MsgUpdateParamsResponse,
             ),
         }
+
+
+Statement.__pydantic_model__.update_forward_refs()  # type: ignore
+Principal.__pydantic_model__.update_forward_refs()  # type: ignore
+Policy.__pydantic_model__.update_forward_refs()  # type: ignore
+PolicyGroup.__pydantic_model__.update_forward_refs()  # type: ignore
+GroupMember.__pydantic_model__.update_forward_refs()  # type: ignore
+EventPutPolicy.__pydantic_model__.update_forward_refs()  # type: ignore
+GenesisState.__pydantic_model__.update_forward_refs()  # type: ignore
+QueryParamsResponse.__pydantic_model__.update_forward_refs()  # type: ignore
+MsgUpdateParams.__pydantic_model__.update_forward_refs()  # type: ignore

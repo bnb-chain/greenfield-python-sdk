@@ -2,13 +2,21 @@
 # sources: tendermint/abci/types.proto
 # plugin: python-betterproto
 # This file has been @generated
-from dataclasses import dataclass
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from dataclasses import dataclass
+else:
+    from pydantic.dataclasses import dataclass
+
 from datetime import datetime
 from typing import TYPE_CHECKING, Dict, List, Optional
 
 import betterproto
 import grpclib
 from betterproto.grpc.grpclib_server import ServiceBase
+from pydantic import root_validator
 
 from .. import crypto as _crypto__
 from .. import types as _types__
@@ -56,23 +64,31 @@ class ResponseProcessProposalProposalStatus(betterproto.Enum):
 
 @dataclass(eq=False, repr=False)
 class Request(betterproto.Message):
-    echo: "RequestEcho" = betterproto.message_field(1, group="value")
-    flush: "RequestFlush" = betterproto.message_field(2, group="value")
-    info: "RequestInfo" = betterproto.message_field(3, group="value")
-    init_chain: "RequestInitChain" = betterproto.message_field(5, group="value")
-    query: "RequestQuery" = betterproto.message_field(6, group="value")
-    begin_block: "RequestBeginBlock" = betterproto.message_field(7, group="value")
-    check_tx: "RequestCheckTx" = betterproto.message_field(8, group="value")
-    deliver_tx: "RequestDeliverTx" = betterproto.message_field(9, group="value")
-    end_block: "RequestEndBlock" = betterproto.message_field(10, group="value")
-    commit: "RequestCommit" = betterproto.message_field(11, group="value")
-    list_snapshots: "RequestListSnapshots" = betterproto.message_field(12, group="value")
-    offer_snapshot: "RequestOfferSnapshot" = betterproto.message_field(13, group="value")
-    load_snapshot_chunk: "RequestLoadSnapshotChunk" = betterproto.message_field(14, group="value")
-    apply_snapshot_chunk: "RequestApplySnapshotChunk" = betterproto.message_field(15, group="value")
-    prepare_proposal: "RequestPrepareProposal" = betterproto.message_field(16, group="value")
-    process_proposal: "RequestProcessProposal" = betterproto.message_field(17, group="value")
-    eth_query: "RequestEthQuery" = betterproto.message_field(18, group="value")
+    echo: Optional["RequestEcho"] = betterproto.message_field(1, optional=True, group="value")
+    flush: Optional["RequestFlush"] = betterproto.message_field(2, optional=True, group="value")
+    info: Optional["RequestInfo"] = betterproto.message_field(3, optional=True, group="value")
+    init_chain: Optional["RequestInitChain"] = betterproto.message_field(5, optional=True, group="value")
+    query: Optional["RequestQuery"] = betterproto.message_field(6, optional=True, group="value")
+    begin_block: Optional["RequestBeginBlock"] = betterproto.message_field(7, optional=True, group="value")
+    check_tx: Optional["RequestCheckTx"] = betterproto.message_field(8, optional=True, group="value")
+    deliver_tx: Optional["RequestDeliverTx"] = betterproto.message_field(9, optional=True, group="value")
+    end_block: Optional["RequestEndBlock"] = betterproto.message_field(10, optional=True, group="value")
+    commit: Optional["RequestCommit"] = betterproto.message_field(11, optional=True, group="value")
+    list_snapshots: Optional["RequestListSnapshots"] = betterproto.message_field(12, optional=True, group="value")
+    offer_snapshot: Optional["RequestOfferSnapshot"] = betterproto.message_field(13, optional=True, group="value")
+    load_snapshot_chunk: Optional["RequestLoadSnapshotChunk"] = betterproto.message_field(
+        14, optional=True, group="value"
+    )
+    apply_snapshot_chunk: Optional["RequestApplySnapshotChunk"] = betterproto.message_field(
+        15, optional=True, group="value"
+    )
+    prepare_proposal: Optional["RequestPrepareProposal"] = betterproto.message_field(16, optional=True, group="value")
+    process_proposal: Optional["RequestProcessProposal"] = betterproto.message_field(17, optional=True, group="value")
+    eth_query: Optional["RequestEthQuery"] = betterproto.message_field(18, optional=True, group="value")
+
+    @root_validator()
+    def check_oneof(cls, values):
+        return cls._validate_field_groups(values)
 
 
 @dataclass(eq=False, repr=False)
@@ -180,8 +196,8 @@ class RequestPrepareProposal(betterproto.Message):
 
     txs: List[bytes] = betterproto.bytes_field(2)
     """
-    txs is an array of transactions that will be included in a block,
-    sent to the app for possible modifications.
+    txs is an array of transactions that will be included in a block, sent to
+    the app for possible modifications.
     """
 
     local_last_commit: "ExtendedCommitInfo" = betterproto.message_field(3)
@@ -217,24 +233,32 @@ class RequestEthQuery(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class Response(betterproto.Message):
-    exception: "ResponseException" = betterproto.message_field(1, group="value")
-    echo: "ResponseEcho" = betterproto.message_field(2, group="value")
-    flush: "ResponseFlush" = betterproto.message_field(3, group="value")
-    info: "ResponseInfo" = betterproto.message_field(4, group="value")
-    init_chain: "ResponseInitChain" = betterproto.message_field(6, group="value")
-    query: "ResponseQuery" = betterproto.message_field(7, group="value")
-    begin_block: "ResponseBeginBlock" = betterproto.message_field(8, group="value")
-    check_tx: "ResponseCheckTx" = betterproto.message_field(9, group="value")
-    deliver_tx: "ResponseDeliverTx" = betterproto.message_field(10, group="value")
-    end_block: "ResponseEndBlock" = betterproto.message_field(11, group="value")
-    commit: "ResponseCommit" = betterproto.message_field(12, group="value")
-    list_snapshots: "ResponseListSnapshots" = betterproto.message_field(13, group="value")
-    offer_snapshot: "ResponseOfferSnapshot" = betterproto.message_field(14, group="value")
-    load_snapshot_chunk: "ResponseLoadSnapshotChunk" = betterproto.message_field(15, group="value")
-    apply_snapshot_chunk: "ResponseApplySnapshotChunk" = betterproto.message_field(16, group="value")
-    prepare_proposal: "ResponsePrepareProposal" = betterproto.message_field(17, group="value")
-    process_proposal: "ResponseProcessProposal" = betterproto.message_field(18, group="value")
-    eth_query: "ResponseEthQuery" = betterproto.message_field(19, group="value")
+    exception: Optional["ResponseException"] = betterproto.message_field(1, optional=True, group="value")
+    echo: Optional["ResponseEcho"] = betterproto.message_field(2, optional=True, group="value")
+    flush: Optional["ResponseFlush"] = betterproto.message_field(3, optional=True, group="value")
+    info: Optional["ResponseInfo"] = betterproto.message_field(4, optional=True, group="value")
+    init_chain: Optional["ResponseInitChain"] = betterproto.message_field(6, optional=True, group="value")
+    query: Optional["ResponseQuery"] = betterproto.message_field(7, optional=True, group="value")
+    begin_block: Optional["ResponseBeginBlock"] = betterproto.message_field(8, optional=True, group="value")
+    check_tx: Optional["ResponseCheckTx"] = betterproto.message_field(9, optional=True, group="value")
+    deliver_tx: Optional["ResponseDeliverTx"] = betterproto.message_field(10, optional=True, group="value")
+    end_block: Optional["ResponseEndBlock"] = betterproto.message_field(11, optional=True, group="value")
+    commit: Optional["ResponseCommit"] = betterproto.message_field(12, optional=True, group="value")
+    list_snapshots: Optional["ResponseListSnapshots"] = betterproto.message_field(13, optional=True, group="value")
+    offer_snapshot: Optional["ResponseOfferSnapshot"] = betterproto.message_field(14, optional=True, group="value")
+    load_snapshot_chunk: Optional["ResponseLoadSnapshotChunk"] = betterproto.message_field(
+        15, optional=True, group="value"
+    )
+    apply_snapshot_chunk: Optional["ResponseApplySnapshotChunk"] = betterproto.message_field(
+        16, optional=True, group="value"
+    )
+    prepare_proposal: Optional["ResponsePrepareProposal"] = betterproto.message_field(17, optional=True, group="value")
+    process_proposal: Optional["ResponseProcessProposal"] = betterproto.message_field(18, optional=True, group="value")
+    eth_query: Optional["ResponseEthQuery"] = betterproto.message_field(19, optional=True, group="value")
+
+    @root_validator()
+    def check_oneof(cls, values):
+        return cls._validate_field_groups(values)
 
 
 @dataclass(eq=False, repr=False)
@@ -304,8 +328,8 @@ class ResponseCheckTx(betterproto.Message):
     priority: int = betterproto.int64_field(10)
     mempool_error: str = betterproto.string_field(11)
     """
-    mempool_error is set by CometBFT.
-    ABCI applictions creating a ResponseCheckTX should not set mempool_error.
+    mempool_error is set by CometBFT. ABCI applictions creating a
+    ResponseCheckTX should not set mempool_error.
     """
 
 
@@ -385,7 +409,9 @@ class CommitInfo(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class ExtendedCommitInfo(betterproto.Message):
     round: int = betterproto.int32_field(1)
-    """The round at which the block proposer decided in the previous height."""
+    """
+    The round at which the block proposer decided in the previous height.
+    """
 
     votes: List["ExtendedVoteInfo"] = betterproto.message_field(2)
     """
@@ -398,8 +424,8 @@ class ExtendedCommitInfo(betterproto.Message):
 class Event(betterproto.Message):
     """
     Event allows application developers to attach additional information to
-    ResponseBeginBlock, ResponseEndBlock, ResponseCheckTx and ResponseDeliverTx.
-    Later, transactions may be queried using these events.
+    ResponseBeginBlock, ResponseEndBlock, ResponseCheckTx and
+    ResponseDeliverTx. Later, transactions may be queried using these events.
     """
 
     type: str = betterproto.string_field(1)
@@ -418,8 +444,8 @@ class EventAttribute(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class TxResult(betterproto.Message):
     """
-    TxResult contains results of executing the transaction.
-    One usage is indexing transaction results.
+    TxResult contains results of executing the transaction. One usage is
+    indexing transaction results.
     """
 
     height: int = betterproto.int64_field(1)
@@ -1044,3 +1070,31 @@ class AbciApplicationBase(ServiceBase):
                 ResponseEthQuery,
             ),
         }
+
+
+Request.__pydantic_model__.update_forward_refs()  # type: ignore
+RequestInitChain.__pydantic_model__.update_forward_refs()  # type: ignore
+RequestBeginBlock.__pydantic_model__.update_forward_refs()  # type: ignore
+RequestCheckTx.__pydantic_model__.update_forward_refs()  # type: ignore
+RequestOfferSnapshot.__pydantic_model__.update_forward_refs()  # type: ignore
+RequestPrepareProposal.__pydantic_model__.update_forward_refs()  # type: ignore
+RequestProcessProposal.__pydantic_model__.update_forward_refs()  # type: ignore
+Response.__pydantic_model__.update_forward_refs()  # type: ignore
+ResponseInitChain.__pydantic_model__.update_forward_refs()  # type: ignore
+ResponseQuery.__pydantic_model__.update_forward_refs()  # type: ignore
+ResponseBeginBlock.__pydantic_model__.update_forward_refs()  # type: ignore
+ResponseCheckTx.__pydantic_model__.update_forward_refs()  # type: ignore
+ResponseDeliverTx.__pydantic_model__.update_forward_refs()  # type: ignore
+ResponseEndBlock.__pydantic_model__.update_forward_refs()  # type: ignore
+ResponseListSnapshots.__pydantic_model__.update_forward_refs()  # type: ignore
+ResponseOfferSnapshot.__pydantic_model__.update_forward_refs()  # type: ignore
+ResponseApplySnapshotChunk.__pydantic_model__.update_forward_refs()  # type: ignore
+ResponseProcessProposal.__pydantic_model__.update_forward_refs()  # type: ignore
+CommitInfo.__pydantic_model__.update_forward_refs()  # type: ignore
+ExtendedCommitInfo.__pydantic_model__.update_forward_refs()  # type: ignore
+Event.__pydantic_model__.update_forward_refs()  # type: ignore
+TxResult.__pydantic_model__.update_forward_refs()  # type: ignore
+ValidatorUpdate.__pydantic_model__.update_forward_refs()  # type: ignore
+VoteInfo.__pydantic_model__.update_forward_refs()  # type: ignore
+ExtendedVoteInfo.__pydantic_model__.update_forward_refs()  # type: ignore
+Misbehavior.__pydantic_model__.update_forward_refs()  # type: ignore
