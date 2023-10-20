@@ -2,14 +2,7 @@
 # sources: cosmos/auth/module/v1/module.proto
 # plugin: python-betterproto
 # This file has been @generated
-
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from dataclasses import dataclass
-else:
-    from pydantic.dataclasses import dataclass
-
+from dataclasses import dataclass
 from typing import List
 
 import betterproto
@@ -44,6 +37,3 @@ class ModuleAccountPermission(betterproto.Message):
     permissions are the permissions this module has. Currently recognized
     values are minter, burner and staking.
     """
-
-
-Module.__pydantic_model__.update_forward_refs()  # type: ignore

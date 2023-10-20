@@ -2,13 +2,7 @@
 # sources: cosmos/base/v1beta1/coin.proto
 # plugin: python-betterproto
 # This file has been @generated
-
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from dataclasses import dataclass
-else:
-    from pydantic.dataclasses import dataclass
+from dataclasses import dataclass
 
 import betterproto
 
@@ -16,9 +10,9 @@ import betterproto
 @dataclass(eq=False, repr=False)
 class Coin(betterproto.Message):
     """
-    Coin defines a token with a denomination and an amount. NOTE: The amount
-    field is an Int which implements the custom method signatures required by
-    gogoproto.
+    Coin defines a token with a denomination and an amount.
+    NOTE: The amount field is an Int which implements the custom method
+    signatures required by gogoproto.
     """
 
     denom: str = betterproto.string_field(1)
@@ -28,9 +22,9 @@ class Coin(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class DecCoin(betterproto.Message):
     """
-    DecCoin defines a token with a denomination and a decimal amount. NOTE: The
-    amount field is an Dec which implements the custom method signatures
-    required by gogoproto.
+    DecCoin defines a token with a denomination and a decimal amount.
+    NOTE: The amount field is an Dec which implements the custom method
+    signatures required by gogoproto.
     """
 
     denom: str = betterproto.string_field(1)

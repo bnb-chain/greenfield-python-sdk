@@ -2,19 +2,10 @@
 # sources: cosmos/crypto/keyring/v1/record.proto
 # plugin: python-betterproto
 # This file has been @generated
-
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from dataclasses import dataclass
-else:
-    from pydantic.dataclasses import dataclass
-
-from typing import Optional
+from dataclasses import dataclass
 
 import betterproto
 import betterproto.lib.google.protobuf as betterproto_lib_google_protobuf
-from pydantic import root_validator
 
 from ...hd import v1 as __hd_v1__
 
@@ -29,26 +20,25 @@ class Record(betterproto.Message):
     pub_key: "betterproto_lib_google_protobuf.Any" = betterproto.message_field(2)
     """pub_key represents a public key in any format"""
 
-    local: Optional["RecordLocal"] = betterproto.message_field(3, optional=True, group="item")
+    local: "RecordLocal" = betterproto.message_field(3, group="item")
     """local stores the private key locally."""
 
-    ledger: Optional["RecordLedger"] = betterproto.message_field(4, optional=True, group="item")
+    ledger: "RecordLedger" = betterproto.message_field(4, group="item")
     """ledger stores the information about a Ledger key."""
 
-    multi: Optional["RecordMulti"] = betterproto.message_field(5, optional=True, group="item")
+    multi: "RecordMulti" = betterproto.message_field(5, group="item")
     """Multi does not store any other information."""
 
-    offline: Optional["RecordOffline"] = betterproto.message_field(6, optional=True, group="item")
+    offline: "RecordOffline" = betterproto.message_field(6, group="item")
     """Offline does not store any other information."""
-
-    @root_validator()
-    def check_oneof(cls, values):
-        return cls._validate_field_groups(values)
 
 
 @dataclass(eq=False, repr=False)
 class RecordLocal(betterproto.Message):
-    """Item is a keyring item stored in a keyring backend. Local item"""
+    """
+    Item is a keyring item stored in a keyring backend.
+    Local item
+    """
 
     priv_key: "betterproto_lib_google_protobuf.Any" = betterproto.message_field(1)
 
@@ -72,8 +62,3 @@ class RecordOffline(betterproto.Message):
     """Offline item"""
 
     pass
-
-
-Record.__pydantic_model__.update_forward_refs()  # type: ignore
-RecordLocal.__pydantic_model__.update_forward_refs()  # type: ignore
-RecordLedger.__pydantic_model__.update_forward_refs()  # type: ignore

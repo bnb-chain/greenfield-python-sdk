@@ -2,13 +2,7 @@
 # sources: cosmos/gov/module/v1/module.proto
 # plugin: python-betterproto
 # This file has been @generated
-
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from dataclasses import dataclass
-else:
-    from pydantic.dataclasses import dataclass
+from dataclasses import dataclass
 
 import betterproto
 
@@ -19,8 +13,8 @@ class Module(betterproto.Message):
 
     max_metadata_len: int = betterproto.uint64_field(1)
     """
-    max_metadata_len defines the maximum proposal metadata length.  Defaults to
-    255 if not explicitly set.
+    max_metadata_len defines the maximum proposal metadata length.
+    Defaults to 255 if not explicitly set.
     """
 
     authority: str = betterproto.string_field(2)

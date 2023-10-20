@@ -2,14 +2,7 @@
 # sources: cosmos/crosschain/v1/crosschain.proto, cosmos/crosschain/v1/event.proto, cosmos/crosschain/v1/genesis.proto, cosmos/crosschain/v1/query.proto, cosmos/crosschain/v1/tx.proto
 # plugin: python-betterproto
 # This file has been @generated
-
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from dataclasses import dataclass
-else:
-    from pydantic.dataclasses import dataclass
-
+from dataclasses import dataclass
 from typing import TYPE_CHECKING, Dict, List, Optional
 
 import betterproto
@@ -46,9 +39,7 @@ class ChannelPermission(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class EventCrossChain(betterproto.Message):
-    """
-    EventCrossChain is emitted when there is a cross chain package created
-    """
+    """EventCrossChain is emitted when there is a cross chain package created"""
 
     src_chain_id: int = betterproto.uint32_field(1)
     """Source chain id of the cross chain package"""
@@ -75,9 +66,7 @@ class EventCrossChain(betterproto.Message):
     """Relayer fee for the cross chain package"""
 
     ack_relayer_fee: str = betterproto.string_field(9)
-    """
-    Relayer fee for the ACK or FAIL_ACK package of this cross chain package
-    """
+    """Relayer fee for the ACK or FAIL_ACK package of this cross chain package"""
 
 
 @dataclass(eq=False, repr=False)
@@ -90,18 +79,14 @@ class GenesisState(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class QueryParamsRequest(betterproto.Message):
-    """
-    QueryParamsRequest is the request type for the Query/Params RPC method.
-    """
+    """QueryParamsRequest is the request type for the Query/Params RPC method."""
 
     pass
 
 
 @dataclass(eq=False, repr=False)
 class QueryParamsResponse(betterproto.Message):
-    """
-    QueryParamsResponse is the response type for the Query/Params RPC method.
-    """
+    """QueryParamsResponse is the response type for the Query/Params RPC method."""
 
     params: "Params" = betterproto.message_field(1)
     """params defines the parameters of the module."""
@@ -110,8 +95,8 @@ class QueryParamsResponse(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class QueryCrossChainPackageRequest(betterproto.Message):
     """
-    QueryCrossChainPackageRequest is the request type for the
-    Query/CrossChainPackage RPC method.
+    QueryCrossChainPackageRequest is the request type for the Query/CrossChainPackage
+    RPC method.
     """
 
     dest_chain_id: int = betterproto.uint32_field(1)
@@ -127,8 +112,8 @@ class QueryCrossChainPackageRequest(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class QueryCrossChainPackageResponse(betterproto.Message):
     """
-    QueryCrossChainPackageResponse is the response type for the
-    Query/CrossChainPackage RPC method.
+    QueryCrossChainPackageResponse is the response type for the Query/CrossChainPackage
+    RPC method.
     """
 
     package: bytes = betterproto.bytes_field(1)
@@ -138,8 +123,7 @@ class QueryCrossChainPackageResponse(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class QuerySendSequenceRequest(betterproto.Message):
     """
-    QuerySendSequenceRequest is the request type for the Query/SendSequence RPC
-    method.
+    QuerySendSequenceRequest is the request type for the Query/SendSequence RPC method.
     """
 
     dest_chain_id: int = betterproto.uint32_field(1)
@@ -152,8 +136,8 @@ class QuerySendSequenceRequest(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class QuerySendSequenceResponse(betterproto.Message):
     """
-    QuerySendSequenceResponse is the response type for the Query/SendSequence
-    RPC method.
+    QuerySendSequenceResponse is the response type for the Query/SendSequence RPC
+    method.
     """
 
     sequence: int = betterproto.uint64_field(1)
@@ -163,8 +147,8 @@ class QuerySendSequenceResponse(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class QueryReceiveSequenceRequest(betterproto.Message):
     """
-    QuerySendSequenceRequest is the request type for the Query/ReceiveSequence
-    RPC method.
+    QuerySendSequenceRequest is the request type for the Query/ReceiveSequence RPC
+    method.
     """
 
     dest_chain_id: int = betterproto.uint32_field(1)
@@ -177,8 +161,8 @@ class QueryReceiveSequenceRequest(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class QueryReceiveSequenceResponse(betterproto.Message):
     """
-    QuerySendSequenceResponse is the response type for the
-    Query/ReceiveSequence RPC method.
+    QuerySendSequenceResponse is the response type for the Query/ReceiveSequence RPC
+    method.
     """
 
     sequence: int = betterproto.uint64_field(1)
@@ -197,8 +181,8 @@ class MsgUpdateParams(betterproto.Message):
 
     params: "Params" = betterproto.message_field(2)
     """
-    params defines the x/crosschain parameters to update. NOTE: All parameters
-    must be supplied.
+    params defines the x/crosschain parameters to update.
+    NOTE: All parameters must be supplied.
     """
 
 
@@ -215,8 +199,7 @@ class MsgUpdateParamsResponse(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class MsgUpdateChannelPermissions(betterproto.Message):
     """
-    MsgUpdateChannelPermissions is the Msg/MsgUpdateChannelPermissions request
-    type.
+    MsgUpdateChannelPermissions is the Msg/MsgUpdateChannelPermissions request type.
     """
 
     authority: str = betterproto.string_field(1)
@@ -232,8 +215,8 @@ class MsgUpdateChannelPermissions(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class MsgUpdateChannelPermissionsResponse(betterproto.Message):
     """
-    MsgUpdateChannelPermissionsResponse defines the response structure for
-    executing a MsgUpdateChannelPermissions message.
+    MsgUpdateChannelPermissionsResponse defines the response structure for executing a
+    MsgUpdateChannelPermissions message.
     """
 
     pass
@@ -242,9 +225,9 @@ class MsgUpdateChannelPermissionsResponse(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class MsgMintModuleTokens(betterproto.Message):
     """
-    MsgMintModuleTokens is the Msg/MintModuleTokens request type. The Msg is
-    used to mint tokens for the crosschain module. This Only permitted to be
-    called by the authority(gov).
+    MsgMintModuleTokens is the Msg/MintModuleTokens request type.
+    The Msg is used to mint tokens for the crosschain module.
+    This Only permitted to be called by the authority(gov).
     """
 
     authority: str = betterproto.string_field(1)
@@ -523,9 +506,3 @@ class MsgBase(ServiceBase):
                 MsgMintModuleTokensResponse,
             ),
         }
-
-
-GenesisState.__pydantic_model__.update_forward_refs()  # type: ignore
-QueryParamsResponse.__pydantic_model__.update_forward_refs()  # type: ignore
-MsgUpdateParams.__pydantic_model__.update_forward_refs()  # type: ignore
-MsgUpdateChannelPermissions.__pydantic_model__.update_forward_refs()  # type: ignore

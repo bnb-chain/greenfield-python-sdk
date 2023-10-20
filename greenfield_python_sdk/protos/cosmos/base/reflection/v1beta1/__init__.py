@@ -2,14 +2,7 @@
 # sources: cosmos/base/reflection/v1beta1/reflection.proto
 # plugin: python-betterproto
 # This file has been @generated
-
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from dataclasses import dataclass
-else:
-    from pydantic.dataclasses import dataclass
-
+from dataclasses import dataclass
 from typing import TYPE_CHECKING, Dict, List, Optional
 
 import betterproto
@@ -24,19 +17,14 @@ if TYPE_CHECKING:
 
 @dataclass(eq=False, repr=False)
 class ListAllInterfacesRequest(betterproto.Message):
-    """
-    ListAllInterfacesRequest is the request type of the ListAllInterfaces RPC.
-    """
+    """ListAllInterfacesRequest is the request type of the ListAllInterfaces RPC."""
 
     pass
 
 
 @dataclass(eq=False, repr=False)
 class ListAllInterfacesResponse(betterproto.Message):
-    """
-    ListAllInterfacesResponse is the response type of the ListAllInterfaces
-    RPC.
-    """
+    """ListAllInterfacesResponse is the response type of the ListAllInterfaces RPC."""
 
     interface_names: List[str] = betterproto.string_field(1)
     """interface_names is an array of all the registered interfaces."""
@@ -50,9 +38,7 @@ class ListImplementationsRequest(betterproto.Message):
     """
 
     interface_name: str = betterproto.string_field(1)
-    """
-    interface_name defines the interface to query the implementations for.
-    """
+    """interface_name defines the interface to query the implementations for."""
 
 
 @dataclass(eq=False, repr=False)

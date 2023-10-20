@@ -2,14 +2,7 @@
 # sources: cosmos/upgrade/v1beta1/query.proto, cosmos/upgrade/v1beta1/upgrade.proto
 # plugin: python-betterproto
 # This file has been @generated
-
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from dataclasses import dataclass
-else:
-    from pydantic.dataclasses import dataclass
-
+from dataclasses import dataclass
 from typing import TYPE_CHECKING, Dict, List, Optional
 
 import betterproto
@@ -24,10 +17,7 @@ if TYPE_CHECKING:
 
 @dataclass(eq=False, repr=False)
 class Plan(betterproto.Message):
-    """
-    Plan specifies information about a planned upgrade and when it should
-    occur.
-    """
+    """Plan specifies information about a planned upgrade and when it should occur."""
 
     name: str = betterproto.string_field(1)
     """
@@ -42,22 +32,22 @@ class Plan(betterproto.Message):
 
     height: int = betterproto.int64_field(2)
     """
-    The height at which the upgrade must be performed. Only used if Time is not
-    set.
+    The height at which the upgrade must be performed.
+    Only used if Time is not set.
     """
 
     info: str = betterproto.string_field(3)
     """
-    Any application specific upgrade info to be included on-chain such as a git
-    commit that validators could automatically upgrade to
+    Any application specific upgrade info to be included on-chain
+    such as a git commit that validators could automatically upgrade to
     """
 
 
 @dataclass(eq=False, repr=False)
 class ModuleVersion(betterproto.Message):
     """
-    ModuleVersion specifies a module and its consensus version. Since: cosmos-
-    sdk 0.43
+    ModuleVersion specifies a module and its consensus version.
+    Since: cosmos-sdk 0.43
     """
 
     name: str = betterproto.string_field(1)
@@ -114,13 +104,14 @@ class QueryAppliedPlanResponse(betterproto.Message):
 class QueryUpgradedConsensusStateRequest(betterproto.Message):
     """
     QueryUpgradedConsensusStateRequest is the request type for the
-    Query/UpgradedConsensusState RPC method.
+    Query/UpgradedConsensusState
+    RPC method.
     """
 
     last_height: int = betterproto.int64_field(1)
     """
-    last height of the current chain must be sent in request as this is the
-    height under which next consensus state is stored
+    last height of the current chain must be sent in request
+    as this is the height under which next consensus state is stored
     """
 
     def __post_init__(self) -> None:
@@ -132,7 +123,8 @@ class QueryUpgradedConsensusStateRequest(betterproto.Message):
 class QueryUpgradedConsensusStateResponse(betterproto.Message):
     """
     QueryUpgradedConsensusStateResponse is the response type for the
-    Query/UpgradedConsensusState RPC method.
+    Query/UpgradedConsensusState
+    RPC method.
     """
 
     upgraded_consensus_state: bytes = betterproto.bytes_field(2)
@@ -147,35 +139,35 @@ class QueryUpgradedConsensusStateResponse(betterproto.Message):
 class QueryModuleVersionsRequest(betterproto.Message):
     """
     QueryModuleVersionsRequest is the request type for the Query/ModuleVersions
-    RPC method. Since: cosmos-sdk 0.43
+    RPC method.
+    Since: cosmos-sdk 0.43
     """
 
     module_name: str = betterproto.string_field(1)
     """
-    module_name is a field to query a specific module consensus version from
-    state. Leaving this empty will fetch the full list of module versions from
-    state
+    module_name is a field to query a specific module
+    consensus version from state. Leaving this empty will
+    fetch the full list of module versions from state
     """
 
 
 @dataclass(eq=False, repr=False)
 class QueryModuleVersionsResponse(betterproto.Message):
     """
-    QueryModuleVersionsResponse is the response type for the
-    Query/ModuleVersions RPC method. Since: cosmos-sdk 0.43
+    QueryModuleVersionsResponse is the response type for the Query/ModuleVersions
+    RPC method.
+    Since: cosmos-sdk 0.43
     """
 
     module_versions: List["ModuleVersion"] = betterproto.message_field(1)
-    """
-    module_versions is a list of module names with their consensus versions.
-    """
+    """module_versions is a list of module names with their consensus versions."""
 
 
 @dataclass(eq=False, repr=False)
 class QueryAuthorityRequest(betterproto.Message):
     """
-    QueryAuthorityRequest is the request type for Query/Authority Since:
-    cosmos-sdk 0.46
+    QueryAuthorityRequest is the request type for Query/Authority
+    Since: cosmos-sdk 0.46
     """
 
     pass
@@ -184,8 +176,8 @@ class QueryAuthorityRequest(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class QueryAuthorityResponse(betterproto.Message):
     """
-    QueryAuthorityResponse is the response type for Query/Authority Since:
-    cosmos-sdk 0.46
+    QueryAuthorityResponse is the response type for Query/Authority
+    Since: cosmos-sdk 0.46
     """
 
     address: str = betterproto.string_field(1)
@@ -338,7 +330,3 @@ class QueryBase(ServiceBase):
                 QueryModuleVersionsResponse,
             ),
         }
-
-
-QueryCurrentPlanResponse.__pydantic_model__.update_forward_refs()  # type: ignore
-QueryModuleVersionsResponse.__pydantic_model__.update_forward_refs()  # type: ignore

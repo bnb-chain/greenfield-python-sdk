@@ -3,13 +3,7 @@
 # plugin: python-betterproto
 # This file has been @generated
 import warnings
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from dataclasses import dataclass
-else:
-    from pydantic.dataclasses import dataclass
-
+from dataclasses import dataclass
 from typing import TYPE_CHECKING, Dict, List, Optional
 
 import betterproto
@@ -32,14 +26,14 @@ class Params(betterproto.Message):
     community_tax: str = betterproto.string_field(1)
     base_proposer_reward: str = betterproto.string_field(2)
     """
-    Deprecated: The base_proposer_reward field is deprecated and is no longer
-    used in the x/distribution module's reward mechanism.
+    Deprecated: The base_proposer_reward field is deprecated and is no longer used
+    in the x/distribution module's reward mechanism.
     """
 
     bonus_proposer_reward: str = betterproto.string_field(3)
     """
-    Deprecated: The bonus_proposer_reward field is deprecated and is no longer
-    used in the x/distribution module's reward mechanism.
+    Deprecated: The bonus_proposer_reward field is deprecated and is no longer used
+    in the x/distribution module's reward mechanism.
     """
 
     withdraw_addr_enabled: bool = betterproto.bool_field(4)
@@ -56,14 +50,17 @@ class Params(betterproto.Message):
 class ValidatorHistoricalRewards(betterproto.Message):
     """
     ValidatorHistoricalRewards represents historical rewards for a validator.
-    Height is implicit within the store key. Cumulative reward ratio is the sum
-    from the zeroeth period until this period of rewards / tokens, per the
-    spec. The reference count indicates the number of objects which might need
-    to reference this historical entry at any point. ReferenceCount =    number
-    of outstanding delegations which ended the associated period (and    might
-    need to read that record)  + number of slashes which ended the associated
-    period (and might need to  read that record)  + one per validator for the
-    zeroeth period, set on initialization
+    Height is implicit within the store key.
+    Cumulative reward ratio is the sum from the zeroeth period
+    until this period of rewards / tokens, per the spec.
+    The reference count indicates the number of objects
+    which might need to reference this historical entry at any point.
+    ReferenceCount =
+       number of outstanding delegations which ended the associated period (and
+       might need to read that record)
+     + number of slashes which ended the associated period (and might need to
+     read that record)
+     + one per validator for the zeroeth period, set on initialization
     """
 
     cumulative_reward_ratio: List["__base_v1_beta1__.DecCoin"] = betterproto.message_field(1)
@@ -73,9 +70,9 @@ class ValidatorHistoricalRewards(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class ValidatorCurrentRewards(betterproto.Message):
     """
-    ValidatorCurrentRewards represents current rewards and current period for a
-    validator kept as a running counter and incremented each block as long as
-    the validator's tokens remain constant.
+    ValidatorCurrentRewards represents current rewards and current
+    period for a validator kept as a running counter and incremented
+    each block as long as the validator's tokens remain constant.
     """
 
     rewards: List["__base_v1_beta1__.DecCoin"] = betterproto.message_field(1)
@@ -85,8 +82,8 @@ class ValidatorCurrentRewards(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class ValidatorAccumulatedCommission(betterproto.Message):
     """
-    ValidatorAccumulatedCommission represents accumulated commission for a
-    validator kept as a running counter, can be withdrawn at any time.
+    ValidatorAccumulatedCommission represents accumulated commission
+    for a validator kept as a running counter, can be withdrawn at any time.
     """
 
     commission: List["__base_v1_beta1__.DecCoin"] = betterproto.message_field(1)
@@ -105,10 +102,10 @@ class ValidatorOutstandingRewards(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class ValidatorSlashEvent(betterproto.Message):
     """
-    ValidatorSlashEvent represents a validator slash event. Height is implicit
-    within the store key. This is needed to calculate appropriate amount of
-    staking tokens for delegations which are withdrawn after a slash has
-    occurred.
+    ValidatorSlashEvent represents a validator slash event.
+    Height is implicit within the store key.
+    This is needed to calculate appropriate amount of staking tokens
+    for delegations which are withdrawn after a slash has occurred.
     """
 
     validator_period: int = betterproto.uint64_field(1)
@@ -117,9 +114,7 @@ class ValidatorSlashEvent(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class ValidatorSlashEvents(betterproto.Message):
-    """
-    ValidatorSlashEvents is a collection of ValidatorSlashEvent messages.
-    """
+    """ValidatorSlashEvents is a collection of ValidatorSlashEvent messages."""
 
     validator_slash_events: List["ValidatorSlashEvent"] = betterproto.message_field(1)
 
@@ -136,11 +131,11 @@ class CommunityPoolSpendProposal(betterproto.Message):
     """
     CommunityPoolSpendProposal details a proposal for use of community funds,
     together with how many coins are proposed to be spent, and to which
-    recipient account. Deprecated: Do not use. As of the Cosmos SDK release
-    v0.47.x, there is no longer a need for an explicit
-    CommunityPoolSpendProposal. To spend community pool funds, a simple
-    MsgCommunityPoolSpend can be invoked from the x/gov module via a v1
-    governance proposal.
+    recipient account.
+    Deprecated: Do not use. As of the Cosmos SDK release v0.47.x, there is no
+    longer a need for an explicit CommunityPoolSpendProposal. To spend community
+    pool funds, a simple MsgCommunityPoolSpend can be invoked from the x/gov
+    module via a v1 governance proposal.
     """
 
     title: str = betterproto.string_field(1)
@@ -158,10 +153,10 @@ class DelegatorStartingInfo(betterproto.Message):
     """
     DelegatorStartingInfo represents the starting info for a delegator reward
     period. It tracks the previous validator period, the delegation's amount of
-    staking token, and the creation height (to check later on if any slashes
-    have occurred). NOTE: Even though validators are slashed to whole staking
-    tokens, the delegators within the validator may be left with less than a
-    full token, thus sdk.Dec is used.
+    staking token, and the creation height (to check later on if any slashes have
+    occurred). NOTE: Even though validators are slashed to whole staking tokens,
+    the delegators within the validator may be left with less than a full token,
+    thus sdk.Dec is used.
     """
 
     previous_period: int = betterproto.uint64_field(1)
@@ -172,8 +167,8 @@ class DelegatorStartingInfo(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class DelegationDelegatorReward(betterproto.Message):
     """
-    DelegationDelegatorReward represents the properties of a delegator's
-    delegation reward.
+    DelegationDelegatorReward represents the properties
+    of a delegator's delegation reward.
     """
 
     validator_address: str = betterproto.string_field(1)
@@ -206,32 +201,25 @@ class DelegatorWithdrawInfo(betterproto.Message):
     """delegator_address is the address of the delegator."""
 
     withdraw_address: str = betterproto.string_field(2)
-    """
-    withdraw_address is the address to withdraw the delegation rewards to.
-    """
+    """withdraw_address is the address to withdraw the delegation rewards to."""
 
 
 @dataclass(eq=False, repr=False)
 class ValidatorOutstandingRewardsRecord(betterproto.Message):
-    """
-    ValidatorOutstandingRewardsRecord is used for import/export via genesis
-    json.
-    """
+    """ValidatorOutstandingRewardsRecord is used for import/export via genesis json."""
 
     validator_address: str = betterproto.string_field(1)
     """validator_address is the address of the validator."""
 
     outstanding_rewards: List["__base_v1_beta1__.DecCoin"] = betterproto.message_field(2)
-    """
-    outstanding_rewards represents the outstanding rewards of a validator.
-    """
+    """outstanding_rewards represents the outstanding rewards of a validator."""
 
 
 @dataclass(eq=False, repr=False)
 class ValidatorAccumulatedCommissionRecord(betterproto.Message):
     """
-    ValidatorAccumulatedCommissionRecord is used for import / export via
-    genesis json.
+    ValidatorAccumulatedCommissionRecord is used for import / export via genesis
+    json.
     """
 
     validator_address: str = betterproto.string_field(1)
@@ -260,9 +248,7 @@ class ValidatorHistoricalRewardsRecord(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class ValidatorCurrentRewardsRecord(betterproto.Message):
-    """
-    ValidatorCurrentRewardsRecord is used for import / export via genesis json.
-    """
+    """ValidatorCurrentRewardsRecord is used for import / export via genesis json."""
 
     validator_address: str = betterproto.string_field(1)
     """validator_address is the address of the validator."""
@@ -273,9 +259,7 @@ class ValidatorCurrentRewardsRecord(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class DelegatorStartingInfoRecord(betterproto.Message):
-    """
-    DelegatorStartingInfoRecord used for import / export via genesis json.
-    """
+    """DelegatorStartingInfoRecord used for import / export via genesis json."""
 
     delegator_address: str = betterproto.string_field(1)
     """delegator_address is the address of the delegator."""
@@ -289,9 +273,7 @@ class DelegatorStartingInfoRecord(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class ValidatorSlashEventRecord(betterproto.Message):
-    """
-    ValidatorSlashEventRecord is used for import / export via genesis json.
-    """
+    """ValidatorSlashEventRecord is used for import / export via genesis json."""
 
     validator_address: str = betterproto.string_field(1)
     """validator_address is the address of the validator."""
@@ -323,19 +305,13 @@ class GenesisState(betterproto.Message):
     """fee_pool defines the previous proposer at genesis."""
 
     outstanding_rewards: List["ValidatorOutstandingRewardsRecord"] = betterproto.message_field(5)
-    """
-    fee_pool defines the outstanding rewards of all validators at genesis.
-    """
+    """fee_pool defines the outstanding rewards of all validators at genesis."""
 
     validator_accumulated_commissions: List["ValidatorAccumulatedCommissionRecord"] = betterproto.message_field(6)
-    """
-    fee_pool defines the accumulated commissions of all validators at genesis.
-    """
+    """fee_pool defines the accumulated commissions of all validators at genesis."""
 
     validator_historical_rewards: List["ValidatorHistoricalRewardsRecord"] = betterproto.message_field(7)
-    """
-    fee_pool defines the historical rewards of all validators at genesis.
-    """
+    """fee_pool defines the historical rewards of all validators at genesis."""
 
     validator_current_rewards: List["ValidatorCurrentRewardsRecord"] = betterproto.message_field(8)
     """fee_pool defines the current rewards of all validators at genesis."""
@@ -349,18 +325,14 @@ class GenesisState(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class QueryParamsRequest(betterproto.Message):
-    """
-    QueryParamsRequest is the request type for the Query/Params RPC method.
-    """
+    """QueryParamsRequest is the request type for the Query/Params RPC method."""
 
     pass
 
 
 @dataclass(eq=False, repr=False)
 class QueryParamsResponse(betterproto.Message):
-    """
-    QueryParamsResponse is the response type for the Query/Params RPC method.
-    """
+    """QueryParamsResponse is the response type for the Query/Params RPC method."""
 
     params: "Params" = betterproto.message_field(1)
     """params defines the parameters of the module."""
@@ -448,14 +420,10 @@ class QueryValidatorSlashesRequest(betterproto.Message):
     """validator_address defines the validator address to query for."""
 
     starting_height: int = betterproto.uint64_field(2)
-    """
-    starting_height defines the optional starting height to query the slashes.
-    """
+    """starting_height defines the optional starting height to query the slashes."""
 
     ending_height: int = betterproto.uint64_field(3)
-    """
-    starting_height defines the optional ending height to query the slashes.
-    """
+    """starting_height defines the optional ending height to query the slashes."""
 
     pagination: "__base_query_v1_beta1__.PageRequest" = betterproto.message_field(4)
     """pagination defines an optional pagination for the request."""
@@ -572,8 +540,8 @@ class QueryDelegatorWithdrawAddressResponse(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class QueryCommunityPoolRequest(betterproto.Message):
     """
-    QueryCommunityPoolRequest is the request type for the Query/CommunityPool
-    RPC method.
+    QueryCommunityPoolRequest is the request type for the Query/CommunityPool RPC
+    method.
     """
 
     pass
@@ -593,8 +561,8 @@ class QueryCommunityPoolResponse(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class MsgSetWithdrawAddress(betterproto.Message):
     """
-    MsgSetWithdrawAddress sets the withdraw address for a delegator (or
-    validator self-delegation).
+    MsgSetWithdrawAddress sets the withdraw address for
+    a delegator (or validator self-delegation).
     """
 
     delegator_address: str = betterproto.string_field(1)
@@ -636,8 +604,8 @@ class MsgWithdrawDelegatorRewardResponse(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class MsgWithdrawValidatorCommission(betterproto.Message):
     """
-    MsgWithdrawValidatorCommission withdraws the full commission to the
-    validator address.
+    MsgWithdrawValidatorCommission withdraws the full commission to the validator
+    address.
     """
 
     validator_address: str = betterproto.string_field(1)
@@ -657,7 +625,8 @@ class MsgWithdrawValidatorCommissionResponse(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class MsgFundCommunityPool(betterproto.Message):
     """
-    MsgFundCommunityPool allows an account to directly fund the community pool.
+    MsgFundCommunityPool allows an account to directly
+    fund the community pool.
     """
 
     amount: List["__base_v1_beta1__.Coin"] = betterproto.message_field(1)
@@ -666,10 +635,7 @@ class MsgFundCommunityPool(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class MsgFundCommunityPoolResponse(betterproto.Message):
-    """
-    MsgFundCommunityPoolResponse defines the Msg/FundCommunityPool response
-    type.
-    """
+    """MsgFundCommunityPoolResponse defines the Msg/FundCommunityPool response type."""
 
     pass
 
@@ -677,8 +643,8 @@ class MsgFundCommunityPoolResponse(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class MsgUpdateParams(betterproto.Message):
     """
-    MsgUpdateParams is the Msg/UpdateParams request type. Since: cosmos-sdk
-    0.47
+    MsgUpdateParams is the Msg/UpdateParams request type.
+    Since: cosmos-sdk 0.47
     """
 
     authority: str = betterproto.string_field(1)
@@ -689,8 +655,8 @@ class MsgUpdateParams(betterproto.Message):
 
     params: "Params" = betterproto.message_field(2)
     """
-    params defines the x/distribution parameters to update. NOTE: All
-    parameters must be supplied.
+    params defines the x/distribution parameters to update.
+    NOTE: All parameters must be supplied.
     """
 
 
@@ -698,7 +664,8 @@ class MsgUpdateParams(betterproto.Message):
 class MsgUpdateParamsResponse(betterproto.Message):
     """
     MsgUpdateParamsResponse defines the response structure for executing a
-    MsgUpdateParams message. Since: cosmos-sdk 0.47
+    MsgUpdateParams message.
+    Since: cosmos-sdk 0.47
     """
 
     pass
@@ -707,10 +674,10 @@ class MsgUpdateParamsResponse(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class MsgCommunityPoolSpend(betterproto.Message):
     """
-    MsgCommunityPoolSpend defines a message for sending tokens from the
-    community pool to another account. This message is typically executed via a
-    governance proposal with the governance module being the executing
-    authority. Since: cosmos-sdk 0.47
+    MsgCommunityPoolSpend defines a message for sending tokens from the community
+    pool to another account. This message is typically executed via a governance
+    proposal with the governance module being the executing authority.
+    Since: cosmos-sdk 0.47
     """
 
     authority: str = betterproto.string_field(1)
@@ -727,7 +694,8 @@ class MsgCommunityPoolSpend(betterproto.Message):
 class MsgCommunityPoolSpendResponse(betterproto.Message):
     """
     MsgCommunityPoolSpendResponse defines the response to executing a
-    MsgCommunityPoolSpend message. Since: cosmos-sdk 0.47
+    MsgCommunityPoolSpend message.
+    Since: cosmos-sdk 0.47
     """
 
     pass
@@ -1319,34 +1287,3 @@ class MsgBase(ServiceBase):
                 MsgCommunityPoolSpendResponse,
             ),
         }
-
-
-ValidatorHistoricalRewards.__pydantic_model__.update_forward_refs()  # type: ignore
-ValidatorCurrentRewards.__pydantic_model__.update_forward_refs()  # type: ignore
-ValidatorAccumulatedCommission.__pydantic_model__.update_forward_refs()  # type: ignore
-ValidatorOutstandingRewards.__pydantic_model__.update_forward_refs()  # type: ignore
-ValidatorSlashEvents.__pydantic_model__.update_forward_refs()  # type: ignore
-FeePool.__pydantic_model__.update_forward_refs()  # type: ignore
-CommunityPoolSpendProposal.__pydantic_model__.update_forward_refs()  # type: ignore
-DelegationDelegatorReward.__pydantic_model__.update_forward_refs()  # type: ignore
-ValidatorOutstandingRewardsRecord.__pydantic_model__.update_forward_refs()  # type: ignore
-ValidatorAccumulatedCommissionRecord.__pydantic_model__.update_forward_refs()  # type: ignore
-ValidatorHistoricalRewardsRecord.__pydantic_model__.update_forward_refs()  # type: ignore
-ValidatorCurrentRewardsRecord.__pydantic_model__.update_forward_refs()  # type: ignore
-DelegatorStartingInfoRecord.__pydantic_model__.update_forward_refs()  # type: ignore
-ValidatorSlashEventRecord.__pydantic_model__.update_forward_refs()  # type: ignore
-GenesisState.__pydantic_model__.update_forward_refs()  # type: ignore
-QueryParamsResponse.__pydantic_model__.update_forward_refs()  # type: ignore
-QueryValidatorDistributionInfoResponse.__pydantic_model__.update_forward_refs()  # type: ignore
-QueryValidatorOutstandingRewardsResponse.__pydantic_model__.update_forward_refs()  # type: ignore
-QueryValidatorCommissionResponse.__pydantic_model__.update_forward_refs()  # type: ignore
-QueryValidatorSlashesRequest.__pydantic_model__.update_forward_refs()  # type: ignore
-QueryValidatorSlashesResponse.__pydantic_model__.update_forward_refs()  # type: ignore
-QueryDelegationRewardsResponse.__pydantic_model__.update_forward_refs()  # type: ignore
-QueryDelegationTotalRewardsResponse.__pydantic_model__.update_forward_refs()  # type: ignore
-QueryCommunityPoolResponse.__pydantic_model__.update_forward_refs()  # type: ignore
-MsgWithdrawDelegatorRewardResponse.__pydantic_model__.update_forward_refs()  # type: ignore
-MsgWithdrawValidatorCommissionResponse.__pydantic_model__.update_forward_refs()  # type: ignore
-MsgFundCommunityPool.__pydantic_model__.update_forward_refs()  # type: ignore
-MsgUpdateParams.__pydantic_model__.update_forward_refs()  # type: ignore
-MsgCommunityPoolSpend.__pydantic_model__.update_forward_refs()  # type: ignore

@@ -2,13 +2,7 @@
 # sources: tendermint/version/types.proto
 # plugin: python-betterproto
 # This file has been @generated
-
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from dataclasses import dataclass
-else:
-    from pydantic.dataclasses import dataclass
+from dataclasses import dataclass
 
 import betterproto
 
@@ -16,9 +10,9 @@ import betterproto
 @dataclass(eq=False, repr=False)
 class App(betterproto.Message):
     """
-    App includes the protocol and software version for the application. This
-    information is included in ResponseInfo. The App.Protocol can be updated in
-    ResponseEndBlock.
+    App includes the protocol and software version for the application.
+    This information is included in ResponseInfo. The App.Protocol can be
+    updated in ResponseEndBlock.
     """
 
     protocol: int = betterproto.uint64_field(1)
@@ -28,9 +22,9 @@ class App(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class Consensus(betterproto.Message):
     """
-    Consensus captures the consensus rules for processing a block in the
-    blockchain, including all blockchain data structures and the rules of the
-    application's state transition machine.
+    Consensus captures the consensus rules for processing a block in the blockchain,
+    including all blockchain data structures and the rules of the application's
+    state transition machine.
     """
 
     block: int = betterproto.uint64_field(1)

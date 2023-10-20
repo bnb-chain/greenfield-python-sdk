@@ -2,14 +2,7 @@
 # sources: greenfield/storage/common.proto, greenfield/storage/events.proto, greenfield/storage/genesis.proto, greenfield/storage/params.proto, greenfield/storage/query.proto, greenfield/storage/tx.proto, greenfield/storage/types.proto
 # plugin: python-betterproto
 # This file has been @generated
-
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from dataclasses import dataclass
-else:
-    from pydantic.dataclasses import dataclass
-
+from dataclasses import dataclass
 from datetime import datetime
 from typing import TYPE_CHECKING, Dict, List, Optional
 
@@ -30,8 +23,8 @@ if TYPE_CHECKING:
 
 class SourceType(betterproto.Enum):
     """
-    SourceType represents the source of resource creation, which can from
-    Greenfield native or from a cross-chain transfer from BSC
+    SourceType represents the source of resource creation, which can
+    from Greenfield native or from a cross-chain transfer from BSC
     """
 
     SOURCE_TYPE_ORIGIN = 0
@@ -43,9 +36,9 @@ class SourceType(betterproto.Enum):
 class BucketStatus(betterproto.Enum):
     """
     BucketStatus represents the status of a bucket. After a user successfully
-    sends a CreateBucket transaction onto the chain, the status is set to
-    'Created'. When a Discontinue Object transaction is received on chain, the
-    status is set to 'Discontinued'.
+    sends a CreateBucket transaction onto the chain, the status is set to 'Created'.
+    When a Discontinue Object transaction is received on chain, the status is set to
+    'Discontinued'.
     """
 
     BUCKET_STATUS_CREATED = 0
@@ -65,12 +58,11 @@ class RedundancyType(betterproto.Enum):
 
 class ObjectStatus(betterproto.Enum):
     """
-    ObjectStatus represents the creation status of an object. After a user
-    successfully sends a CreateObject transaction onto the chain, the status is
-    set to 'Created'. After the Primary Service Provider successfully sends a
-    Seal Object transaction onto the chain, the status is set to 'Sealed'. When
-    a Discontinue Object transaction is received on chain, the status is set to
-    'Discontinued'.
+    ObjectStatus represents the creation status of an object. After a user successfully
+    sends a CreateObject transaction onto the chain, the status is set to 'Created'.
+    After the Primary Service Provider successfully sends a Seal Object transaction onto
+    the chain, the status is set to 'Sealed'. When a Discontinue Object transaction is
+    received on chain, the status is set to 'Discontinued'.
     """
 
     OBJECT_STATUS_CREATED = 0
@@ -86,28 +78,26 @@ class VisibilityType(betterproto.Enum):
     VISIBILITY_TYPE_PRIVATE = 2
     VISIBILITY_TYPE_INHERIT = 3
     """
-    If the bucket Visibility is inherit, it's finally set to private. If the
-    object Visibility is inherit, it's the same as bucket.
+    If the bucket Visibility is inherit, it's finally set to private. If the object
+    Visibility is inherit, it's the same as bucket.
     """
 
 
 @dataclass(eq=False, repr=False)
 class SecondarySpSealObjectSignDoc(betterproto.Message):
     """
-    SecondarySpSealObjectSignDoc used to generate seal signature of secondary
-    SP If the secondary SP only signs the checksum to declare the object pieces
-    are saved, it might be reused by the primary SP to fake it's declaration.
-    Then the primary SP can challenge and slash the secondary SP. So the id of
-    the object is needed to prevent this.
+    SecondarySpSealObjectSignDoc used to generate seal signature of secondary SP
+    If the secondary SP only signs the checksum to declare the object pieces are saved,
+    it might be reused by the primary SP to fake it's declaration.
+    Then the primary SP can challenge and slash the secondary SP.
+    So the id of the object is needed to prevent this.
     """
 
     chain_id: str = betterproto.string_field(1)
     global_virtual_group_id: int = betterproto.uint32_field(2)
     object_id: str = betterproto.string_field(3)
     checksum: bytes = betterproto.bytes_field(4)
-    """
-    checksum is the sha256 hash of slice of integrity hash from secondary sps
-    """
+    """checksum is the sha256 hash of slice of integrity hash from secondary sps"""
 
 
 @dataclass(eq=False, repr=False)
@@ -130,23 +120,19 @@ class SecondarySpMigrationBucketSignDoc(betterproto.Message):
 class LocalVirtualGroup(betterproto.Message):
     """
     Local virtual group(LVG) uniquely associated with a global virtual group.
-    Each bucket maintains a mapping from local virtual group to global virtual
-    group Each local virtual group is associated with a unique virtual payment
-    account, where all object fees are streamed to.
+    Each bucket maintains a mapping from local virtual group to global virtual group
+    Each local virtual group is associated with a unique virtual payment account,
+    where all object fees are streamed to.
     """
 
     id: int = betterproto.uint32_field(1)
     """id is the identifier of the local virtual group."""
 
     global_virtual_group_id: int = betterproto.uint32_field(2)
-    """
-    global_virtual_group_id is the identifier of the global virtual group.
-    """
+    """global_virtual_group_id is the identifier of the global virtual group."""
 
     stored_size: int = betterproto.uint64_field(3)
-    """
-    stored_size is the size of the stored data in the local virtual group.
-    """
+    """stored_size is the size of the stored data in the local virtual group."""
 
     total_charge_size: int = betterproto.uint64_field(4)
     """
@@ -158,24 +144,21 @@ class LocalVirtualGroup(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class BucketInfo(betterproto.Message):
     owner: str = betterproto.string_field(1)
-    """
-    owner is the account address of bucket creator, it is also the bucket
-    owner.
-    """
+    """owner is the account address of bucket creator, it is also the bucket owner."""
 
     bucket_name: str = betterproto.string_field(2)
     """bucket_name is a globally unique name of bucket"""
 
     visibility: "VisibilityType" = betterproto.enum_field(3)
     """
-    visibility defines the highest permissions for bucket. When a bucket is
-    public, everyone can get storage objects in it.
+    visibility defines the highest permissions for bucket. When a bucket is public,
+    everyone can get storage objects in it.
     """
 
     id: str = betterproto.string_field(4)
     """id is the unique identification for bucket."""
 
-    source_type: "SourceType" = betterproto.enum_field(5)
+    source_type: SourceType = betterproto.enum_field(5)
     """
     source_type defines which chain the user should send the bucket management
     transactions to
@@ -193,11 +176,12 @@ class BucketInfo(betterproto.Message):
     charged_read_quota: int = betterproto.uint64_field(9)
     """
     charged_read_quota defines the traffic quota for read in bytes per month.
-    The available read data for each user is the sum of the free read data
-    provided by SP and the ChargeReadQuota specified here.
+    The available read data for each user is the sum of the free read data provided by
+    SP and
+    the ChargeReadQuota specified here.
     """
 
-    bucket_status: "BucketStatus" = betterproto.enum_field(10)
+    bucket_status: BucketStatus = betterproto.enum_field(10)
     """bucket_status define the status of the bucket."""
 
 
@@ -205,23 +189,20 @@ class BucketInfo(betterproto.Message):
 class InternalBucketInfo(betterproto.Message):
     price_time: int = betterproto.int64_field(1)
     """
-    the time of the payment price, used to calculate the charge rate of the
-    bucket
+    the time of the payment price, used to calculate the charge rate of the bucket
     """
 
     total_charge_size: int = betterproto.uint64_field(2)
     """
-    the total size of the objects in the bucket, used to calculate the charge
-    rate of the bucket
+    the total size of the objects in the bucket, used to calculate the charge rate of
+    the bucket
     """
 
     local_virtual_groups: List["LocalVirtualGroup"] = betterproto.message_field(3)
     """local_virtual_groups contains all the lvg of this bucket."""
 
     next_local_virtual_group_id: int = betterproto.uint32_field(4)
-    """
-    next_local_virtual_group_id store the next id used by local virtual group
-    """
+    """next_local_virtual_group_id store the next id used by local virtual group"""
 
 
 @dataclass(eq=False, repr=False)
@@ -230,9 +211,7 @@ class ObjectInfo(betterproto.Message):
     """owner is the object owner"""
 
     creator: str = betterproto.string_field(2)
-    """
-    creator is the address of the uploader, it always be same as owner address
-    """
+    """creator is the address of the uploader, it always be same as owner address"""
 
     bucket_name: str = betterproto.string_field(3)
     """bucket_name is the name of the bucket"""
@@ -249,35 +228,34 @@ class ObjectInfo(betterproto.Message):
 
     visibility: "VisibilityType" = betterproto.enum_field(8)
     """
-    visibility defines the highest permissions for object. When an object is
-    public, everyone can access it.
+    visibility defines the highest permissions for object. When an object is public,
+    everyone can access it.
     """
 
     content_type: str = betterproto.string_field(9)
     """
-    content_type define the format of the object which should be a standard
-    MIME type.
+    content_type define the format of the object which should be a standard MIME type.
     """
 
     create_at: int = betterproto.int64_field(10)
     """create_at define the block timestamp when the object is created"""
 
-    object_status: "ObjectStatus" = betterproto.enum_field(11)
+    object_status: ObjectStatus = betterproto.enum_field(11)
     """object_status define the upload status of the object."""
 
-    redundancy_type: "RedundancyType" = betterproto.enum_field(12)
+    redundancy_type: RedundancyType = betterproto.enum_field(12)
     """
-    redundancy_type define the type of the redundancy which can be multi-
-    replication or EC.
+    redundancy_type define the type of the redundancy which can be multi-replication or
+    EC.
     """
 
-    source_type: "SourceType" = betterproto.enum_field(13)
+    source_type: SourceType = betterproto.enum_field(13)
     """source_type define the source of the object."""
 
     checksums: List[bytes] = betterproto.bytes_field(14)
     """
-    checksums define the root hash of the pieces which stored in a SP. add omit
-    tag to omit the field when converting to NFT metadata
+    checksums define the root hash of the pieces which stored in a SP.
+    add omit tag to omit the field when converting to NFT metadata
     """
 
 
@@ -393,31 +371,23 @@ class EventCreateBucket(betterproto.Message):
 
     visibility: "VisibilityType" = betterproto.enum_field(3)
     """
-    visibility defines the highest permissions for bucket. When a bucket is
-    public, everyone can get the object under it.
+    visibility defines the highest permissions for bucket. When a bucket is public,
+    everyone can get the object under it.
     """
 
     create_at: int = betterproto.int64_field(4)
-    """
-    create_at define the block timestamp when the bucket has been created
-    """
+    """create_at define the block timestamp when the bucket has been created"""
 
     bucket_id: str = betterproto.string_field(5)
-    """
-    bucket_id is the unique u256 for bucket. Not global, only unique in
-    buckets.
-    """
+    """bucket_id is the unique u256 for bucket. Not global, only unique in buckets."""
 
     source_type: "SourceType" = betterproto.enum_field(6)
-    """
-    source_type define the source of the bucket. CrossChain or Greenfield
-    origin
-    """
+    """source_type define the source of the bucket. CrossChain or Greenfield origin"""
 
     charged_read_quota: int = betterproto.uint64_field(7)
     """
-    read_quota defines the charged traffic quota for read, not include free
-    quota which provided by each storage provider
+    read_quota defines the charged traffic quota for read, not include free quota which
+    provided by each storage provider
     """
 
     payment_address: str = betterproto.string_field(8)
@@ -438,9 +408,7 @@ class EventDeleteBucket(betterproto.Message):
     """EventDeleteBucket is emitted on MsgDeleteBucket"""
 
     operator: str = betterproto.string_field(1)
-    """
-    operator define the account address of operator who delete the bucket
-    """
+    """operator define the account address of operator who delete the bucket"""
 
     owner: str = betterproto.string_field(2)
     """owner define the account address of the bucket owner"""
@@ -460,9 +428,7 @@ class EventUpdateBucketInfo(betterproto.Message):
     """EventUpdateBucketInfo is emitted on MsgUpdateBucketInfo"""
 
     operator: str = betterproto.string_field(1)
-    """
-    operator define the account address of operator who update the bucket
-    """
+    """operator define the account address of operator who update the bucket"""
 
     bucket_name: str = betterproto.string_field(2)
     """bucket_name define the name of the bucket"""
@@ -480,9 +446,7 @@ class EventUpdateBucketInfo(betterproto.Message):
     """visibility defines the highest permission of object."""
 
     global_virtual_group_family_id: int = betterproto.uint32_field(7)
-    """
-    global_virtual_group_family_id defines the gvg family id after migrated.
-    """
+    """global_virtual_group_family_id defines the gvg family id after migrated."""
 
 
 @dataclass(eq=False, repr=False)
@@ -546,21 +510,15 @@ class EventCreateObject(betterproto.Message):
     """redundancy_type define the type of redundancy. Replication or EC"""
 
     source_type: "SourceType" = betterproto.enum_field(15)
-    """
-    source_type define the source of the object.  CrossChain or Greenfield
-    origin
-    """
+    """source_type define the source of the object.  CrossChain or Greenfield origin"""
 
     checksums: List[bytes] = betterproto.bytes_field(16)
     """
-    checksums define the total checksums of the object which generated by
-    redundancy
+    checksums define the total checksums of the object which generated by redundancy
     """
 
     local_virtual_group_id: int = betterproto.uint32_field(17)
-    """
-    local_virtual_group_id defines the unique id of lvg which the object stored
-    """
+    """local_virtual_group_id defines the unique id of lvg which the object stored"""
 
 
 @dataclass(eq=False, repr=False)
@@ -568,9 +526,7 @@ class EventCancelCreateObject(betterproto.Message):
     """EventCancelCreateObject is emitted on MsgCancelCreateObject"""
 
     operator: str = betterproto.string_field(1)
-    """
-    operator define the account address of operator who cancel create object
-    """
+    """operator define the account address of operator who cancel create object"""
 
     bucket_name: str = betterproto.string_field(2)
     """bucket_name define the name of the bucket"""
@@ -605,15 +561,10 @@ class EventSealObject(betterproto.Message):
     """status define the status of the object. INIT or IN_SERVICE or others"""
 
     global_virtual_group_id: int = betterproto.uint32_field(7)
-    """
-    global_virtual_group_id defines the unique id of gvg which the object
-    stored
-    """
+    """global_virtual_group_id defines the unique id of gvg which the object stored"""
 
     local_virtual_group_id: int = betterproto.uint32_field(8)
-    """
-    local_virtual_group_id defines the unique id of lvg which the object stored
-    """
+    """local_virtual_group_id defines the unique id of lvg which the object stored"""
 
 
 @dataclass(eq=False, repr=False)
@@ -642,9 +593,7 @@ class EventCopyObject(betterproto.Message):
     """dst_object_id define the u256 id for dst object"""
 
     local_virtual_group_id: int = betterproto.uint32_field(8)
-    """
-    local_virtual_group_id defines the unique id of lvg which the object stored
-    """
+    """local_virtual_group_id defines the unique id of lvg which the object stored"""
 
 
 @dataclass(eq=False, repr=False)
@@ -652,9 +601,7 @@ class EventDeleteObject(betterproto.Message):
     """EventDeleteObject is emitted on MsgDeleteObject"""
 
     operator: str = betterproto.string_field(1)
-    """
-    operator define the account address of operator who delete the object
-    """
+    """operator define the account address of operator who delete the object"""
 
     bucket_name: str = betterproto.string_field(2)
     """bucket_name define the name of the bucket"""
@@ -666,9 +613,7 @@ class EventDeleteObject(betterproto.Message):
     """id define an u256 id for object"""
 
     local_virtual_group_id: int = betterproto.uint32_field(5)
-    """
-    local_virtual_group_id defines the unique id of lvg which the object stored
-    """
+    """local_virtual_group_id defines the unique id of lvg which the object stored"""
 
 
 @dataclass(eq=False, repr=False)
@@ -676,9 +621,7 @@ class EventRejectSealObject(betterproto.Message):
     """EventRejectSealObject is emitted on MsgRejectSealObject"""
 
     operator: str = betterproto.string_field(1)
-    """
-    operator define the account address of operator who reject seal object
-    """
+    """operator define the account address of operator who reject seal object"""
 
     bucket_name: str = betterproto.string_field(2)
     """bucket_name define the name of the bucket"""
@@ -712,9 +655,7 @@ class EventUpdateObjectInfo(betterproto.Message):
     """EventUpdateObjectInfo is emitted on MsgUpdateObjectInfo"""
 
     operator: str = betterproto.string_field(1)
-    """
-    operator define the account address of operator who update the bucket
-    """
+    """operator define the account address of operator who update the bucket"""
 
     bucket_name: str = betterproto.string_field(2)
     """bucket_name define the name of the bucket"""
@@ -743,9 +684,7 @@ class EventCreateGroup(betterproto.Message):
     """id define an u256 id for group"""
 
     source_type: "SourceType" = betterproto.enum_field(4)
-    """
-    source_type define the source of the group. CrossChain or Greenfield origin
-    """
+    """source_type define the source of the group. CrossChain or Greenfield origin"""
 
     extra: str = betterproto.string_field(5)
     """extra defines extra info for the group"""
@@ -787,9 +726,7 @@ class EventUpdateGroupMember(betterproto.Message):
     """EventUpdateGroupMember is emitted on MsgUpdateGroupMember"""
 
     operator: str = betterproto.string_field(1)
-    """
-    operator define the account address of operator who update the group member
-    """
+    """operator define the account address of operator who update the group member"""
 
     owner: str = betterproto.string_field(2)
     """owner define the account address of group owner"""
@@ -810,9 +747,7 @@ class EventUpdateGroupMember(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class EventRenewGroupMember(betterproto.Message):
     operator: str = betterproto.string_field(1)
-    """
-    operator define the account address of operator who update the group member
-    """
+    """operator define the account address of operator who update the group member"""
 
     owner: str = betterproto.string_field(2)
     """owner define the account address of group owner"""
@@ -824,9 +759,7 @@ class EventRenewGroupMember(betterproto.Message):
     """id define an u256 id for group"""
 
     source_type: "SourceType" = betterproto.enum_field(5)
-    """
-    source_type define the source of the group. CrossChain or Greenfield origin
-    """
+    """source_type define the source of the group. CrossChain or Greenfield origin"""
 
     members: List["EventGroupMemberDetail"] = betterproto.message_field(6)
     """members define the all the address of the members."""
@@ -846,9 +779,7 @@ class EventUpdateGroupExtra(betterproto.Message):
     """EventUpdateGroupExtra is emitted on MsgUpdateGroupExtra"""
 
     operator: str = betterproto.string_field(1)
-    """
-    operator define the account address of operator who update the group member
-    """
+    """operator define the account address of operator who update the group member"""
 
     owner: str = betterproto.string_field(2)
     """owner define the account address of group owner"""
@@ -868,9 +799,7 @@ class EventMirrorBucket(betterproto.Message):
     """EventMirrorBucket is emitted on MirrorBucket"""
 
     operator: str = betterproto.string_field(1)
-    """
-    operator define the account address of operator who mirror the bucket
-    """
+    """operator define the account address of operator who mirror the bucket"""
 
     bucket_name: str = betterproto.string_field(2)
     """bucket_name defines the name of the bucket"""
@@ -885,8 +814,7 @@ class EventMirrorBucket(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class EventMirrorBucketResult(betterproto.Message):
     """
-    EventMirrorBucketResult is emitted on receiving ack package from
-    destination chain
+    EventMirrorBucketResult is emitted on receiving ack package from destination chain
     """
 
     status: int = betterproto.uint32_field(1)
@@ -907,9 +835,7 @@ class EventMirrorObject(betterproto.Message):
     """EventMirrorObject is emitted on MirrorObject"""
 
     operator: str = betterproto.string_field(1)
-    """
-    operator define the account address of operator who delete the object
-    """
+    """operator define the account address of operator who delete the object"""
 
     bucket_name: str = betterproto.string_field(2)
     """bucket_name define the name of the bucket"""
@@ -927,8 +853,7 @@ class EventMirrorObject(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class EventMirrorObjectResult(betterproto.Message):
     """
-    EventMirrorObjectResult is emitted on receiving ack package from
-    destination chain
+    EventMirrorObjectResult is emitted on receiving ack package from destination chain
     """
 
     status: int = betterproto.uint32_field(1)
@@ -967,8 +892,7 @@ class EventMirrorGroup(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class EventMirrorGroupResult(betterproto.Message):
     """
-    EventMirrorGroupResult is emitted on receiving ack package from destination
-    chain
+    EventMirrorGroupResult is emitted on receiving ack package from destination chain
     """
 
     status: int = betterproto.uint32_field(1)
@@ -987,8 +911,8 @@ class EventMirrorGroupResult(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class EventStalePolicyCleanup(betterproto.Message):
     """
-    EventStalePolicyCleanup is emitted when specified block height's stale
-    policies need to be Garbage collected
+    EventStalePolicyCleanup is emitted when specified block height's stale policies need
+    to be Garbage collected
     """
 
     block_num: int = betterproto.int64_field(1)
@@ -999,8 +923,8 @@ class EventStalePolicyCleanup(betterproto.Message):
 class EventMigrationBucket(betterproto.Message):
     operator: str = betterproto.string_field(1)
     """
-    The address of the operator that initiated the bucket migration, usually
-    the owner of the bucket or another account which has permission to operate
+    The address of the operator that initiated the bucket migration,
+    usually the owner of the bucket or another account which has permission to operate
     """
 
     bucket_name: str = betterproto.string_field(2)
@@ -1017,8 +941,8 @@ class EventMigrationBucket(betterproto.Message):
 class EventCancelMigrationBucket(betterproto.Message):
     operator: str = betterproto.string_field(1)
     """
-    The address of the operator that canceled the bucket migration, usually the
-    owner of the bucket or another account which has permission to operate
+    The address of the operator that canceled the bucket migration,
+    usually the owner of the bucket or another account which has permission to operate
     """
 
     bucket_name: str = betterproto.string_field(2)
@@ -1032,8 +956,8 @@ class EventCancelMigrationBucket(betterproto.Message):
 class EventCompleteMigrationBucket(betterproto.Message):
     operator: str = betterproto.string_field(1)
     """
-    The address of the operator that initiated the bucket migration, usually
-    the owner of the bucket or another account which has permission to operate
+    The address of the operator that initiated the bucket migration,
+    usually the owner of the bucket or another account which has permission to operate
     """
 
     bucket_name: str = betterproto.string_field(2)
@@ -1046,10 +970,7 @@ class EventCompleteMigrationBucket(betterproto.Message):
     """The family id that the bucket to be migrated to"""
 
     src_primary_sp_id: int = betterproto.uint32_field(5)
-    """
-    The src_primary_sp_id defines the primary sp id of the bucket before
-    migrate.
-    """
+    """The src_primary_sp_id defines the primary sp id of the bucket before migrate."""
 
 
 @dataclass(eq=False, repr=False)
@@ -1064,25 +985,19 @@ class Params(betterproto.Message):
     """relayer fee for the mirror bucket tx to bsc"""
 
     bsc_mirror_bucket_ack_relayer_fee: str = betterproto.string_field(4)
-    """
-    relayer fee for the ACK or FAIL_ACK package of the mirror bucket tx to bsc
-    """
+    """relayer fee for the ACK or FAIL_ACK package of the mirror bucket tx to bsc"""
 
     bsc_mirror_object_relayer_fee: str = betterproto.string_field(5)
     """relayer fee for the mirror object tx to bsc"""
 
     bsc_mirror_object_ack_relayer_fee: str = betterproto.string_field(6)
-    """
-    Relayer fee for the ACK or FAIL_ACK package of the mirror object tx to bsc
-    """
+    """Relayer fee for the ACK or FAIL_ACK package of the mirror object tx to bsc"""
 
     bsc_mirror_group_relayer_fee: str = betterproto.string_field(7)
     """relayer fee for the mirror object tx to bsc"""
 
     bsc_mirror_group_ack_relayer_fee: str = betterproto.string_field(8)
-    """
-    Relayer fee for the ACK or FAIL_ACK package of the mirror object tx to bsc
-    """
+    """Relayer fee for the ACK or FAIL_ACK package of the mirror object tx to bsc"""
 
     max_buckets_per_account: int = betterproto.uint32_field(9)
     """The maximum number of buckets that can be created per account"""
@@ -1116,8 +1031,7 @@ class Params(betterproto.Message):
 
     op_mirror_bucket_ack_relayer_fee: str = betterproto.string_field(19)
     """
-    relayer fee for the ACK or FAIL_ACK package of the mirror bucket tx to op
-    chain
+    relayer fee for the ACK or FAIL_ACK package of the mirror bucket tx to op chain
     """
 
     op_mirror_object_relayer_fee: str = betterproto.string_field(20)
@@ -1125,8 +1039,7 @@ class Params(betterproto.Message):
 
     op_mirror_object_ack_relayer_fee: str = betterproto.string_field(21)
     """
-    Relayer fee for the ACK or FAIL_ACK package of the mirror object tx to op
-    chain
+    Relayer fee for the ACK or FAIL_ACK package of the mirror object tx to op chain
     """
 
     op_mirror_group_relayer_fee: str = betterproto.string_field(22)
@@ -1134,37 +1047,32 @@ class Params(betterproto.Message):
 
     op_mirror_group_ack_relayer_fee: str = betterproto.string_field(23)
     """
-    Relayer fee for the ACK or FAIL_ACK package of the mirror object tx to op
-    chain
+    Relayer fee for the ACK or FAIL_ACK package of the mirror object tx to op chain
     """
 
 
 @dataclass(eq=False, repr=False)
 class VersionedParams(betterproto.Message):
     """
-    VersionedParams defines the parameters for the storage module with multi
-    version, each version store with different timestamp.
+    VersionedParams defines the parameters for the storage module with multi version,
+    each version store with different timestamp.
     """
 
     max_segment_size: int = betterproto.uint64_field(1)
     """max_segment_size is the maximum size of a segment. default: 16M"""
 
     redundant_data_chunk_num: int = betterproto.uint32_field(2)
-    """
-    redundant_data_check_num is the num of data chunks of EC redundancy
-    algorithm
-    """
+    """redundant_data_check_num is the num of data chunks of EC redundancy algorithm"""
 
     redundant_parity_chunk_num: int = betterproto.uint32_field(3)
     """
-    redundant_data_check_num is the num of parity chunks of EC redundancy
-    algorithm
+    redundant_data_check_num is the num of parity chunks of EC redundancy algorithm
     """
 
     min_charge_size: int = betterproto.uint64_field(4)
     """
-    min_charge_size is the minimum charge size of the payload, objects smaller
-    than this size will be charged as this size
+    min_charge_size is the minimum charge size of the payload, objects smaller than this
+    size will be charged as this size
     """
 
 
@@ -1184,9 +1092,7 @@ class QueryParamsRequest(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class QueryParamsResponse(betterproto.Message):
-    """
-    QueryParamsResponse is response type for the Query/Params RPC method.
-    """
+    """QueryParamsResponse is response type for the Query/Params RPC method."""
 
     params: "Params" = betterproto.message_field(1)
     """params holds all the parameters of this module."""
@@ -1195,8 +1101,8 @@ class QueryParamsResponse(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class QueryParamsByTimestampRequest(betterproto.Message):
     """
-    QueryVersionedParamsRequest is request type for the Query/Params RPC method
-    with timestamp.
+    QueryVersionedParamsRequest is request type for the Query/Params RPC method with
+    timestamp.
     """
 
     timestamp: int = betterproto.int64_field(1)
@@ -1206,8 +1112,8 @@ class QueryParamsByTimestampRequest(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class QueryParamsByTimestampResponse(betterproto.Message):
     """
-    QueryVersionedParamsResponse is response type for the Query/Params RPC
-    method with timestamp.
+    QueryVersionedParamsResponse is response type for the Query/Params RPC method with
+    timestamp.
     """
 
     params: "Params" = betterproto.message_field(1)
@@ -1461,8 +1367,7 @@ class QueryGroupsExistResponse(betterproto.Message):
 class MsgCreateBucket(betterproto.Message):
     creator: str = betterproto.string_field(1)
     """
-    creator defines the account address of bucket creator, it is also the
-    bucket owner.
+    creator defines the account address of bucket creator, it is also the bucket owner.
     """
 
     bucket_name: str = betterproto.string_field(2)
@@ -1470,14 +1375,15 @@ class MsgCreateBucket(betterproto.Message):
 
     visibility: "VisibilityType" = betterproto.enum_field(3)
     """
-    visibility means the bucket is private or public. if private, only bucket
-    owner or grantee can read it, otherwise every greenfield user can read it.
+    visibility means the bucket is private or public. if private, only bucket owner or
+    grantee can read it,
+    otherwise every greenfield user can read it.
     """
 
     payment_address: str = betterproto.string_field(4)
     """
-    payment_address defines an account address specified by bucket owner to pay
-    the read fee. Default: creator
+    payment_address defines an account address specified by bucket owner to pay the read
+    fee. Default: creator
     """
 
     primary_sp_address: str = betterproto.string_field(5)
@@ -1485,15 +1391,17 @@ class MsgCreateBucket(betterproto.Message):
 
     primary_sp_approval: "_common__.Approval" = betterproto.message_field(6)
     """
-    primary_sp_approval defines the approval info of the primary SP which
-    indicates that primary sp confirm the user's request.
+    primary_sp_approval defines the approval info of the primary SP which indicates that
+    primary sp confirm the user's request.
     """
 
     charged_read_quota: int = betterproto.uint64_field(7)
     """
-    charged_read_quota defines the read data that users are charged for,
-    measured in bytes. The available read data for each user is the sum of the
-    free read data provided by SP and the ChargeReadQuota specified here.
+    charged_read_quota defines the read data that users are charged for, measured in
+    bytes.
+    The available read data for each user is the sum of the free read data provided by
+    SP and
+    the ChargeReadQuota specified here.
     """
 
 
@@ -1526,8 +1434,8 @@ class MsgDiscontinueBucket(betterproto.Message):
 
     bucket_name: str = betterproto.string_field(2)
     """
-    bucket_name defines the name of the bucket where the object which to be
-    discontinued is stored.
+    bucket_name defines the name of the bucket where the object which to be discontinued
+    is stored.
     """
 
     reason: str = betterproto.string_field(3)
@@ -1545,9 +1453,7 @@ class MsgCreateObject(betterproto.Message):
     """creator defines the account address of object uploader"""
 
     bucket_name: str = betterproto.string_field(2)
-    """
-    bucket_name defines the name of the bucket where the object is stored.
-    """
+    """bucket_name defines the name of the bucket where the object is stored."""
 
     object_name: str = betterproto.string_field(3)
     """object_name defines the name of object"""
@@ -1557,21 +1463,20 @@ class MsgCreateObject(betterproto.Message):
 
     visibility: "VisibilityType" = betterproto.enum_field(5)
     """
-    visibility means the object is private or public. if private, only object
-    owner or grantee can access it, otherwise every greenfield user can access
-    it.
+    visibility means the object is private or public. if private, only object owner or
+    grantee can access it,
+    otherwise every greenfield user can access it.
     """
 
     content_type: str = betterproto.string_field(6)
     """
-    content_type defines a standard MIME type describing the format of the
-    object.
+    content_type defines a standard MIME type describing the format of the object.
     """
 
     primary_sp_approval: "_common__.Approval" = betterproto.message_field(7)
     """
-    primary_sp_approval defines the approval info of the primary SP which
-    indicates that primary sp confirm the user's request.
+    primary_sp_approval defines the approval info of the primary SP which indicates that
+    primary sp confirm the user's request.
     """
 
     expect_checksums: List[bytes] = betterproto.bytes_field(8)
@@ -1595,9 +1500,7 @@ class MsgSealObject(betterproto.Message):
     """operator defines the account address of primary SP"""
 
     bucket_name: str = betterproto.string_field(2)
-    """
-    bucket_name defines the name of the bucket where the object is stored.
-    """
+    """bucket_name defines the name of the bucket where the object is stored."""
 
     object_name: str = betterproto.string_field(3)
     """object_name defines the name of object to be sealed."""
@@ -1607,9 +1510,9 @@ class MsgSealObject(betterproto.Message):
 
     secondary_sp_bls_agg_signatures: bytes = betterproto.bytes_field(5)
     """
-    secondary_sp_bls_agg_signatures defines the aggregate bls signature of the
-    secondary sp that can acknowledge that the payload data has received and
-    stored.
+    secondary_sp_bls_agg_signatures defines the aggregate bls signature of the secondary
+    sp that can
+    acknowledge that the payload data has received and stored.
     """
 
 
@@ -1624,9 +1527,7 @@ class MsgRejectSealObject(betterproto.Message):
     """operator defines the account address of the object owner"""
 
     bucket_name: str = betterproto.string_field(2)
-    """
-    bucket_name defines the name of the bucket where the object is stored.
-    """
+    """bucket_name defines the name of the bucket where the object is stored."""
 
     object_name: str = betterproto.string_field(3)
     """object_name defines the name of unsealed object to be reject."""
@@ -1647,15 +1548,12 @@ class MsgCopyObject(betterproto.Message):
 
     src_bucket_name: str = betterproto.string_field(2)
     """
-    src_bucket_name defines the name of the bucket where the object to be
-    copied is located
+    src_bucket_name defines the name of the bucket where the object to be copied is
+    located
     """
 
     dst_bucket_name: str = betterproto.string_field(3)
-    """
-    dst_bucket_name defines the name of the bucket where the object is copied
-    to.
-    """
+    """dst_bucket_name defines the name of the bucket where the object is copied to."""
 
     src_object_name: str = betterproto.string_field(4)
     """src_object_name defines the name of the object which to be copied"""
@@ -1665,8 +1563,8 @@ class MsgCopyObject(betterproto.Message):
 
     dst_primary_sp_approval: "_common__.Approval" = betterproto.message_field(6)
     """
-    primary_sp_approval defines the approval info of the primary SP which
-    indicates that primary sp confirm the user's request.
+    primary_sp_approval defines the approval info of the primary SP which indicates that
+    primary sp confirm the user's request.
     """
 
 
@@ -1679,14 +1577,14 @@ class MsgCopyObjectResponse(betterproto.Message):
 class MsgDeleteObject(betterproto.Message):
     operator: str = betterproto.string_field(1)
     """
-    operator defines the account address of the operator who has the
-    DeleteObject permission of the object to be deleted.
+    operator defines the account address of the operator who has the DeleteObject
+    permission of the object to be deleted.
     """
 
     bucket_name: str = betterproto.string_field(2)
     """
-    bucket_name defines the name of the bucket where the object which to be
-    deleted is stored.
+    bucket_name defines the name of the bucket where the object which to be deleted is
+    stored.
     """
 
     object_name: str = betterproto.string_field(3)
@@ -1705,8 +1603,8 @@ class MsgDiscontinueObject(betterproto.Message):
 
     bucket_name: str = betterproto.string_field(2)
     """
-    bucket_name defines the name of the bucket where the object which to be
-    discontinued is stored.
+    bucket_name defines the name of the bucket where the object which to be discontinued
+    is stored.
     """
 
     object_ids: List[str] = betterproto.string_field(3)
@@ -1724,9 +1622,7 @@ class MsgDiscontinueObjectResponse(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class MsgCreateGroup(betterproto.Message):
     creator: str = betterproto.string_field(1)
-    """
-    owner defines the account address of group owner who create the group
-    """
+    """owner defines the account address of group owner who create the group"""
 
     group_name: str = betterproto.string_field(2)
     """group_name defines the name of the group. it's not globally unique."""
@@ -1744,8 +1640,8 @@ class MsgCreateGroupResponse(betterproto.Message):
 class MsgDeleteGroup(betterproto.Message):
     operator: str = betterproto.string_field(1)
     """
-    operator defines the account address of the operator who has the
-    DeleteGroup permission of the group to be deleted.
+    operator defines the account address of the operator who has the DeleteGroup
+    permission of the group to be deleted.
     """
 
     group_name: str = betterproto.string_field(2)
@@ -1761,8 +1657,8 @@ class MsgDeleteGroupResponse(betterproto.Message):
 class MsgUpdateGroupMember(betterproto.Message):
     operator: str = betterproto.string_field(1)
     """
-    operator defines the account address of the operator who has the
-    UpdateGroupMember permission of the group.
+    operator defines the account address of the operator who has the UpdateGroupMember
+    permission of the group.
     """
 
     group_owner: str = betterproto.string_field(2)
@@ -1773,14 +1669,14 @@ class MsgUpdateGroupMember(betterproto.Message):
 
     members_to_add: List["MsgGroupMember"] = betterproto.message_field(4)
     """
-    members_to_add defines a list of members account address which will be add
-    to the group
+    members_to_add defines a list of members account address which will be add to the
+    group
     """
 
     members_to_delete: List[str] = betterproto.string_field(5)
     """
-    members_to_delete defines a list of members account address which will be
-    remove from the group
+    members_to_delete defines a list of members account address which will be remove
+    from the group
     """
 
 
@@ -1793,8 +1689,8 @@ class MsgUpdateGroupMemberResponse(betterproto.Message):
 class MsgRenewGroupMember(betterproto.Message):
     operator: str = betterproto.string_field(1)
     """
-    operator defines the account address of the operator who has the
-    UpdateGroupMember permission of the group.
+    operator defines the account address of the operator who has the UpdateGroupMember
+    permission of the group.
     """
 
     group_owner: str = betterproto.string_field(2)
@@ -1825,8 +1721,8 @@ class MsgGroupMember(betterproto.Message):
 class MsgUpdateGroupExtra(betterproto.Message):
     operator: str = betterproto.string_field(1)
     """
-    operator defines the account address of the operator who has the
-    UpdateGroupMember permission of the group.
+    operator defines the account address of the operator who has the UpdateGroupMember
+    permission of the group.
     """
 
     group_owner: str = betterproto.string_field(2)
@@ -1847,10 +1743,7 @@ class MsgUpdateGroupExtraResponse(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class MsgLeaveGroup(betterproto.Message):
     member: str = betterproto.string_field(1)
-    """
-    member defines the account address of the member who want to leave the
-    group
-    """
+    """member defines the account address of the member who want to leave the group"""
 
     group_owner: str = betterproto.string_field(2)
     """group_owner defines the owner of the group you want to leave"""
@@ -1880,14 +1773,15 @@ class MsgUpdateBucketInfo(betterproto.Message):
 
     payment_address: str = betterproto.string_field(4)
     """
-    payment_address defines the account address of the payment account if
-    payment_address is empty, it means don't change the payment_address
+    payment_address defines the account address of the payment account
+    if payment_address is empty, it means don't change the payment_address
     """
 
     visibility: "VisibilityType" = betterproto.enum_field(5)
     """
-    visibility means the bucket is private or public. if private, only bucket
-    owner or grantee can read it, otherwise every greenfield user can read it.
+    visibility means the bucket is private or public. if private, only bucket owner or
+    grantee can read it,
+    otherwise every greenfield user can read it.
     """
 
 
@@ -1916,33 +1810,30 @@ class MsgCancelCreateObjectResponse(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class MsgPutPolicy(betterproto.Message):
     operator: str = betterproto.string_field(1)
-    """
-    operator defines the granter who grant the permission to another principal
-    """
+    """operator defines the granter who grant the permission to another principal"""
 
     principal: "_permission__.Principal" = betterproto.message_field(2)
     """
-    Principal defines the roles that can grant permissions. Currently, it can
-    be account or group.
+    Principal defines the roles that can grant permissions. Currently, it can be account
+    or group.
     """
 
     resource: str = betterproto.string_field(3)
     """
-    resource defines a greenfield standard resource name that can be generated
-    by GRN structure
+    resource defines a greenfield standard resource name that can be generated by GRN
+    structure
     """
 
     statements: List["_permission__.Statement"] = betterproto.message_field(4)
     """
-    statements defines a list of individual statement which describe the detail
-    rules of policy
+    statements defines a list of individual statement which describe the detail rules of
+    policy
     """
 
     expiration_time: datetime = betterproto.message_field(7)
     """
     expiration_time defines the whole expiration time of all the statements.
-    Notices: Its priority is higher than the expiration time inside the
-    Statement
+    Notices: Its priority is higher than the expiration time inside the Statement
     """
 
 
@@ -1954,20 +1845,18 @@ class MsgPutPolicyResponse(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class MsgDeletePolicy(betterproto.Message):
     operator: str = betterproto.string_field(1)
-    """
-    operator defines the granter who grant the permission to another principal
-    """
+    """operator defines the granter who grant the permission to another principal"""
 
     principal: "_permission__.Principal" = betterproto.message_field(2)
     """
-    Principal defines the roles that can grant permissions. Currently, it can
-    be account or group.
+    Principal defines the roles that can grant permissions. Currently, it can be account
+    or group.
     """
 
     resource: str = betterproto.string_field(3)
     """
-    resource defines a greenfield standard resource name that can be generated
-    by GRN structure
+    resource defines a greenfield standard resource name that can be generated by GRN
+    structure
     """
 
 
@@ -1980,17 +1869,15 @@ class MsgDeletePolicyResponse(betterproto.Message):
 class MsgMirrorObject(betterproto.Message):
     operator: str = betterproto.string_field(1)
     """
-    operator defines the account address of the operator who has the
-    DeleteObject permission of the object to be deleted.
+    operator defines the account address of the operator who has the DeleteObject
+    permission of the object to be deleted.
     """
 
     id: str = betterproto.string_field(2)
     """id defines the unique u256 for object."""
 
     bucket_name: str = betterproto.string_field(3)
-    """
-    bucket_name defines the name of the bucket where the object is stored
-    """
+    """bucket_name defines the name of the bucket where the object is stored"""
 
     object_name: str = betterproto.string_field(4)
     """object_name defines the name of object"""
@@ -2040,8 +1927,9 @@ class MsgUpdateObjectInfo(betterproto.Message):
 
     visibility: "VisibilityType" = betterproto.enum_field(4)
     """
-    visibility means the object is private or public. if private, only bucket
-    owner or grantee can read it, otherwise every greenfield user can read it.
+    visibility means the object is private or public. if private, only bucket owner or
+    grantee can read it,
+    otherwise every greenfield user can read it.
     """
 
 
@@ -2054,8 +1942,7 @@ class MsgMirrorBucketResponse(betterproto.Message):
 class MsgMirrorGroup(betterproto.Message):
     operator: str = betterproto.string_field(1)
     """
-    operator defines the account address of the operator who is the owner of
-    the group
+    operator defines the account address of the operator who is the owner of the group
     """
 
     id: str = betterproto.string_field(2)
@@ -2085,16 +1972,14 @@ class MsgUpdateParams(betterproto.Message):
 
     params: "Params" = betterproto.message_field(2)
     """
-    params defines the x/storage parameters to update. NOTE: All parameters
-    must be supplied.
+    params defines the x/storage parameters to update.
+    NOTE: All parameters must be supplied.
     """
 
 
 @dataclass(eq=False, repr=False)
 class MsgUpdateParamsResponse(betterproto.Message):
-    """
-    MsgUpdateParamsResponse defines the response structure for executing a
-    """
+    """MsgUpdateParamsResponse defines the response structure for executing a"""
 
     pass
 
@@ -2105,8 +1990,7 @@ class MsgMigrateBucket(betterproto.Message):
 
     operator: str = betterproto.string_field(1)
     """
-    operator defines the account address of the operator who initial the
-    migrate bucket
+    operator defines the account address of the operator who initial the migrate bucket
     """
 
     bucket_name: str = betterproto.string_field(2)
@@ -2128,9 +2012,9 @@ class MsgMigrateBucketResponse(betterproto.Message):
 class MsgCompleteMigrateBucket(betterproto.Message):
     operator: str = betterproto.string_field(1)
     """
-    operator defines the account address of the msg operator. The
-    CompleteMigrateBucket transaction must be initiated by the destination SP
-    of the migration
+    operator defines the account address of the msg operator.
+    The CompleteMigrateBucket transaction must be initiated by the destination SP of the
+    migration
     """
 
     bucket_name: str = betterproto.string_field(2)
@@ -2138,14 +2022,13 @@ class MsgCompleteMigrateBucket(betterproto.Message):
 
     global_virtual_group_family_id: int = betterproto.uint32_field(3)
     """
-    global_virtual_group_family_id defines the family id which the bucket
-    migrate to
+    global_virtual_group_family_id defines the family id which the bucket migrate to
     """
 
     gvg_mappings: List["GvgMapping"] = betterproto.message_field(4)
     """
-    gvg_mappings defines the src and dst gvg mapping relationships which the
-    bucket migrate to
+    gvg_mappings defines the src and dst gvg mapping relationships which the bucket
+    migrate to
     """
 
 
@@ -2158,8 +2041,8 @@ class MsgCompleteMigrateBucketResponse(betterproto.Message):
 class MsgCancelMigrateBucket(betterproto.Message):
     operator: str = betterproto.string_field(1)
     """
-    operator defines the account address of the msg operator. Only the user can
-    send this transaction to cancel the migrate bucket
+    operator defines the account address of the msg operator.
+    Only the user can send this transaction to cancel the migrate bucket
     """
 
     bucket_name: str = betterproto.string_field(2)
@@ -2242,7 +2125,6 @@ class QueryStub(betterproto.ServiceStub):
 
     async def head_bucket_nft(
         self,
-        query_nft_request: "QueryNftRequest",
         *,
         timeout: Optional[float] = None,
         deadline: Optional["Deadline"] = None,
@@ -2293,7 +2175,6 @@ class QueryStub(betterproto.ServiceStub):
 
     async def head_object_nft(
         self,
-        query_nft_request: "QueryNftRequest",
         *,
         timeout: Optional[float] = None,
         deadline: Optional["Deadline"] = None,
@@ -2361,7 +2242,6 @@ class QueryStub(betterproto.ServiceStub):
 
     async def head_group_nft(
         self,
-        query_nft_request: "QueryNftRequest",
         *,
         timeout: Optional[float] = None,
         deadline: Optional["Deadline"] = None,
@@ -3093,7 +2973,7 @@ class QueryBase(ServiceBase):
     ) -> "QueryHeadBucketResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    async def head_bucket_nft(self, query_nft_request: "QueryNftRequest") -> "QueryBucketNftResponse":
+    async def head_bucket_nft(self) -> "QueryBucketNftResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
     async def head_object(self, query_head_object_request: "QueryHeadObjectRequest") -> "QueryHeadObjectResponse":
@@ -3104,7 +2984,7 @@ class QueryBase(ServiceBase):
     ) -> "QueryHeadObjectResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    async def head_object_nft(self, query_nft_request: "QueryNftRequest") -> "QueryObjectNftResponse":
+    async def head_object_nft(self) -> "QueryObjectNftResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
     async def list_buckets(self, query_list_buckets_request: "QueryListBucketsRequest") -> "QueryListBucketsResponse":
@@ -3119,7 +2999,7 @@ class QueryBase(ServiceBase):
     ) -> "QueryListObjectsResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    async def head_group_nft(self, query_nft_request: "QueryNftRequest") -> "QueryGroupNftResponse":
+    async def head_group_nft(self) -> "QueryGroupNftResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
     async def query_policy_for_account(
@@ -3994,62 +3874,3 @@ class MsgBase(ServiceBase):
                 MsgCancelMigrateBucketResponse,
             ),
         }
-
-
-BucketInfo.__pydantic_model__.update_forward_refs()  # type: ignore
-InternalBucketInfo.__pydantic_model__.update_forward_refs()  # type: ignore
-ObjectInfo.__pydantic_model__.update_forward_refs()  # type: ignore
-GroupInfo.__pydantic_model__.update_forward_refs()  # type: ignore
-BucketMetaData.__pydantic_model__.update_forward_refs()  # type: ignore
-ObjectMetaData.__pydantic_model__.update_forward_refs()  # type: ignore
-GroupMetaData.__pydantic_model__.update_forward_refs()  # type: ignore
-DeleteInfo.__pydantic_model__.update_forward_refs()  # type: ignore
-EventCreateBucket.__pydantic_model__.update_forward_refs()  # type: ignore
-EventUpdateBucketInfo.__pydantic_model__.update_forward_refs()  # type: ignore
-EventCreateObject.__pydantic_model__.update_forward_refs()  # type: ignore
-EventSealObject.__pydantic_model__.update_forward_refs()  # type: ignore
-EventUpdateObjectInfo.__pydantic_model__.update_forward_refs()  # type: ignore
-EventCreateGroup.__pydantic_model__.update_forward_refs()  # type: ignore
-EventUpdateGroupMember.__pydantic_model__.update_forward_refs()  # type: ignore
-EventRenewGroupMember.__pydantic_model__.update_forward_refs()  # type: ignore
-EventGroupMemberDetail.__pydantic_model__.update_forward_refs()  # type: ignore
-EventStalePolicyCleanup.__pydantic_model__.update_forward_refs()  # type: ignore
-Params.__pydantic_model__.update_forward_refs()  # type: ignore
-GenesisState.__pydantic_model__.update_forward_refs()  # type: ignore
-QueryParamsResponse.__pydantic_model__.update_forward_refs()  # type: ignore
-QueryParamsByTimestampResponse.__pydantic_model__.update_forward_refs()  # type: ignore
-QueryHeadBucketResponse.__pydantic_model__.update_forward_refs()  # type: ignore
-QueryHeadObjectResponse.__pydantic_model__.update_forward_refs()  # type: ignore
-QueryListBucketsRequest.__pydantic_model__.update_forward_refs()  # type: ignore
-QueryListBucketsResponse.__pydantic_model__.update_forward_refs()  # type: ignore
-QueryListObjectsRequest.__pydantic_model__.update_forward_refs()  # type: ignore
-QueryListObjectsByBucketIdRequest.__pydantic_model__.update_forward_refs()  # type: ignore
-QueryListObjectsResponse.__pydantic_model__.update_forward_refs()  # type: ignore
-QueryBucketNftResponse.__pydantic_model__.update_forward_refs()  # type: ignore
-QueryObjectNftResponse.__pydantic_model__.update_forward_refs()  # type: ignore
-QueryGroupNftResponse.__pydantic_model__.update_forward_refs()  # type: ignore
-QueryPolicyForAccountResponse.__pydantic_model__.update_forward_refs()  # type: ignore
-QueryVerifyPermissionRequest.__pydantic_model__.update_forward_refs()  # type: ignore
-QueryVerifyPermissionResponse.__pydantic_model__.update_forward_refs()  # type: ignore
-QueryHeadGroupResponse.__pydantic_model__.update_forward_refs()  # type: ignore
-QueryListGroupsRequest.__pydantic_model__.update_forward_refs()  # type: ignore
-QueryListGroupsResponse.__pydantic_model__.update_forward_refs()  # type: ignore
-QueryHeadGroupMemberResponse.__pydantic_model__.update_forward_refs()  # type: ignore
-QueryPolicyForGroupResponse.__pydantic_model__.update_forward_refs()  # type: ignore
-QueryPolicyByIdResponse.__pydantic_model__.update_forward_refs()  # type: ignore
-QueryHeadBucketExtraResponse.__pydantic_model__.update_forward_refs()  # type: ignore
-QueryGroupMembersExistResponse.__pydantic_model__.update_forward_refs()  # type: ignore
-QueryGroupsExistResponse.__pydantic_model__.update_forward_refs()  # type: ignore
-MsgCreateBucket.__pydantic_model__.update_forward_refs()  # type: ignore
-MsgCreateObject.__pydantic_model__.update_forward_refs()  # type: ignore
-MsgCopyObject.__pydantic_model__.update_forward_refs()  # type: ignore
-MsgUpdateGroupMember.__pydantic_model__.update_forward_refs()  # type: ignore
-MsgRenewGroupMember.__pydantic_model__.update_forward_refs()  # type: ignore
-MsgGroupMember.__pydantic_model__.update_forward_refs()  # type: ignore
-MsgUpdateBucketInfo.__pydantic_model__.update_forward_refs()  # type: ignore
-MsgPutPolicy.__pydantic_model__.update_forward_refs()  # type: ignore
-MsgDeletePolicy.__pydantic_model__.update_forward_refs()  # type: ignore
-MsgUpdateObjectInfo.__pydantic_model__.update_forward_refs()  # type: ignore
-MsgUpdateParams.__pydantic_model__.update_forward_refs()  # type: ignore
-MsgMigrateBucket.__pydantic_model__.update_forward_refs()  # type: ignore
-MsgCompleteMigrateBucket.__pydantic_model__.update_forward_refs()  # type: ignore

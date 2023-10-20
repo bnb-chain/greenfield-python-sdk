@@ -2,14 +2,7 @@
 # sources: cosmos/bank/module/v1/module.proto
 # plugin: python-betterproto
 # This file has been @generated
-
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from dataclasses import dataclass
-else:
-    from pydantic.dataclasses import dataclass
-
+from dataclasses import dataclass
 from typing import List
 
 import betterproto
@@ -21,9 +14,10 @@ class Module(betterproto.Message):
 
     blocked_module_accounts_override: List[str] = betterproto.string_field(1)
     """
-    blocked_module_accounts configures exceptional module accounts which should
-    be blocked from receiving funds. If left empty it defaults to the list of
-    account names supplied in the auth module configuration as
+    blocked_module_accounts configures exceptional module accounts which should be
+    blocked from receiving funds.
+    If left empty it defaults to the list of account names supplied in the auth module
+    configuration as
     module_account_permissions
     """
 

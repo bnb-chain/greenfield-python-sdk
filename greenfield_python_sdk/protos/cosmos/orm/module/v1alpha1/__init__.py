@@ -2,13 +2,7 @@
 # sources: cosmos/orm/module/v1alpha1/module.proto
 # plugin: python-betterproto
 # This file has been @generated
-
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from dataclasses import dataclass
-else:
-    from pydantic.dataclasses import dataclass
+from dataclasses import dataclass
 
 import betterproto
 
@@ -17,8 +11,8 @@ import betterproto
 class Module(betterproto.Message):
     """
     Module defines the ORM module which adds providers to the app container for
-    module-scoped DB's. In the future it may provide gRPC services for
-    interacting with ORM data.
+    module-scoped DB's. In the future it may provide gRPC services for interacting
+    with ORM data.
     """
 
     pass

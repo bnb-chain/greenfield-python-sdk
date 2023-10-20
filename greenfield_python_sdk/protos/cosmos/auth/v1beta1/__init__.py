@@ -3,13 +3,7 @@
 # plugin: python-betterproto
 # This file has been @generated
 import warnings
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from dataclasses import dataclass
-else:
-    from pydantic.dataclasses import dataclass
-
+from dataclasses import dataclass
 from typing import TYPE_CHECKING, Dict, List, Optional
 
 import betterproto
@@ -28,9 +22,9 @@ if TYPE_CHECKING:
 @dataclass(eq=False, repr=False)
 class BaseAccount(betterproto.Message):
     """
-    BaseAccount defines a base account type. It contains all the necessary
-    fields for basic account functionality. Any custom account type should
-    extend this type for additional functionality (e.g. vesting).
+    BaseAccount defines a base account type. It contains all the necessary fields
+    for basic account functionality. Any custom account type should extend this
+    type for additional functionality (e.g. vesting).
     """
 
     address: str = betterproto.string_field(1)
@@ -41,9 +35,7 @@ class BaseAccount(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class ModuleAccount(betterproto.Message):
-    """
-    ModuleAccount defines an account for modules that holds coins on a pool.
-    """
+    """ModuleAccount defines an account for modules that holds coins on a pool."""
 
     base_account: "BaseAccount" = betterproto.message_field(1)
     name: str = betterproto.string_field(2)
@@ -53,21 +45,22 @@ class ModuleAccount(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class ModuleCredential(betterproto.Message):
     """
-    ModuleCredential represents a unclaimable pubkey for base accounts
-    controlled by modules. Since: cosmos-sdk 0.47
+    ModuleCredential represents a unclaimable pubkey for base accounts controlled by
+    modules.
+    Since: cosmos-sdk 0.47
     """
 
     module_name: str = betterproto.string_field(1)
     """
-    module_name is the name of the module used for address derivation (passed
-    into address.Module).
+    module_name is the name of the module used for address derivation (passed into
+    address.Module).
     """
 
     derivation_keys: List[bytes] = betterproto.bytes_field(2)
     """
     derivation_keys is for deriving a module account address (passed into
-    address.Module) adding more keys creates sub-account addresses (passed into
-    address.Derive)
+    address.Module)
+    adding more keys creates sub-account addresses (passed into address.Derive)
     """
 
 
@@ -107,8 +100,8 @@ class QueryAccountsRequest(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class QueryAccountsResponse(betterproto.Message):
     """
-    QueryAccountsResponse is the response type for the Query/Accounts RPC
-    method. Since: cosmos-sdk 0.43
+    QueryAccountsResponse is the response type for the Query/Accounts RPC method.
+    Since: cosmos-sdk 0.43
     """
 
     accounts: List["betterproto_lib_google_protobuf.Any"] = betterproto.message_field(1)
@@ -120,9 +113,7 @@ class QueryAccountsResponse(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class QueryAccountRequest(betterproto.Message):
-    """
-    QueryAccountRequest is the request type for the Query/Account RPC method.
-    """
+    """QueryAccountRequest is the request type for the Query/Account RPC method."""
 
     address: str = betterproto.string_field(1)
     """address defines the address to query for."""
@@ -130,9 +121,7 @@ class QueryAccountRequest(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class QueryAccountResponse(betterproto.Message):
-    """
-    QueryAccountResponse is the response type for the Query/Account RPC method.
-    """
+    """QueryAccountResponse is the response type for the Query/Account RPC method."""
 
     account: "betterproto_lib_google_protobuf.Any" = betterproto.message_field(1)
     """account defines the account of the corresponding address."""
@@ -140,18 +129,14 @@ class QueryAccountResponse(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class QueryParamsRequest(betterproto.Message):
-    """
-    QueryParamsRequest is the request type for the Query/Params RPC method.
-    """
+    """QueryParamsRequest is the request type for the Query/Params RPC method."""
 
     pass
 
 
 @dataclass(eq=False, repr=False)
 class QueryParamsResponse(betterproto.Message):
-    """
-    QueryParamsResponse is the response type for the Query/Params RPC method.
-    """
+    """QueryParamsResponse is the response type for the Query/Params RPC method."""
 
     params: "Params" = betterproto.message_field(1)
     """params defines the parameters of the module."""
@@ -160,8 +145,9 @@ class QueryParamsResponse(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class QueryModuleAccountsRequest(betterproto.Message):
     """
-    QueryModuleAccountsRequest is the request type for the Query/ModuleAccounts
-    RPC method. Since: cosmos-sdk 0.46
+    QueryModuleAccountsRequest is the request type for the Query/ModuleAccounts RPC
+    method.
+    Since: cosmos-sdk 0.46
     """
 
     pass
@@ -170,8 +156,9 @@ class QueryModuleAccountsRequest(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class QueryModuleAccountsResponse(betterproto.Message):
     """
-    QueryModuleAccountsResponse is the response type for the
-    Query/ModuleAccounts RPC method. Since: cosmos-sdk 0.46
+    QueryModuleAccountsResponse is the response type for the Query/ModuleAccounts RPC
+    method.
+    Since: cosmos-sdk 0.46
     """
 
     accounts: List["betterproto_lib_google_protobuf.Any"] = betterproto.message_field(1)
@@ -200,8 +187,8 @@ class QueryModuleAccountByNameResponse(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class AddressBytesToStringRequest(betterproto.Message):
     """
-    AddressBytesToStringRequest is the request type for AddressString rpc
-    method. Since: cosmos-sdk 0.46
+    AddressBytesToStringRequest is the request type for AddressString rpc method.
+    Since: cosmos-sdk 0.46
     """
 
     address_bytes: bytes = betterproto.bytes_field(1)
@@ -210,8 +197,8 @@ class AddressBytesToStringRequest(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class AddressBytesToStringResponse(betterproto.Message):
     """
-    AddressBytesToStringResponse is the response type for AddressString rpc
-    method. Since: cosmos-sdk 0.46
+    AddressBytesToStringResponse is the response type for AddressString rpc method.
+    Since: cosmos-sdk 0.46
     """
 
     address_string: str = betterproto.string_field(1)
@@ -220,8 +207,8 @@ class AddressBytesToStringResponse(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class AddressStringToBytesRequest(betterproto.Message):
     """
-    AddressStringToBytesRequest is the request type for AccountBytes rpc
-    method. Since: cosmos-sdk 0.46
+    AddressStringToBytesRequest is the request type for AccountBytes rpc method.
+    Since: cosmos-sdk 0.46
     """
 
     address_string: str = betterproto.string_field(1)
@@ -230,8 +217,8 @@ class AddressStringToBytesRequest(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class AddressStringToBytesResponse(betterproto.Message):
     """
-    AddressStringToBytesResponse is the response type for AddressBytes rpc
-    method. Since: cosmos-sdk 0.46
+    AddressStringToBytesResponse is the response type for AddressBytes rpc method.
+    Since: cosmos-sdk 0.46
     """
 
     address_bytes: bytes = betterproto.bytes_field(1)
@@ -240,22 +227,22 @@ class AddressStringToBytesResponse(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class QueryAccountAddressByIdRequest(betterproto.Message):
     """
-    QueryAccountAddressByIDRequest is the request type for AccountAddressByID
-    rpc method Since: cosmos-sdk 0.46.2
+    QueryAccountAddressByIDRequest is the request type for AccountAddressByID rpc method
+    Since: cosmos-sdk 0.46.2
     """
 
     id: int = betterproto.int64_field(1)
     """
-    Deprecated, use account_id instead id is the account number of the address
-    to be queried. This field should have been an uint64 (like all account
-    numbers), and will be updated to uint64 in a future version of the auth
-    query.
+    Deprecated, use account_id instead
+    id is the account number of the address to be queried. This field
+    should have been an uint64 (like all account numbers), and will be
+    updated to uint64 in a future version of the auth query.
     """
 
     account_id: int = betterproto.uint64_field(2)
     """
-    account_id is the account number of the address to be queried. Since:
-    cosmos-sdk 0.47
+    account_id is the account number of the address to be queried.
+    Since: cosmos-sdk 0.47
     """
 
     def __post_init__(self) -> None:
@@ -267,8 +254,9 @@ class QueryAccountAddressByIdRequest(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class QueryAccountAddressByIdResponse(betterproto.Message):
     """
-    QueryAccountAddressByIDResponse is the response type for AccountAddressByID
-    rpc method Since: cosmos-sdk 0.46.2
+    QueryAccountAddressByIDResponse is the response type for AccountAddressByID rpc
+    method
+    Since: cosmos-sdk 0.46.2
     """
 
     account_address: str = betterproto.string_field(1)
@@ -277,8 +265,8 @@ class QueryAccountAddressByIdResponse(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class QueryAccountInfoRequest(betterproto.Message):
     """
-    QueryAccountInfoRequest is the Query/AccountInfo request type. Since:
-    cosmos-sdk 0.47
+    QueryAccountInfoRequest is the Query/AccountInfo request type.
+    Since: cosmos-sdk 0.47
     """
 
     address: str = betterproto.string_field(1)
@@ -288,8 +276,8 @@ class QueryAccountInfoRequest(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class QueryAccountInfoResponse(betterproto.Message):
     """
-    QueryAccountInfoResponse is the Query/AccountInfo response type. Since:
-    cosmos-sdk 0.47
+    QueryAccountInfoResponse is the Query/AccountInfo response type.
+    Since: cosmos-sdk 0.47
     """
 
     info: "BaseAccount" = betterproto.message_field(1)
@@ -299,8 +287,8 @@ class QueryAccountInfoResponse(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class MsgUpdateParams(betterproto.Message):
     """
-    MsgUpdateParams is the Msg/UpdateParams request type. Since: cosmos-sdk
-    0.47
+    MsgUpdateParams is the Msg/UpdateParams request type.
+    Since: cosmos-sdk 0.47
     """
 
     authority: str = betterproto.string_field(1)
@@ -311,8 +299,8 @@ class MsgUpdateParams(betterproto.Message):
 
     params: "Params" = betterproto.message_field(2)
     """
-    params defines the x/auth parameters to update. NOTE: All parameters must
-    be supplied.
+    params defines the x/auth parameters to update.
+    NOTE: All parameters must be supplied.
     """
 
 
@@ -320,7 +308,8 @@ class MsgUpdateParams(betterproto.Message):
 class MsgUpdateParamsResponse(betterproto.Message):
     """
     MsgUpdateParamsResponse defines the response structure for executing a
-    MsgUpdateParams message. Since: cosmos-sdk 0.47
+    MsgUpdateParams message.
+    Since: cosmos-sdk 0.47
     """
 
     pass
@@ -363,7 +352,6 @@ class QueryStub(betterproto.ServiceStub):
 
     async def account_address_by_id(
         self,
-        query_account_address_by_id_request: "QueryAccountAddressByIdRequest",
         *,
         timeout: Optional[float] = None,
         deadline: Optional["Deadline"] = None,
@@ -473,9 +461,7 @@ class QueryBase(ServiceBase):
     async def account(self, query_account_request: "QueryAccountRequest") -> "QueryAccountResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    async def account_address_by_id(
-        self, query_account_address_by_id_request: "QueryAccountAddressByIdRequest"
-    ) -> "QueryAccountAddressByIdResponse":
+    async def account_address_by_id(self) -> "QueryAccountAddressByIdResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
     async def params(self, query_params_request: "QueryParamsRequest") -> "QueryParamsResponse":
@@ -611,16 +597,3 @@ class MsgBase(ServiceBase):
                 MsgUpdateParamsResponse,
             ),
         }
-
-
-BaseAccount.__pydantic_model__.update_forward_refs()  # type: ignore
-ModuleAccount.__pydantic_model__.update_forward_refs()  # type: ignore
-GenesisState.__pydantic_model__.update_forward_refs()  # type: ignore
-QueryAccountsRequest.__pydantic_model__.update_forward_refs()  # type: ignore
-QueryAccountsResponse.__pydantic_model__.update_forward_refs()  # type: ignore
-QueryAccountResponse.__pydantic_model__.update_forward_refs()  # type: ignore
-QueryParamsResponse.__pydantic_model__.update_forward_refs()  # type: ignore
-QueryModuleAccountsResponse.__pydantic_model__.update_forward_refs()  # type: ignore
-QueryModuleAccountByNameResponse.__pydantic_model__.update_forward_refs()  # type: ignore
-QueryAccountInfoResponse.__pydantic_model__.update_forward_refs()  # type: ignore
-MsgUpdateParams.__pydantic_model__.update_forward_refs()  # type: ignore

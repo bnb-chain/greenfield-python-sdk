@@ -3,13 +3,7 @@
 # plugin: python-betterproto
 # This file has been @generated
 import warnings
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from dataclasses import dataclass
-else:
-    from pydantic.dataclasses import dataclass
-
+from dataclasses import dataclass
 from typing import List
 
 import betterproto
@@ -21,8 +15,8 @@ from .....tendermint import abci as ____tendermint_abci__
 @dataclass(eq=False, repr=False)
 class TxResponse(betterproto.Message):
     """
-    TxResponse defines a structure containing relevant tx data and metadata.
-    The tags are stringified and the log is JSON decoded.
+    TxResponse defines a structure containing relevant tx data and metadata. The
+    tags are stringified and the log is JSON decoded.
     """
 
     height: int = betterproto.int64_field(1)
@@ -42,14 +36,12 @@ class TxResponse(betterproto.Message):
 
     raw_log: str = betterproto.string_field(6)
     """
-    The output of the application's logger (raw string). May be non-
-    deterministic.
+    The output of the application's logger (raw string). May be
+    non-deterministic.
     """
 
     logs: List["AbciMessageLog"] = betterproto.message_field(7)
-    """
-    The output of the application's logger (typed). May be non-deterministic.
-    """
+    """The output of the application's logger (typed). May be non-deterministic."""
 
     info: str = betterproto.string_field(8)
     """Additional information. May be non-deterministic."""
@@ -74,18 +66,15 @@ class TxResponse(betterproto.Message):
     """
     Events defines all the events emitted by processing a transaction. Note,
     these events include those emitted by processing all the messages and those
-    emitted from the ante. Whereas Logs contains the events, with additional
-    metadata, emitted only by processing the messages. Since: cosmos-sdk
-    0.42.11, 0.44.5, 0.45
+    emitted from the ante. Whereas Logs contains the events, with
+    additional metadata, emitted only by processing the messages.
+    Since: cosmos-sdk 0.42.11, 0.44.5, 0.45
     """
 
 
 @dataclass(eq=False, repr=False)
 class AbciMessageLog(betterproto.Message):
-    """
-    ABCIMessageLog defines a structure containing an indexed tx ABCI message
-    log.
-    """
+    """ABCIMessageLog defines a structure containing an indexed tx ABCI message log."""
 
     msg_index: int = betterproto.uint32_field(1)
     log: str = betterproto.string_field(2)
@@ -110,8 +99,8 @@ class StringEvent(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class Attribute(betterproto.Message):
     """
-    Attribute defines an attribute wrapper where the key and value are strings
-    instead of raw bytes.
+    Attribute defines an attribute wrapper where the key and value are
+    strings instead of raw bytes.
     """
 
     key: str = betterproto.string_field(1)
@@ -197,8 +186,8 @@ class MsgData(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class TxMsgData(betterproto.Message):
     """
-    TxMsgData defines a list of MsgData. A transaction will have a MsgData
-    object for each message.
+    TxMsgData defines a list of MsgData. A transaction will have a MsgData object
+    for each message.
     """
 
     data: List["MsgData"] = betterproto.message_field(1)
@@ -206,8 +195,8 @@ class TxMsgData(betterproto.Message):
 
     msg_responses: List["betterproto_lib_google_protobuf.Any"] = betterproto.message_field(2)
     """
-    msg_responses contains the Msg handler responses packed into Anys. Since:
-    cosmos-sdk 0.46
+    msg_responses contains the Msg handler responses packed into Anys.
+    Since: cosmos-sdk 0.46
     """
 
     extra_data: bytes = betterproto.bytes_field(3)
@@ -240,12 +229,3 @@ class SearchTxsResult(betterproto.Message):
 
     txs: List["TxResponse"] = betterproto.message_field(6)
     """List of txs in current page"""
-
-
-TxResponse.__pydantic_model__.update_forward_refs()  # type: ignore
-AbciMessageLog.__pydantic_model__.update_forward_refs()  # type: ignore
-StringEvent.__pydantic_model__.update_forward_refs()  # type: ignore
-Result.__pydantic_model__.update_forward_refs()  # type: ignore
-SimulationResponse.__pydantic_model__.update_forward_refs()  # type: ignore
-TxMsgData.__pydantic_model__.update_forward_refs()  # type: ignore
-SearchTxsResult.__pydantic_model__.update_forward_refs()  # type: ignore

@@ -2,14 +2,7 @@
 # sources: greenfield/payment/auto_resume_record.proto, greenfield/payment/auto_settle_record.proto, greenfield/payment/delayed_withdrawal_record.proto, greenfield/payment/events.proto, greenfield/payment/genesis.proto, greenfield/payment/out_flow.proto, greenfield/payment/params.proto, greenfield/payment/payment_account.proto, greenfield/payment/payment_account_count.proto, greenfield/payment/query.proto, greenfield/payment/stream_record.proto, greenfield/payment/tx.proto
 # plugin: python-betterproto
 # This file has been @generated
-
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from dataclasses import dataclass
-else:
-    from pydantic.dataclasses import dataclass
-
+from dataclasses import dataclass
 from typing import TYPE_CHECKING, Dict, List, Optional
 
 import betterproto
@@ -38,15 +31,13 @@ class StreamAccountStatus(betterproto.Enum):
     """StreamAccountStatus defines the status of a stream account"""
 
     STREAM_ACCOUNT_STATUS_ACTIVE = 0
-    """
-    STREAM_ACCOUNT_STATUS_ACTIVE defines the active status of a stream account.
-    """
+    """STREAM_ACCOUNT_STATUS_ACTIVE defines the active status of a stream account."""
 
     STREAM_ACCOUNT_STATUS_FROZEN = 1
     """
     STREAM_ACCOUNT_STATUS_FROZEN defines the frozen status of a stream account.
-    A frozen stream account cannot be used as payment address for buckets. It
-    can be unfrozen by depositing more BNB to the stream account.
+    A frozen stream account cannot be used as payment address for buckets.
+    It can be unfrozen by depositing more BNB to the stream account.
     """
 
 
@@ -58,9 +49,9 @@ class FeePreviewType(betterproto.Enum):
 @dataclass(eq=False, repr=False)
 class AutoResumeRecord(betterproto.Message):
     """
-    AutoResumeRecord is the record keeps the auto resume information. The
-    EndBlocker of payment module will scan the list of AutoResumeRecord and
-    resume the stream account one by one.
+    AutoResumeRecord is the record keeps the auto resume information.
+    The EndBlocker of payment module will scan the list of AutoResumeRecord
+    and resume the stream account one by one.
     """
 
     timestamp: int = betterproto.int64_field(1)
@@ -73,15 +64,13 @@ class AutoResumeRecord(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class AutoSettleRecord(betterproto.Message):
     """
-    AutoSettleRecord is the record keeps the auto settle information. The
-    EndBlocker of payment module will scan the list of AutoSettleRecord and
-    settle the stream account if the timestamp is less than the current time.
+    AutoSettleRecord is the record keeps the auto settle information.
+    The EndBlocker of payment module will scan the list of AutoSettleRecord
+    and settle the stream account if the timestamp is less than the current time.
     """
 
     timestamp: int = betterproto.int64_field(1)
-    """
-    timestamp is the unix timestamp when the stream account will be settled.
-    """
+    """timestamp is the unix timestamp when the stream account will be settled."""
 
     addr: str = betterproto.string_field(2)
     """A stream account address"""
@@ -105,14 +94,12 @@ class DelayedWithdrawalRecord(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class OutFlow(betterproto.Message):
     """
-    OutFlow defines the accumulative outflow stream rate in BNB from a stream
-    account to a Storage Provider
+    OutFlow defines the accumulative outflow stream rate in BNB
+    from a stream account to a Storage Provider
     """
 
     to_address: str = betterproto.string_field(1)
-    """
-    stream account address who receives the flow, usually SP(service provider)
-    """
+    """stream account address who receives the flow, usually SP(service provider)"""
 
     rate: str = betterproto.string_field(2)
     """flow rate"""
@@ -133,8 +120,8 @@ class StreamRecord(betterproto.Message):
 
     netflow_rate: str = betterproto.string_field(3)
     """
-    The per-second rate that an account's balance is changing. It is the sum of
-    the account's inbound and outbound flow rates.
+    The per-second rate that an account's balance is changing.
+    It is the sum of the account's inbound and outbound flow rates.
     """
 
     static_balance: str = betterproto.string_field(4)
@@ -142,14 +129,15 @@ class StreamRecord(betterproto.Message):
 
     buffer_balance: str = betterproto.string_field(5)
     """
-    reserved balance of the stream account If the netflow rate is negative, the
-    reserved balance is `netflow_rate * reserve_time`
+    reserved balance of the stream account
+    If the netflow rate is negative, the reserved balance is `netflow_rate *
+    reserve_time`
     """
 
     lock_balance: str = betterproto.string_field(6)
     """
-    the locked balance of the stream account after it puts a new object and
-    before the object is sealed
+    the locked balance of the stream account after it puts a new object and before the
+    object is sealed
     """
 
     status: "StreamAccountStatus" = betterproto.enum_field(7)
@@ -189,8 +177,8 @@ class EventStreamRecordUpdate(betterproto.Message):
 
     netflow_rate: str = betterproto.string_field(3)
     """
-    The per-second rate that an account's balance is changing. It is the sum of
-    the account's inbound and outbound flow rates.
+    The per-second rate that an account's balance is changing.
+    It is the sum of the account's inbound and outbound flow rates.
     """
 
     frozen_netflow_rate: str = betterproto.string_field(4)
@@ -201,14 +189,15 @@ class EventStreamRecordUpdate(betterproto.Message):
 
     buffer_balance: str = betterproto.string_field(6)
     """
-    reserved balance of the stream account If the netflow rate is negative, the
-    reserved balance is `netflow_rate * reserve_time`
+    reserved balance of the stream account
+    If the netflow rate is negative, the reserved balance is `netflow_rate *
+    reserve_time`
     """
 
     lock_balance: str = betterproto.string_field(7)
     """
-    the locked balance of the stream account after it puts a new object and
-    before the object is sealed
+    the locked balance of the stream account after it puts a new object and before the
+    object is sealed
     """
 
     status: "StreamAccountStatus" = betterproto.enum_field(8)
@@ -221,8 +210,8 @@ class EventStreamRecordUpdate(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class EventForceSettle(betterproto.Message):
     """
-    EventForceSettle may be emitted on all Msgs and EndBlocker when a payment
-    account's balance or net outflow rate is changed
+    EventForceSettle may be emitted on all Msgs and EndBlocker when a payment account's
+    balance or net outflow rate is changed
     """
 
     addr: str = betterproto.string_field(1)
@@ -230,10 +219,10 @@ class EventForceSettle(betterproto.Message):
 
     settled_balance: str = betterproto.string_field(2)
     """
-    left balance of the payment account after force settlement if the balance
-    is positive, it will go to the governance stream account if the balance is
-    negative, it's the debt of the system, which will be paid by the governance
-    stream account
+    left balance of the payment account after force settlement
+    if the balance is positive, it will go to the governance stream account
+    if the balance is negative, it's the debt of the system, which will be paid by the
+    governance stream account
     """
 
 
@@ -264,8 +253,8 @@ class EventWithdraw(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class EventFeePreview(betterproto.Message):
     """
-    emit when upload/cancel/delete object, used for frontend to preview the fee
-    changed only emit in tx simulation
+    emit when upload/cancel/delete object, used for frontend to preview the fee changed
+    only emit in tx simulation
     """
 
     account: str = betterproto.string_field(1)
@@ -279,20 +268,17 @@ class Params(betterproto.Message):
 
     versioned_params: "VersionedParams" = betterproto.message_field(1)
     payment_account_count_limit: int = betterproto.uint64_field(2)
-    """
-    The maximum number of payment accounts that can be created by one user
-    """
+    """The maximum number of payment accounts that can be created by one user"""
 
     forced_settle_time: int = betterproto.uint64_field(3)
     """
-    Time duration threshold of forced settlement. If dynamic balance is less
-    than NetOutFlowRate * forcedSettleTime, the account can be forced settled.
+    Time duration threshold of forced settlement.
+    If dynamic balance is less than NetOutFlowRate * forcedSettleTime, the account can
+    be forced settled.
     """
 
     max_auto_settle_flow_count: int = betterproto.uint64_field(4)
-    """
-    the maximum number of flows that will be auto forced settled in one block
-    """
+    """the maximum number of flows that will be auto forced settled in one block"""
 
     max_auto_resume_flow_count: int = betterproto.uint64_field(5)
     """the maximum number of flows that will be auto resumed in one block"""
@@ -310,20 +296,19 @@ class Params(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class VersionedParams(betterproto.Message):
     """
-    VersionedParams defines the parameters with multiple versions, each version
-    is stored with different timestamp.
+    VersionedParams defines the parameters with multiple versions, each version is
+    stored with different timestamp.
     """
 
     reserve_time: int = betterproto.uint64_field(1)
     """
-    Time duration which the buffer balance need to be reserved for NetOutFlow
-    e.g. 6 month
+    Time duration which the buffer balance need to be reserved for NetOutFlow e.g. 6
+    month
     """
 
     validator_tax_rate: str = betterproto.string_field(2)
     """
-    The tax rate to pay for validators in storage payment. The default value is
-    1%(0.01)
+    The tax rate to pay for validators in storage payment. The default value is 1%(0.01)
     """
 
 
@@ -344,8 +329,8 @@ class PaymentAccount(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class PaymentAccountCount(betterproto.Message):
     """
-    PaymentAccountCount defines the state struct which stores the number of
-    payment accounts for an account
+    PaymentAccountCount defines the state struct which stores the number of payment
+    accounts for an account
     """
 
     owner: str = betterproto.string_field(1)
@@ -375,9 +360,7 @@ class QueryParamsRequest(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class QueryParamsResponse(betterproto.Message):
-    """
-    QueryParamsResponse is response type for the Query/Params RPC method.
-    """
+    """QueryParamsResponse is response type for the Query/Params RPC method."""
 
     params: "Params" = betterproto.message_field(1)
     """params holds all the parameters of this module."""
@@ -386,8 +369,8 @@ class QueryParamsResponse(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class QueryParamsByTimestampRequest(betterproto.Message):
     """
-    QueryParamsByTimestampRequest is request type for the
-    Query/ParamsByTimestamp RPC method with timestamp.
+    QueryParamsByTimestampRequest is request type for the Query/ParamsByTimestamp RPC
+    method with timestamp.
     """
 
     timestamp: int = betterproto.int64_field(1)
@@ -397,8 +380,8 @@ class QueryParamsByTimestampRequest(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class QueryParamsByTimestampResponse(betterproto.Message):
     """
-    QueryParamsByTimestampResponse is response type for the
-    Query/ParamsByTimestamp RPC method with timestamp.
+    QueryParamsByTimestampResponse is response type for the Query/ParamsByTimestamp RPC
+    method with timestamp.
     """
 
     params: "Params" = betterproto.message_field(1)
@@ -490,8 +473,8 @@ class QueryDynamicBalanceResponse(betterproto.Message):
 
     stream_record: "StreamRecord" = betterproto.message_field(2)
     """
-    the stream record of the given account, if it does not exist, it will be
-    default values
+    the stream record of the given account, if it does not exist, it will be default
+    values
     """
 
     current_timestamp: int = betterproto.int64_field(3)
@@ -553,8 +536,8 @@ class MsgUpdateParams(betterproto.Message):
 
     params: "Params" = betterproto.message_field(2)
     """
-    params defines the x/payment parameters to update. NOTE: All parameters
-    must be supplied.
+    params defines the x/payment parameters to update.
+    NOTE: All parameters must be supplied.
     """
 
 
@@ -571,10 +554,7 @@ class MsgUpdateParamsResponse(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class MsgCreatePaymentAccount(betterproto.Message):
     creator: str = betterproto.string_field(1)
-    """
-    creator is the address of the stream account that created the payment
-    account
-    """
+    """creator is the address of the stream account that created the payment account"""
 
 
 @dataclass(eq=False, repr=False)
@@ -586,8 +566,8 @@ class MsgCreatePaymentAccountResponse(betterproto.Message):
 class MsgDeposit(betterproto.Message):
     creator: str = betterproto.string_field(1)
     """
-    creator is the message signer for MsgDeposit and the address of the account
-    to deposit from
+    creator is the message signer for MsgDeposit and the address of the account to
+    deposit from
     """
 
     to: str = betterproto.string_field(2)
@@ -606,8 +586,7 @@ class MsgDepositResponse(betterproto.Message):
 class MsgWithdraw(betterproto.Message):
     creator: str = betterproto.string_field(1)
     """
-    creator is the message signer for MsgWithdraw and the address of the
-    receive account
+    creator is the message signer for MsgWithdraw and the address of the receive account
     """
 
     from_: str = betterproto.string_field(2)
@@ -626,8 +605,8 @@ class MsgWithdrawResponse(betterproto.Message):
 class MsgDisableRefund(betterproto.Message):
     owner: str = betterproto.string_field(1)
     """
-    owner is the message signer for MsgDisableRefund and the address of the
-    payment account owner
+    owner is the message signer for MsgDisableRefund and the address of the payment
+    account owner
     """
 
     addr: str = betterproto.string_field(2)
@@ -1280,28 +1259,3 @@ class MsgBase(ServiceBase):
                 MsgDisableRefundResponse,
             ),
         }
-
-
-OutFlow.__pydantic_model__.update_forward_refs()  # type: ignore
-StreamRecord.__pydantic_model__.update_forward_refs()  # type: ignore
-EventStreamRecordUpdate.__pydantic_model__.update_forward_refs()  # type: ignore
-EventFeePreview.__pydantic_model__.update_forward_refs()  # type: ignore
-Params.__pydantic_model__.update_forward_refs()  # type: ignore
-GenesisState.__pydantic_model__.update_forward_refs()  # type: ignore
-QueryParamsResponse.__pydantic_model__.update_forward_refs()  # type: ignore
-QueryParamsByTimestampResponse.__pydantic_model__.update_forward_refs()  # type: ignore
-QueryOutFlowsResponse.__pydantic_model__.update_forward_refs()  # type: ignore
-QueryGetStreamRecordResponse.__pydantic_model__.update_forward_refs()  # type: ignore
-QueryStreamRecordsRequest.__pydantic_model__.update_forward_refs()  # type: ignore
-QueryStreamRecordsResponse.__pydantic_model__.update_forward_refs()  # type: ignore
-QueryPaymentAccountCountResponse.__pydantic_model__.update_forward_refs()  # type: ignore
-QueryPaymentAccountCountsRequest.__pydantic_model__.update_forward_refs()  # type: ignore
-QueryPaymentAccountCountsResponse.__pydantic_model__.update_forward_refs()  # type: ignore
-QueryPaymentAccountResponse.__pydantic_model__.update_forward_refs()  # type: ignore
-QueryPaymentAccountsRequest.__pydantic_model__.update_forward_refs()  # type: ignore
-QueryPaymentAccountsResponse.__pydantic_model__.update_forward_refs()  # type: ignore
-QueryDynamicBalanceResponse.__pydantic_model__.update_forward_refs()  # type: ignore
-QueryAutoSettleRecordsRequest.__pydantic_model__.update_forward_refs()  # type: ignore
-QueryAutoSettleRecordsResponse.__pydantic_model__.update_forward_refs()  # type: ignore
-QueryDelayedWithdrawalResponse.__pydantic_model__.update_forward_refs()  # type: ignore
-MsgUpdateParams.__pydantic_model__.update_forward_refs()  # type: ignore

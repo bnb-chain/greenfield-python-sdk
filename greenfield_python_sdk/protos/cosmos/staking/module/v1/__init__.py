@@ -2,14 +2,7 @@
 # sources: cosmos/staking/module/v1/module.proto
 # plugin: python-betterproto
 # This file has been @generated
-
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from dataclasses import dataclass
-else:
-    from pydantic.dataclasses import dataclass
-
+from dataclasses import dataclass
 from typing import List
 
 import betterproto
@@ -21,8 +14,8 @@ class Module(betterproto.Message):
 
     hooks_order: List[str] = betterproto.string_field(1)
     """
-    hooks_order specifies the order of staking hooks and should be a list of
-    module names which provide a staking hooks instance. If no order is
+    hooks_order specifies the order of staking hooks and should be a list
+    of module names which provide a staking hooks instance. If no order is
     provided, then hooks will be applied in alphabetical order of module names.
     """
 

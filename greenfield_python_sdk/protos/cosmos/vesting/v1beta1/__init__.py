@@ -2,14 +2,7 @@
 # sources: cosmos/vesting/v1beta1/tx.proto, cosmos/vesting/v1beta1/vesting.proto
 # plugin: python-betterproto
 # This file has been @generated
-
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from dataclasses import dataclass
-else:
-    from pydantic.dataclasses import dataclass
-
+from dataclasses import dataclass
 from typing import TYPE_CHECKING, Dict, List, Optional
 
 import betterproto
@@ -88,8 +81,8 @@ class PeriodicVestingAccount(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class PermanentLockedAccount(betterproto.Message):
     """
-    PermanentLockedAccount implements the VestingAccount interface. It does not
-    ever release coins, locking them indefinitely. Coins in this account can
+    PermanentLockedAccount implements the VestingAccount interface. It does
+    not ever release coins, locking them indefinitely. Coins in this account can
     still be used for delegating and for governance votes even while locked.
     Since: cosmos-sdk 0.43
     """
@@ -116,8 +109,7 @@ class MsgCreateVestingAccount(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class MsgCreateVestingAccountResponse(betterproto.Message):
     """
-    MsgCreateVestingAccountResponse defines the Msg/CreateVestingAccount
-    response type.
+    MsgCreateVestingAccountResponse defines the Msg/CreateVestingAccount response type.
     """
 
     pass
@@ -126,8 +118,9 @@ class MsgCreateVestingAccountResponse(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class MsgCreatePermanentLockedAccount(betterproto.Message):
     """
-    MsgCreatePermanentLockedAccount defines a message that enables creating a
-    permanent locked account. Since: cosmos-sdk 0.46
+    MsgCreatePermanentLockedAccount defines a message that enables creating a permanent
+    locked account.
+    Since: cosmos-sdk 0.46
     """
 
     from_address: str = betterproto.string_field(1)
@@ -138,8 +131,9 @@ class MsgCreatePermanentLockedAccount(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class MsgCreatePermanentLockedAccountResponse(betterproto.Message):
     """
-    MsgCreatePermanentLockedAccountResponse defines the
-    Msg/CreatePermanentLockedAccount response type. Since: cosmos-sdk 0.46
+    MsgCreatePermanentLockedAccountResponse defines the Msg/CreatePermanentLockedAccount
+    response type.
+    Since: cosmos-sdk 0.46
     """
 
     pass
@@ -149,7 +143,8 @@ class MsgCreatePermanentLockedAccountResponse(betterproto.Message):
 class MsgCreatePeriodicVestingAccount(betterproto.Message):
     """
     MsgCreateVestingAccount defines a message that enables creating a vesting
-    account. Since: cosmos-sdk 0.46
+    account.
+    Since: cosmos-sdk 0.46
     """
 
     from_address: str = betterproto.string_field(1)
@@ -163,8 +158,9 @@ class MsgCreatePeriodicVestingAccount(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class MsgCreatePeriodicVestingAccountResponse(betterproto.Message):
     """
-    MsgCreateVestingAccountResponse defines the
-    Msg/CreatePeriodicVestingAccount response type. Since: cosmos-sdk 0.46
+    MsgCreateVestingAccountResponse defines the Msg/CreatePeriodicVestingAccount
+    response type.
+    Since: cosmos-sdk 0.46
     """
 
     pass
@@ -284,14 +280,3 @@ class MsgBase(ServiceBase):
                 MsgCreatePeriodicVestingAccountResponse,
             ),
         }
-
-
-BaseVestingAccount.__pydantic_model__.update_forward_refs()  # type: ignore
-ContinuousVestingAccount.__pydantic_model__.update_forward_refs()  # type: ignore
-DelayedVestingAccount.__pydantic_model__.update_forward_refs()  # type: ignore
-Period.__pydantic_model__.update_forward_refs()  # type: ignore
-PeriodicVestingAccount.__pydantic_model__.update_forward_refs()  # type: ignore
-PermanentLockedAccount.__pydantic_model__.update_forward_refs()  # type: ignore
-MsgCreateVestingAccount.__pydantic_model__.update_forward_refs()  # type: ignore
-MsgCreatePermanentLockedAccount.__pydantic_model__.update_forward_refs()  # type: ignore
-MsgCreatePeriodicVestingAccount.__pydantic_model__.update_forward_refs()  # type: ignore

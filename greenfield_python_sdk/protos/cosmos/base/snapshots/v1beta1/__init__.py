@@ -3,17 +3,10 @@
 # plugin: python-betterproto
 # This file has been @generated
 import warnings
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from dataclasses import dataclass
-else:
-    from pydantic.dataclasses import dataclass
-
-from typing import List, Optional
+from dataclasses import dataclass
+from typing import List
 
 import betterproto
-from pydantic import root_validator
 
 
 @dataclass(eq=False, repr=False)
@@ -37,16 +30,16 @@ class Metadata(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class SnapshotItem(betterproto.Message):
     """
-    SnapshotItem is an item contained in a rootmulti.Store snapshot. Since:
-    cosmos-sdk 0.46
+    SnapshotItem is an item contained in a rootmulti.Store snapshot.
+    Since: cosmos-sdk 0.46
     """
 
-    store: Optional["SnapshotStoreItem"] = betterproto.message_field(1, optional=True, group="item")
-    iavl: Optional["SnapshotIavlItem"] = betterproto.message_field(2, optional=True, group="item")
-    extension: Optional["SnapshotExtensionMeta"] = betterproto.message_field(3, optional=True, group="item")
-    extension_payload: Optional["SnapshotExtensionPayload"] = betterproto.message_field(4, optional=True, group="item")
-    kv: Optional["SnapshotKvItem"] = betterproto.message_field(5, optional=True, group="item")
-    schema: Optional["SnapshotSchema"] = betterproto.message_field(6, optional=True, group="item")
+    store: "SnapshotStoreItem" = betterproto.message_field(1, group="item")
+    iavl: "SnapshotIavlItem" = betterproto.message_field(2, group="item")
+    extension: "SnapshotExtensionMeta" = betterproto.message_field(3, group="item")
+    extension_payload: "SnapshotExtensionPayload" = betterproto.message_field(4, group="item")
+    kv: "SnapshotKvItem" = betterproto.message_field(5, group="item")
+    schema: "SnapshotSchema" = betterproto.message_field(6, group="item")
 
     def __post_init__(self) -> None:
         super().__post_init__()
@@ -55,16 +48,12 @@ class SnapshotItem(betterproto.Message):
         if self.is_set("schema"):
             warnings.warn("SnapshotItem.schema is deprecated", DeprecationWarning)
 
-    @root_validator()
-    def check_oneof(cls, values):
-        return cls._validate_field_groups(values)
-
 
 @dataclass(eq=False, repr=False)
 class SnapshotStoreItem(betterproto.Message):
     """
-    SnapshotStoreItem contains metadata about a snapshotted store. Since:
-    cosmos-sdk 0.46
+    SnapshotStoreItem contains metadata about a snapshotted store.
+    Since: cosmos-sdk 0.46
     """
 
     name: str = betterproto.string_field(1)
@@ -72,7 +61,10 @@ class SnapshotStoreItem(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class SnapshotIavlItem(betterproto.Message):
-    """SnapshotIAVLItem is an exported IAVL node. Since: cosmos-sdk 0.46"""
+    """
+    SnapshotIAVLItem is an exported IAVL node.
+    Since: cosmos-sdk 0.46
+    """
 
     key: bytes = betterproto.bytes_field(1)
     value: bytes = betterproto.bytes_field(2)
@@ -107,9 +99,10 @@ class SnapshotExtensionPayload(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class SnapshotKvItem(betterproto.Message):
     """
-    SnapshotKVItem is an exported Key/Value Pair Since: cosmos-sdk 0.46
-    Deprecated: This message was part of store/v2alpha1 which has been deleted
-    from v0.47.
+    SnapshotKVItem is an exported Key/Value Pair
+    Since: cosmos-sdk 0.46
+    Deprecated: This message was part of store/v2alpha1 which has been deleted from
+    v0.47.
     """
 
     key: bytes = betterproto.bytes_field(1)
@@ -123,9 +116,10 @@ class SnapshotKvItem(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class SnapshotSchema(betterproto.Message):
     """
-    SnapshotSchema is an exported schema of smt store Since: cosmos-sdk 0.46
-    Deprecated: This message was part of store/v2alpha1 which has been deleted
-    from v0.47.
+    SnapshotSchema is an exported schema of smt store
+    Since: cosmos-sdk 0.46
+    Deprecated: This message was part of store/v2alpha1 which has been deleted from
+    v0.47.
     """
 
     keys: List[bytes] = betterproto.bytes_field(1)
@@ -133,7 +127,3 @@ class SnapshotSchema(betterproto.Message):
     def __post_init__(self) -> None:
         warnings.warn("SnapshotSchema is deprecated", DeprecationWarning)
         super().__post_init__()
-
-
-Snapshot.__pydantic_model__.update_forward_refs()  # type: ignore
-SnapshotItem.__pydantic_model__.update_forward_refs()  # type: ignore

@@ -2,13 +2,7 @@
 # sources: cosmos/capability/module/v1/module.proto
 # plugin: python-betterproto
 # This file has been @generated
-
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from dataclasses import dataclass
-else:
-    from pydantic.dataclasses import dataclass
+from dataclasses import dataclass
 
 import betterproto
 
@@ -19,7 +13,7 @@ class Module(betterproto.Message):
 
     seal_keeper: bool = betterproto.bool_field(1)
     """
-    seal_keeper defines if keeper.Seal() will run on BeginBlock() to prevent
-    further modules from creating a scoped keeper. For more details check
-    x/capability/keeper.go.
+    seal_keeper defines if keeper.Seal() will run on BeginBlock() to prevent further
+    modules from creating a scoped
+    keeper. For more details check x/capability/keeper.go.
     """

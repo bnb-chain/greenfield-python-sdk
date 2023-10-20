@@ -2,14 +2,7 @@
 # sources: cosmos/authz/v1beta1/authz.proto, cosmos/authz/v1beta1/event.proto, cosmos/authz/v1beta1/genesis.proto, cosmos/authz/v1beta1/query.proto, cosmos/authz/v1beta1/tx.proto
 # plugin: python-betterproto
 # This file has been @generated
-
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from dataclasses import dataclass
-else:
-    from pydantic.dataclasses import dataclass
-
+from dataclasses import dataclass
 from datetime import datetime
 from typing import TYPE_CHECKING, Dict, List, Optional
 
@@ -35,31 +28,32 @@ class GenericAuthorization(betterproto.Message):
 
     msg: str = betterproto.string_field(1)
     """
-    Msg, identified by it's type URL, to grant unrestricted permissions to
-    execute
+    Msg, identified by it's type URL, to grant unrestricted permissions to execute
     """
 
 
 @dataclass(eq=False, repr=False)
 class Grant(betterproto.Message):
     """
-    Grant gives permissions to execute the provide method with expiration time.
+    Grant gives permissions to execute
+    the provide method with expiration time.
     """
 
     authorization: "betterproto_lib_google_protobuf.Any" = betterproto.message_field(1)
     expiration: datetime = betterproto.message_field(2)
     """
     time when the grant will expire and will be pruned. If null, then the grant
-    doesn't have a time expiration (other conditions  in `authorization` may
-    apply to invalidate the grant)
+    doesn't have a time expiration (other conditions  in `authorization`
+    may apply to invalidate the grant)
     """
 
 
 @dataclass(eq=False, repr=False)
 class GrantAuthorization(betterproto.Message):
     """
-    GrantAuthorization extends a grant with both the addresses of the grantee
-    and granter. It is used in genesis.proto and query.proto
+    GrantAuthorization extends a grant with both the addresses of the grantee and
+    granter.
+    It is used in genesis.proto and query.proto
     """
 
     granter: str = betterproto.string_field(1)
@@ -113,16 +107,13 @@ class GenesisState(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class QueryGrantsRequest(betterproto.Message):
-    """
-    QueryGrantsRequest is the request type for the Query/Grants RPC method.
-    """
+    """QueryGrantsRequest is the request type for the Query/Grants RPC method."""
 
     granter: str = betterproto.string_field(1)
     grantee: str = betterproto.string_field(2)
     msg_type_url: str = betterproto.string_field(3)
     """
-    Optional, msg_type_url, when set, will query only grants matching given msg
-    type.
+    Optional, msg_type_url, when set, will query only grants matching given msg type.
     """
 
     pagination: "__base_query_v1_beta1__.PageRequest" = betterproto.message_field(4)
@@ -132,8 +123,7 @@ class QueryGrantsRequest(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class QueryGrantsResponse(betterproto.Message):
     """
-    QueryGrantsResponse is the response type for the Query/Authorizations RPC
-    method.
+    QueryGrantsResponse is the response type for the Query/Authorizations RPC method.
     """
 
     grants: List["Grant"] = betterproto.message_field(1)
@@ -146,8 +136,8 @@ class QueryGrantsResponse(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class QueryGranterGrantsRequest(betterproto.Message):
     """
-    QueryGranterGrantsRequest is the request type for the Query/GranterGrants
-    RPC method.
+    QueryGranterGrantsRequest is the request type for the Query/GranterGrants RPC
+    method.
     """
 
     granter: str = betterproto.string_field(1)
@@ -158,8 +148,8 @@ class QueryGranterGrantsRequest(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class QueryGranterGrantsResponse(betterproto.Message):
     """
-    QueryGranterGrantsResponse is the response type for the Query/GranterGrants
-    RPC method.
+    QueryGranterGrantsResponse is the response type for the Query/GranterGrants RPC
+    method.
     """
 
     grants: List["GrantAuthorization"] = betterproto.message_field(1)
@@ -172,8 +162,7 @@ class QueryGranterGrantsResponse(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class QueryGranteeGrantsRequest(betterproto.Message):
     """
-    QueryGranteeGrantsRequest is the request type for the Query/IssuedGrants
-    RPC method.
+    QueryGranteeGrantsRequest is the request type for the Query/IssuedGrants RPC method.
     """
 
     grantee: str = betterproto.string_field(1)
@@ -184,8 +173,8 @@ class QueryGranteeGrantsRequest(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class QueryGranteeGrantsResponse(betterproto.Message):
     """
-    QueryGranteeGrantsResponse is the response type for the Query/GranteeGrants
-    RPC method.
+    QueryGranteeGrantsResponse is the response type for the Query/GranteeGrants RPC
+    method.
     """
 
     grants: List["GrantAuthorization"] = betterproto.message_field(1)
@@ -198,8 +187,9 @@ class QueryGranteeGrantsResponse(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class MsgGrant(betterproto.Message):
     """
-    MsgGrant is a request type for Grant method. It declares authorization to
-    the grantee on behalf of the granter with the provided expiration time.
+    MsgGrant is a request type for Grant method. It declares authorization to the
+    grantee
+    on behalf of the granter with the provided expiration time.
     """
 
     granter: str = betterproto.string_field(1)
@@ -217,16 +207,18 @@ class MsgExecResponse(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class MsgExec(betterproto.Message):
     """
-    MsgExec attempts to execute the provided messages using authorizations
-    granted to the grantee. Each message should have only one signer
-    corresponding to the granter of the authorization.
+    MsgExec attempts to execute the provided messages using
+    authorizations granted to the grantee. Each message should have only
+    one signer corresponding to the granter of the authorization.
     """
 
     grantee: str = betterproto.string_field(1)
     msgs: List["betterproto_lib_google_protobuf.Any"] = betterproto.message_field(2)
     """
-    Execute Msg. The x/authz will try to find a grant matching (msg.signers[0],
-    grantee, MsgTypeURL(msg)) triple and validate it.
+    Execute Msg.
+    The x/authz will try to find a grant matching (msg.signers[0], grantee,
+    MsgTypeURL(msg))
+    triple and validate it.
     """
 
 
@@ -466,16 +458,3 @@ class MsgBase(ServiceBase):
                 MsgRevokeResponse,
             ),
         }
-
-
-Grant.__pydantic_model__.update_forward_refs()  # type: ignore
-GrantAuthorization.__pydantic_model__.update_forward_refs()  # type: ignore
-GenesisState.__pydantic_model__.update_forward_refs()  # type: ignore
-QueryGrantsRequest.__pydantic_model__.update_forward_refs()  # type: ignore
-QueryGrantsResponse.__pydantic_model__.update_forward_refs()  # type: ignore
-QueryGranterGrantsRequest.__pydantic_model__.update_forward_refs()  # type: ignore
-QueryGranterGrantsResponse.__pydantic_model__.update_forward_refs()  # type: ignore
-QueryGranteeGrantsRequest.__pydantic_model__.update_forward_refs()  # type: ignore
-QueryGranteeGrantsResponse.__pydantic_model__.update_forward_refs()  # type: ignore
-MsgGrant.__pydantic_model__.update_forward_refs()  # type: ignore
-MsgExec.__pydantic_model__.update_forward_refs()  # type: ignore

@@ -2,14 +2,7 @@
 # sources: cosmos/mint/v1beta1/genesis.proto, cosmos/mint/v1beta1/mint.proto, cosmos/mint/v1beta1/query.proto, cosmos/mint/v1beta1/tx.proto
 # plugin: python-betterproto
 # This file has been @generated
-
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from dataclasses import dataclass
-else:
-    from pydantic.dataclasses import dataclass
-
+from dataclasses import dataclass
 from typing import TYPE_CHECKING, Dict, Optional
 
 import betterproto
@@ -69,18 +62,14 @@ class GenesisState(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class QueryParamsRequest(betterproto.Message):
-    """
-    QueryParamsRequest is the request type for the Query/Params RPC method.
-    """
+    """QueryParamsRequest is the request type for the Query/Params RPC method."""
 
     pass
 
 
 @dataclass(eq=False, repr=False)
 class QueryParamsResponse(betterproto.Message):
-    """
-    QueryParamsResponse is the response type for the Query/Params RPC method.
-    """
+    """QueryParamsResponse is the response type for the Query/Params RPC method."""
 
     params: "Params" = betterproto.message_field(1)
     """params defines the parameters of the module."""
@@ -88,10 +77,7 @@ class QueryParamsResponse(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class QueryInflationRequest(betterproto.Message):
-    """
-    QueryInflationRequest is the request type for the Query/Inflation RPC
-    method.
-    """
+    """QueryInflationRequest is the request type for the Query/Inflation RPC method."""
 
     pass
 
@@ -131,8 +117,8 @@ class QueryAnnualProvisionsResponse(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class MsgUpdateParams(betterproto.Message):
     """
-    MsgUpdateParams is the Msg/UpdateParams request type. Since: cosmos-sdk
-    0.47
+    MsgUpdateParams is the Msg/UpdateParams request type.
+    Since: cosmos-sdk 0.47
     """
 
     authority: str = betterproto.string_field(1)
@@ -143,8 +129,8 @@ class MsgUpdateParams(betterproto.Message):
 
     params: "Params" = betterproto.message_field(2)
     """
-    params defines the x/mint parameters to update. NOTE: All parameters must
-    be supplied.
+    params defines the x/mint parameters to update.
+    NOTE: All parameters must be supplied.
     """
 
 
@@ -152,7 +138,8 @@ class MsgUpdateParams(betterproto.Message):
 class MsgUpdateParamsResponse(betterproto.Message):
     """
     MsgUpdateParamsResponse defines the response structure for executing a
-    MsgUpdateParams message. Since: cosmos-sdk 0.47
+    MsgUpdateParams message.
+    Since: cosmos-sdk 0.47
     """
 
     pass
@@ -306,8 +293,3 @@ class MsgBase(ServiceBase):
                 MsgUpdateParamsResponse,
             ),
         }
-
-
-GenesisState.__pydantic_model__.update_forward_refs()  # type: ignore
-QueryParamsResponse.__pydantic_model__.update_forward_refs()  # type: ignore
-MsgUpdateParams.__pydantic_model__.update_forward_refs()  # type: ignore

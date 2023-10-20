@@ -3,13 +3,7 @@
 # plugin: python-betterproto
 # This file has been @generated
 import warnings
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from dataclasses import dataclass
-else:
-    from pydantic.dataclasses import dataclass
-
+from dataclasses import dataclass
 from typing import TYPE_CHECKING, Dict, List, Optional
 
 import betterproto
@@ -29,14 +23,16 @@ if TYPE_CHECKING:
 class SendAuthorization(betterproto.Message):
     """
     SendAuthorization allows the grantee to spend up to spend_limit coins from
-    the granter's account. Since: cosmos-sdk 0.43
+    the granter's account.
+    Since: cosmos-sdk 0.43
     """
 
     spend_limit: List["__base_v1_beta1__.Coin"] = betterproto.message_field(1)
     allow_list: List[str] = betterproto.string_field(2)
     """
-    allow_list specifies an optional list of addresses to whom the grantee can
-    send tokens on behalf of the granter. If omitted, any recipient is allowed.
+    allow_list specifies an optional list of addresses to whom the grantee can send
+    tokens on behalf of the
+    granter. If omitted, any recipient is allowed.
     Since: cosmos-sdk 0.47
     """
 
@@ -47,10 +43,11 @@ class Params(betterproto.Message):
 
     send_enabled: List["SendEnabled"] = betterproto.message_field(1)
     """
-    Deprecated: Use of SendEnabled in params is deprecated. For genesis, use
-    the newly added send_enabled field in the genesis object. Storage, lookup,
-    and manipulation of this information is now in the keeper. As of cosmos-sdk
-    0.47, this only exists for backwards compatibility of genesis files.
+    Deprecated: Use of SendEnabled in params is deprecated.
+    For genesis, use the newly added send_enabled field in the genesis object.
+    Storage, lookup, and manipulation of this information is now in the keeper.
+    As of cosmos-sdk 0.47, this only exists for backwards compatibility of genesis
+    files.
     """
 
     default_send_enabled: bool = betterproto.bool_field(2)
@@ -92,8 +89,8 @@ class Output(betterproto.Message):
 class Supply(betterproto.Message):
     """
     Supply represents a struct that passively keeps track of the total supply
-    amounts in the network. This message is deprecated now that supply is
-    indexed by denom.
+    amounts in the network.
+    This message is deprecated now that supply is indexed by denom.
     """
 
     total: List["__base_v1_beta1__.Coin"] = betterproto.message_field(1)
@@ -106,21 +103,20 @@ class Supply(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class DenomUnit(betterproto.Message):
     """
-    DenomUnit represents a struct that describes a given denomination unit of
-    the basic token.
+    DenomUnit represents a struct that describes a given
+    denomination unit of the basic token.
     """
 
     denom: str = betterproto.string_field(1)
-    """
-    denom represents the string name of the given denom unit (e.g uatom).
-    """
+    """denom represents the string name of the given denom unit (e.g uatom)."""
 
     exponent: int = betterproto.uint32_field(2)
     """
-    exponent represents power of 10 exponent that one must raise the base_denom
-    to in order to equal the given DenomUnit's denom 1 denom = 10^exponent
-    base_denom (e.g. with a base_denom of uatom, one can create a DenomUnit of
-    'atom' with exponent = 6, thus: 1 atom = 10^6 uatom).
+    exponent represents power of 10 exponent that one must
+    raise the base_denom to in order to equal the given DenomUnit's denom
+    1 denom = 10^exponent base_denom
+    (e.g. with a base_denom of uatom, one can create a DenomUnit of 'atom' with
+    exponent = 6, thus: 1 atom = 10^6 uatom).
     """
 
     aliases: List[str] = betterproto.string_field(3)
@@ -129,43 +125,48 @@ class DenomUnit(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class Metadata(betterproto.Message):
-    """Metadata represents a struct that describes a basic token."""
+    """
+    Metadata represents a struct that describes
+    a basic token.
+    """
 
     description: str = betterproto.string_field(1)
     denom_units: List["DenomUnit"] = betterproto.message_field(2)
     """denom_units represents the list of DenomUnit's for a given coin"""
 
     base: str = betterproto.string_field(3)
-    """
-    base represents the base denom (should be the DenomUnit with exponent = 0).
-    """
+    """base represents the base denom (should be the DenomUnit with exponent = 0)."""
 
     display: str = betterproto.string_field(4)
     """
-    display indicates the suggested denom that should be displayed in clients.
+    display indicates the suggested denom that should be
+    displayed in clients.
     """
 
     name: str = betterproto.string_field(5)
     """
-    name defines the name of the token (eg: Cosmos Atom) Since: cosmos-sdk 0.43
+    name defines the name of the token (eg: Cosmos Atom)
+    Since: cosmos-sdk 0.43
     """
 
     symbol: str = betterproto.string_field(6)
     """
     symbol is the token symbol usually shown on exchanges (eg: ATOM). This can
-    be the same as the display. Since: cosmos-sdk 0.43
+    be the same as the display.
+    Since: cosmos-sdk 0.43
     """
 
     uri: str = betterproto.string_field(7)
     """
-    URI to a document (on or off-chain) that contains additional information.
-    Optional. Since: cosmos-sdk 0.46
+    URI to a document (on or off-chain) that contains additional information. Optional.
+    Since: cosmos-sdk 0.46
     """
 
     uri_hash: str = betterproto.string_field(8)
     """
-    URIHash is a sha256 hash of a document pointed by URI. It's used to verify
-    that the document didn't change. Optional. Since: cosmos-sdk 0.46
+    URIHash is a sha256 hash of a document pointed by URI. It's used to verify that
+    the document didn't change. Optional.
+    Since: cosmos-sdk 0.46
     """
 
 
@@ -181,9 +182,10 @@ class GenesisState(betterproto.Message):
 
     supply: List["__base_v1_beta1__.Coin"] = betterproto.message_field(3)
     """
-    supply represents the total supply. If it is left empty, then supply will
-    be calculated based on the provided balances. Otherwise, it will be used to
-    validate that the sum of the balances equals this amount.
+    supply represents the total supply. If it is left empty, then supply will be
+    calculated based on the provided
+    balances. Otherwise, it will be used to validate that the sum of the balances equals
+    this amount.
     """
 
     denom_metadata: List["Metadata"] = betterproto.message_field(4)
@@ -191,16 +193,16 @@ class GenesisState(betterproto.Message):
 
     send_enabled: List["SendEnabled"] = betterproto.message_field(5)
     """
-    send_enabled defines the denoms where send is enabled or disabled. Since:
-    cosmos-sdk 0.47
+    send_enabled defines the denoms where send is enabled or disabled.
+    Since: cosmos-sdk 0.47
     """
 
 
 @dataclass(eq=False, repr=False)
 class Balance(betterproto.Message):
     """
-    Balance defines an account address and balance pair used in the bank
-    module's genesis state.
+    Balance defines an account address and balance pair used in the bank module's
+    genesis state.
     """
 
     address: str = betterproto.string_field(1)
@@ -212,9 +214,7 @@ class Balance(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class QueryBalanceRequest(betterproto.Message):
-    """
-    QueryBalanceRequest is the request type for the Query/Balance RPC method.
-    """
+    """QueryBalanceRequest is the request type for the Query/Balance RPC method."""
 
     address: str = betterproto.string_field(1)
     """address is the address to query balances for."""
@@ -225,9 +225,7 @@ class QueryBalanceRequest(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class QueryBalanceResponse(betterproto.Message):
-    """
-    QueryBalanceResponse is the response type for the Query/Balance RPC method.
-    """
+    """QueryBalanceResponse is the response type for the Query/Balance RPC method."""
 
     balance: "__base_v1_beta1__.Coin" = betterproto.message_field(1)
     """balance is the balance of the coin."""
@@ -235,10 +233,7 @@ class QueryBalanceResponse(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class QueryAllBalancesRequest(betterproto.Message):
-    """
-    QueryBalanceRequest is the request type for the Query/AllBalances RPC
-    method.
-    """
+    """QueryBalanceRequest is the request type for the Query/AllBalances RPC method."""
 
     address: str = betterproto.string_field(1)
     """address is the address to query balances for."""
@@ -264,8 +259,9 @@ class QueryAllBalancesResponse(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class QuerySpendableBalancesRequest(betterproto.Message):
     """
-    QuerySpendableBalancesRequest defines the gRPC request structure for
-    querying an account's spendable balances. Since: cosmos-sdk 0.46
+    QuerySpendableBalancesRequest defines the gRPC request structure for querying
+    an account's spendable balances.
+    Since: cosmos-sdk 0.46
     """
 
     address: str = betterproto.string_field(1)
@@ -278,8 +274,9 @@ class QuerySpendableBalancesRequest(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class QuerySpendableBalancesResponse(betterproto.Message):
     """
-    QuerySpendableBalancesResponse defines the gRPC response structure for
-    querying an account's spendable balances. Since: cosmos-sdk 0.46
+    QuerySpendableBalancesResponse defines the gRPC response structure for querying
+    an account's spendable balances.
+    Since: cosmos-sdk 0.46
     """
 
     balances: List["__base_v1_beta1__.Coin"] = betterproto.message_field(1)
@@ -293,8 +290,8 @@ class QuerySpendableBalancesResponse(betterproto.Message):
 class QuerySpendableBalanceByDenomRequest(betterproto.Message):
     """
     QuerySpendableBalanceByDenomRequest defines the gRPC request structure for
-    querying an account's spendable balance for a specific denom. Since:
-    cosmos-sdk 0.47
+    querying an account's spendable balance for a specific denom.
+    Since: cosmos-sdk 0.47
     """
 
     address: str = betterproto.string_field(1)
@@ -307,9 +304,9 @@ class QuerySpendableBalanceByDenomRequest(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class QuerySpendableBalanceByDenomResponse(betterproto.Message):
     """
-    QuerySpendableBalanceByDenomResponse defines the gRPC response structure
-    for querying an account's spendable balance for a specific denom. Since:
-    cosmos-sdk 0.47
+    QuerySpendableBalanceByDenomResponse defines the gRPC response structure for
+    querying an account's spendable balance for a specific denom.
+    Since: cosmos-sdk 0.47
     """
 
     balance: "__base_v1_beta1__.Coin" = betterproto.message_field(1)
@@ -325,8 +322,8 @@ class QueryTotalSupplyRequest(betterproto.Message):
 
     pagination: "__base_query_v1_beta1__.PageRequest" = betterproto.message_field(1)
     """
-    pagination defines an optional pagination for the request. Since: cosmos-
-    sdk 0.43
+    pagination defines an optional pagination for the request.
+    Since: cosmos-sdk 0.43
     """
 
 
@@ -342,15 +339,14 @@ class QueryTotalSupplyResponse(betterproto.Message):
 
     pagination: "__base_query_v1_beta1__.PageResponse" = betterproto.message_field(2)
     """
-    pagination defines the pagination in the response. Since: cosmos-sdk 0.43
+    pagination defines the pagination in the response.
+    Since: cosmos-sdk 0.43
     """
 
 
 @dataclass(eq=False, repr=False)
 class QuerySupplyOfRequest(betterproto.Message):
-    """
-    QuerySupplyOfRequest is the request type for the Query/SupplyOf RPC method.
-    """
+    """QuerySupplyOfRequest is the request type for the Query/SupplyOf RPC method."""
 
     denom: str = betterproto.string_field(1)
     """denom is the coin denom to query balances for."""
@@ -358,10 +354,7 @@ class QuerySupplyOfRequest(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class QuerySupplyOfResponse(betterproto.Message):
-    """
-    QuerySupplyOfResponse is the response type for the Query/SupplyOf RPC
-    method.
-    """
+    """QuerySupplyOfResponse is the response type for the Query/SupplyOf RPC method."""
 
     amount: "__base_v1_beta1__.Coin" = betterproto.message_field(1)
     """amount is the supply of the coin."""
@@ -369,19 +362,14 @@ class QuerySupplyOfResponse(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class QueryParamsRequest(betterproto.Message):
-    """
-    QueryParamsRequest defines the request type for querying x/bank parameters.
-    """
+    """QueryParamsRequest defines the request type for querying x/bank parameters."""
 
     pass
 
 
 @dataclass(eq=False, repr=False)
 class QueryParamsResponse(betterproto.Message):
-    """
-    QueryParamsResponse defines the response type for querying x/bank
-    parameters.
-    """
+    """QueryParamsResponse defines the response type for querying x/bank parameters."""
 
     params: "Params" = betterproto.message_field(1)
 
@@ -389,8 +377,8 @@ class QueryParamsResponse(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class QueryDenomsMetadataRequest(betterproto.Message):
     """
-    QueryDenomsMetadataRequest is the request type for the Query/DenomsMetadata
-    RPC method.
+    QueryDenomsMetadataRequest is the request type for the Query/DenomsMetadata RPC
+    method.
     """
 
     pagination: "__base_query_v1_beta1__.PageRequest" = betterproto.message_field(1)
@@ -400,14 +388,12 @@ class QueryDenomsMetadataRequest(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class QueryDenomsMetadataResponse(betterproto.Message):
     """
-    QueryDenomsMetadataResponse is the response type for the
-    Query/DenomsMetadata RPC method.
+    QueryDenomsMetadataResponse is the response type for the Query/DenomsMetadata RPC
+    method.
     """
 
     metadatas: List["Metadata"] = betterproto.message_field(1)
-    """
-    metadata provides the client information for all the registered tokens.
-    """
+    """metadata provides the client information for all the registered tokens."""
 
     pagination: "__base_query_v1_beta1__.PageResponse" = betterproto.message_field(2)
     """pagination defines the pagination in the response."""
@@ -416,8 +402,8 @@ class QueryDenomsMetadataResponse(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class QueryDenomMetadataRequest(betterproto.Message):
     """
-    QueryDenomMetadataRequest is the request type for the Query/DenomMetadata
-    RPC method.
+    QueryDenomMetadataRequest is the request type for the Query/DenomMetadata RPC
+    method.
     """
 
     denom: str = betterproto.string_field(1)
@@ -427,29 +413,26 @@ class QueryDenomMetadataRequest(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class QueryDenomMetadataResponse(betterproto.Message):
     """
-    QueryDenomMetadataResponse is the response type for the Query/DenomMetadata
-    RPC method.
+    QueryDenomMetadataResponse is the response type for the Query/DenomMetadata RPC
+    method.
     """
 
     metadata: "Metadata" = betterproto.message_field(1)
     """
-    metadata describes and provides all the client information for the
-    requested token.
+    metadata describes and provides all the client information for the requested token.
     """
 
 
 @dataclass(eq=False, repr=False)
 class QueryDenomOwnersRequest(betterproto.Message):
     """
-    QueryDenomOwnersRequest defines the request type for the DenomOwners RPC
-    query, which queries for a paginated set of all account holders of a
-    particular denomination.
+    QueryDenomOwnersRequest defines the request type for the DenomOwners RPC query,
+    which queries for a paginated set of all account holders of a particular
+    denomination.
     """
 
     denom: str = betterproto.string_field(1)
-    """
-    denom defines the coin denomination to query all account holders for.
-    """
+    """denom defines the coin denomination to query all account holders for."""
 
     pagination: "__base_query_v1_beta1__.PageRequest" = betterproto.message_field(2)
     """pagination defines an optional pagination for the request."""
@@ -460,7 +443,8 @@ class DenomOwner(betterproto.Message):
     """
     DenomOwner defines structure representing an account that owns or holds a
     particular denominated token. It contains the account address and account
-    balance of the denominated token. Since: cosmos-sdk 0.46
+    balance of the denominated token.
+    Since: cosmos-sdk 0.46
     """
 
     address: str = betterproto.string_field(1)
@@ -473,8 +457,8 @@ class DenomOwner(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class QueryDenomOwnersResponse(betterproto.Message):
     """
-    QueryDenomOwnersResponse defines the RPC response of a DenomOwners RPC
-    query. Since: cosmos-sdk 0.46
+    QueryDenomOwnersResponse defines the RPC response of a DenomOwners RPC query.
+    Since: cosmos-sdk 0.46
     """
 
     denom_owners: List["DenomOwner"] = betterproto.message_field(1)
@@ -485,14 +469,13 @@ class QueryDenomOwnersResponse(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class QuerySendEnabledRequest(betterproto.Message):
     """
-    QuerySendEnabledRequest defines the RPC request for looking up SendEnabled
-    entries. Since: cosmos-sdk 0.47
+    QuerySendEnabledRequest defines the RPC request for looking up SendEnabled entries.
+    Since: cosmos-sdk 0.47
     """
 
     denoms: List[str] = betterproto.string_field(1)
     """
-    denoms is the specific denoms you want look up. Leave empty to get all
-    entries.
+    denoms is the specific denoms you want look up. Leave empty to get all entries.
     """
 
     pagination: "__base_query_v1_beta1__.PageRequest" = betterproto.message_field(99)
@@ -519,9 +502,7 @@ class QuerySendEnabledResponse(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class MsgSend(betterproto.Message):
-    """
-    MsgSend represents a message to send coins from one account to another.
-    """
+    """MsgSend represents a message to send coins from one account to another."""
 
     from_address: str = betterproto.string_field(1)
     to_address: str = betterproto.string_field(2)
@@ -537,9 +518,7 @@ class MsgSendResponse(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class MsgMultiSend(betterproto.Message):
-    """
-    MsgMultiSend represents an arbitrary multi-in, multi-out send message.
-    """
+    """MsgMultiSend represents an arbitrary multi-in, multi-out send message."""
 
     inputs: List["Input"] = betterproto.message_field(1)
     """
@@ -560,8 +539,8 @@ class MsgMultiSendResponse(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class MsgUpdateParams(betterproto.Message):
     """
-    MsgUpdateParams is the Msg/UpdateParams request type. Since: cosmos-sdk
-    0.47
+    MsgUpdateParams is the Msg/UpdateParams request type.
+    Since: cosmos-sdk 0.47
     """
 
     authority: str = betterproto.string_field(1)
@@ -572,8 +551,8 @@ class MsgUpdateParams(betterproto.Message):
 
     params: "Params" = betterproto.message_field(2)
     """
-    params defines the x/bank parameters to update. NOTE: All parameters must
-    be supplied.
+    params defines the x/bank parameters to update.
+    NOTE: All parameters must be supplied.
     """
 
 
@@ -581,7 +560,8 @@ class MsgUpdateParams(betterproto.Message):
 class MsgUpdateParamsResponse(betterproto.Message):
     """
     MsgUpdateParamsResponse defines the response structure for executing a
-    MsgUpdateParams message. Since: cosmos-sdk 0.47
+    MsgUpdateParams message.
+    Since: cosmos-sdk 0.47
     """
 
     pass
@@ -590,9 +570,11 @@ class MsgUpdateParamsResponse(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class MsgSetSendEnabled(betterproto.Message):
     """
-    MsgSetSendEnabled is the Msg/SetSendEnabled request type. Only entries to
-    add/update/delete need to be included. Existing SendEnabled entries that
-    are not included in this message are left unchanged. Since: cosmos-sdk 0.47
+    MsgSetSendEnabled is the Msg/SetSendEnabled request type.
+    Only entries to add/update/delete need to be included.
+    Existing SendEnabled entries that are not included in this
+    message are left unchanged.
+    Since: cosmos-sdk 0.47
     """
 
     authority: str = betterproto.string_field(1)
@@ -601,10 +583,11 @@ class MsgSetSendEnabled(betterproto.Message):
 
     use_default_for: List[str] = betterproto.string_field(3)
     """
-    use_default_for is a list of denoms that should use the
-    params.default_send_enabled value. Denoms listed here will have their
-    SendEnabled entries deleted. If a denom is included that doesn't have a
-    SendEnabled entry, it will be ignored.
+    use_default_for is a list of denoms that should use the params.default_send_enabled
+    value.
+    Denoms listed here will have their SendEnabled entries deleted.
+    If a denom is included that doesn't have a SendEnabled entry,
+    it will be ignored.
     """
 
 
@@ -1138,35 +1121,3 @@ class MsgBase(ServiceBase):
                 MsgSetSendEnabledResponse,
             ),
         }
-
-
-SendAuthorization.__pydantic_model__.update_forward_refs()  # type: ignore
-Params.__pydantic_model__.update_forward_refs()  # type: ignore
-Input.__pydantic_model__.update_forward_refs()  # type: ignore
-Output.__pydantic_model__.update_forward_refs()  # type: ignore
-Supply.__pydantic_model__.update_forward_refs()  # type: ignore
-Metadata.__pydantic_model__.update_forward_refs()  # type: ignore
-GenesisState.__pydantic_model__.update_forward_refs()  # type: ignore
-Balance.__pydantic_model__.update_forward_refs()  # type: ignore
-QueryBalanceResponse.__pydantic_model__.update_forward_refs()  # type: ignore
-QueryAllBalancesRequest.__pydantic_model__.update_forward_refs()  # type: ignore
-QueryAllBalancesResponse.__pydantic_model__.update_forward_refs()  # type: ignore
-QuerySpendableBalancesRequest.__pydantic_model__.update_forward_refs()  # type: ignore
-QuerySpendableBalancesResponse.__pydantic_model__.update_forward_refs()  # type: ignore
-QuerySpendableBalanceByDenomResponse.__pydantic_model__.update_forward_refs()  # type: ignore
-QueryTotalSupplyRequest.__pydantic_model__.update_forward_refs()  # type: ignore
-QueryTotalSupplyResponse.__pydantic_model__.update_forward_refs()  # type: ignore
-QuerySupplyOfResponse.__pydantic_model__.update_forward_refs()  # type: ignore
-QueryParamsResponse.__pydantic_model__.update_forward_refs()  # type: ignore
-QueryDenomsMetadataRequest.__pydantic_model__.update_forward_refs()  # type: ignore
-QueryDenomsMetadataResponse.__pydantic_model__.update_forward_refs()  # type: ignore
-QueryDenomMetadataResponse.__pydantic_model__.update_forward_refs()  # type: ignore
-QueryDenomOwnersRequest.__pydantic_model__.update_forward_refs()  # type: ignore
-DenomOwner.__pydantic_model__.update_forward_refs()  # type: ignore
-QueryDenomOwnersResponse.__pydantic_model__.update_forward_refs()  # type: ignore
-QuerySendEnabledRequest.__pydantic_model__.update_forward_refs()  # type: ignore
-QuerySendEnabledResponse.__pydantic_model__.update_forward_refs()  # type: ignore
-MsgSend.__pydantic_model__.update_forward_refs()  # type: ignore
-MsgMultiSend.__pydantic_model__.update_forward_refs()  # type: ignore
-MsgUpdateParams.__pydantic_model__.update_forward_refs()  # type: ignore
-MsgSetSendEnabled.__pydantic_model__.update_forward_refs()  # type: ignore

@@ -2,31 +2,24 @@
 # sources: cosmos/tx/signing/v1beta1/signing.proto
 # plugin: python-betterproto
 # This file has been @generated
-
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from dataclasses import dataclass
-else:
-    from pydantic.dataclasses import dataclass
-
-from typing import List, Optional
+from dataclasses import dataclass
+from typing import List
 
 import betterproto
 import betterproto.lib.google.protobuf as betterproto_lib_google_protobuf
-from pydantic import root_validator
 
 from ....crypto.multisig import v1beta1 as ___crypto_multisig_v1_beta1__
 
 
 class SignMode(betterproto.Enum):
     """
-    SignMode represents a signing mode with its own security guarantees. This
-    enum should be considered a registry of all known sign modes in the Cosmos
-    ecosystem. Apps are not expected to support all known sign modes. Apps that
-    would like to support custom  sign modes are encouraged to open a small PR
-    against this file to add a new case to this SignMode enum describing their
-    sign mode so that different apps have a consistent version of this enum.
+    SignMode represents a signing mode with its own security guarantees.
+    This enum should be considered a registry of all known sign modes
+    in the Cosmos ecosystem. Apps are not expected to support all known
+    sign modes. Apps that would like to support custom  sign modes are
+    encouraged to open a small PR against this file to add a new case
+    to this SignMode enum describing their sign mode so that different
+    apps have a consistent version of this enum.
     """
 
     SIGN_MODE_UNSPECIFIED = 0
@@ -43,17 +36,18 @@ class SignMode(betterproto.Enum):
 
     SIGN_MODE_TEXTUAL = 2
     """
-    SIGN_MODE_TEXTUAL is a future signing mode that will verify some human-
-    readable textual representation on top of the binary representation from
-    SIGN_MODE_DIRECT. It is currently not supported.
+    SIGN_MODE_TEXTUAL is a future signing mode that will verify some
+    human-readable textual representation on top of the binary representation
+    from SIGN_MODE_DIRECT. It is currently not supported.
     """
 
     SIGN_MODE_DIRECT_AUX = 3
     """
-    SIGN_MODE_DIRECT_AUX specifies a signing mode which uses SignDocDirectAux.
-    As opposed to SIGN_MODE_DIRECT, this sign mode does not require signers
-    signing over other signers' `signer_info`. It also allows for adding Tips
-    in transactions. Since: cosmos-sdk 0.46
+    SIGN_MODE_DIRECT_AUX specifies a signing mode which uses
+    SignDocDirectAux. As opposed to SIGN_MODE_DIRECT, this sign mode does not
+    require signers signing over other signers' `signer_info`. It also allows
+    for adding Tips in transactions.
+    Since: cosmos-sdk 0.46
     """
 
     SIGN_MODE_LEGACY_AMINO_JSON = 127
@@ -65,12 +59,13 @@ class SignMode(betterproto.Enum):
     SIGN_MODE_EIP_191 = 191
     """
     SIGN_MODE_EIP_191 specifies the sign mode for EIP 191 signing on the Cosmos
-    SDK. Ref: https://eips.ethereum.org/EIPS/eip-191 Currently,
-    SIGN_MODE_EIP_191 is registered as a SignMode enum variant, but is not
-    implemented on the SDK by default. To enable EIP-191, you need to pass a
-    custom `TxConfig` that has an implementation of `SignModeHandler` for
-    EIP-191. The SDK may decide to fully support EIP-191 in the future. Since:
-    cosmos-sdk 0.45.2
+    SDK. Ref: https://eips.ethereum.org/EIPS/eip-191
+    Currently, SIGN_MODE_EIP_191 is registered as a SignMode enum variant,
+    but is not implemented on the SDK by default. To enable EIP-191, you need
+    to pass a custom `TxConfig` that has an implementation of
+    `SignModeHandler` for EIP-191. The SDK may decide to fully support
+    EIP-191 in the future.
+    Since: cosmos-sdk 0.45.2
     """
 
     SIGN_MODE_EIP_712 = 712
@@ -91,10 +86,10 @@ class SignatureDescriptors(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class SignatureDescriptor(betterproto.Message):
     """
-    SignatureDescriptor is a convenience type which represents the full data
-    for a signature including the public key of the signer, signing modes and
-    the signature itself. It is primarily used for coordinating signatures
-    between clients.
+    SignatureDescriptor is a convenience type which represents the full data for
+    a signature including the public key of the signer, signing modes and the
+    signature itself. It is primarily used for coordinating signatures between
+    clients.
     """
 
     public_key: "betterproto_lib_google_protobuf.Any" = betterproto.message_field(1)
@@ -103,8 +98,8 @@ class SignatureDescriptor(betterproto.Message):
     data: "SignatureDescriptorData" = betterproto.message_field(2)
     sequence: int = betterproto.uint64_field(3)
     """
-    sequence is the sequence of the account, which describes the number of
-    committed transactions signed by a given address. It is used to prevent
+    sequence is the sequence of the account, which describes the
+    number of committed transactions signed by a given address. It is used to prevent
     replay attacks.
     """
 
@@ -113,15 +108,11 @@ class SignatureDescriptor(betterproto.Message):
 class SignatureDescriptorData(betterproto.Message):
     """Data represents signature data"""
 
-    single: Optional["SignatureDescriptorDataSingle"] = betterproto.message_field(1, optional=True, group="sum")
+    single: "SignatureDescriptorDataSingle" = betterproto.message_field(1, group="sum")
     """single represents a single signer"""
 
-    multi: Optional["SignatureDescriptorDataMulti"] = betterproto.message_field(2, optional=True, group="sum")
+    multi: "SignatureDescriptorDataMulti" = betterproto.message_field(2, group="sum")
     """multi represents a multisig signer"""
-
-    @root_validator()
-    def check_oneof(cls, values):
-        return cls._validate_field_groups(values)
 
 
 @dataclass(eq=False, repr=False)
@@ -144,10 +135,3 @@ class SignatureDescriptorDataMulti(betterproto.Message):
 
     signatures: List["SignatureDescriptorData"] = betterproto.message_field(2)
     """signatures is the signatures of the multi-signature"""
-
-
-SignatureDescriptors.__pydantic_model__.update_forward_refs()  # type: ignore
-SignatureDescriptor.__pydantic_model__.update_forward_refs()  # type: ignore
-SignatureDescriptorData.__pydantic_model__.update_forward_refs()  # type: ignore
-SignatureDescriptorDataSingle.__pydantic_model__.update_forward_refs()  # type: ignore
-SignatureDescriptorDataMulti.__pydantic_model__.update_forward_refs()  # type: ignore

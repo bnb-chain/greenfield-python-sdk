@@ -2,13 +2,7 @@
 # sources: cosmos/crypto/hd/v1/hd.proto
 # plugin: python-betterproto
 # This file has been @generated
-
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from dataclasses import dataclass
-else:
-    from pydantic.dataclasses import dataclass
+from dataclasses import dataclass
 
 import betterproto
 
@@ -19,8 +13,7 @@ class Bip44Params(betterproto.Message):
 
     purpose: int = betterproto.uint32_field(1)
     """
-    purpose is a constant set to 44' (or 0x8000002C) following the BIP43
-    recommendation
+    purpose is a constant set to 44' (or 0x8000002C) following the BIP43 recommendation
     """
 
     coin_type: int = betterproto.uint32_field(2)
@@ -31,8 +24,9 @@ class Bip44Params(betterproto.Message):
 
     change: bool = betterproto.bool_field(4)
     """
-    change is a constant used for public derivation. Constant 0 is used for
-    external chain and constant 1 for internal chain.
+    change is a constant used for public derivation. Constant 0 is used for external
+    chain and constant 1 for internal
+    chain.
     """
 
     address_index: int = betterproto.uint32_field(5)

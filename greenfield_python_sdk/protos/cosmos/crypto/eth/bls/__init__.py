@@ -2,13 +2,7 @@
 # sources: cosmos/crypto/eth/bls/keys.proto
 # plugin: python-betterproto
 # This file has been @generated
-
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from dataclasses import dataclass
-else:
-    from pydantic.dataclasses import dataclass
+from dataclasses import dataclass
 
 import betterproto
 
@@ -16,7 +10,8 @@ import betterproto
 @dataclass(eq=False, repr=False)
 class PubKey(betterproto.Message):
     """
-    PubKey defines a bls public key Key is the compressed form of the pubkey.
+    PubKey defines a bls public key
+    Key is the compressed form of the pubkey.
     """
 
     key: bytes = betterproto.bytes_field(1)

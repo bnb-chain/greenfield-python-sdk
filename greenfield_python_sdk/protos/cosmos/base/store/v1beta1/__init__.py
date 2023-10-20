@@ -2,14 +2,7 @@
 # sources: cosmos/base/store/v1beta1/commit_info.proto, cosmos/base/store/v1beta1/listening.proto
 # plugin: python-betterproto
 # This file has been @generated
-
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from dataclasses import dataclass
-else:
-    from pydantic.dataclasses import dataclass
-
+from dataclasses import dataclass
 from datetime import datetime
 from typing import List
 
@@ -21,8 +14,8 @@ from .....tendermint import abci as ____tendermint_abci__
 @dataclass(eq=False, repr=False)
 class CommitInfo(betterproto.Message):
     """
-    CommitInfo defines commit information used by the multi-store when
-    committing a version/height.
+    CommitInfo defines commit information used by the multi-store when committing
+    a version/height.
     """
 
     version: int = betterproto.int64_field(1)
@@ -33,8 +26,8 @@ class CommitInfo(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class StoreInfo(betterproto.Message):
     """
-    StoreInfo defines store-specific commit information. It contains a
-    reference between a store name and the commit ID.
+    StoreInfo defines store-specific commit information. It contains a reference
+    between a store name and the commit ID.
     """
 
     name: str = betterproto.string_field(1)
@@ -55,10 +48,12 @@ class CommitId(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class StoreKvPair(betterproto.Message):
     """
-    StoreKVPair is a KVStore KVPair used for listening to state changes (Sets
-    and Deletes) It optionally includes the StoreKey for the originating
-    KVStore and a Boolean flag to distinguish between Sets and Deletes Since:
-    cosmos-sdk 0.43
+    StoreKVPair is a KVStore KVPair used for listening to state changes (Sets and
+    Deletes)
+    It optionally includes the StoreKey for the originating KVStore and a Boolean flag
+    to distinguish between Sets and
+    Deletes
+    Since: cosmos-sdk 0.43
     """
 
     store_key: str = betterproto.string_field(1)
@@ -70,8 +65,8 @@ class StoreKvPair(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class BlockMetadata(betterproto.Message):
     """
-    BlockMetadata contains all the abci event data of a block the file streamer
-    dump them into files together with the state changes.
+    BlockMetadata contains all the abci event data of a block
+    the file streamer dump them into files together with the state changes.
     """
 
     request_begin_block: "____tendermint_abci__.RequestBeginBlock" = betterproto.message_field(1)
@@ -88,9 +83,3 @@ class BlockMetadataDeliverTx(betterproto.Message):
 
     request: "____tendermint_abci__.RequestDeliverTx" = betterproto.message_field(1)
     response: "____tendermint_abci__.ResponseDeliverTx" = betterproto.message_field(2)
-
-
-CommitInfo.__pydantic_model__.update_forward_refs()  # type: ignore
-StoreInfo.__pydantic_model__.update_forward_refs()  # type: ignore
-BlockMetadata.__pydantic_model__.update_forward_refs()  # type: ignore
-BlockMetadataDeliverTx.__pydantic_model__.update_forward_refs()  # type: ignore

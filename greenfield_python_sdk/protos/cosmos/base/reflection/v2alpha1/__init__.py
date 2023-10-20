@@ -2,14 +2,7 @@
 # sources: cosmos/base/reflection/v2alpha1/reflection.proto
 # plugin: python-betterproto
 # This file has been @generated
-
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from dataclasses import dataclass
-else:
-    from pydantic.dataclasses import dataclass
-
+from dataclasses import dataclass
 from typing import TYPE_CHECKING, Dict, List, Optional
 
 import betterproto
@@ -28,9 +21,9 @@ class AppDescriptor(betterproto.Message):
 
     authn: "AuthnDescriptor" = betterproto.message_field(1)
     """
-    AuthnDescriptor provides information on how to authenticate transactions on
-    the application NOTE: experimental and subject to change in future
-    releases.
+    AuthnDescriptor provides information on how to authenticate transactions on the
+    application
+    NOTE: experimental and subject to change in future releases.
     """
 
     chain: "ChainDescriptor" = betterproto.message_field(2)
@@ -40,20 +33,18 @@ class AppDescriptor(betterproto.Message):
     """codec provides metadata information regarding codec related types"""
 
     configuration: "ConfigurationDescriptor" = betterproto.message_field(4)
-    """
-    configuration provides metadata information regarding the sdk.Config type
-    """
+    """configuration provides metadata information regarding the sdk.Config type"""
 
     query_services: "QueryServicesDescriptor" = betterproto.message_field(5)
     """
-    query_services provides metadata information regarding the available
-    queriable endpoints
+    query_services provides metadata information regarding the available queriable
+    endpoints
     """
 
     tx: "TxDescriptor" = betterproto.message_field(6)
     """
-    tx provides metadata information regarding how to send transactions to the
-    given application
+    tx provides metadata information regarding how to send transactions to the given
+    application
     """
 
 
@@ -63,10 +54,12 @@ class TxDescriptor(betterproto.Message):
 
     fullname: str = betterproto.string_field(1)
     """
-    fullname is the protobuf fullname of the raw transaction type (for instance
-    the tx.Tx type) it is not meant to support polymorphism of transaction
-    types, it is supposed to be used by reflection clients to understand if
-    they can handle a specific transaction type in an application.
+    fullname is the protobuf fullname of the raw transaction type (for instance the
+    tx.Tx type)
+    it is not meant to support polymorphism of transaction types, it is supposed to be
+    used by
+    reflection clients to understand if they can handle a specific transaction type in
+    an application.
     """
 
     msgs: List["MsgDescriptor"] = betterproto.message_field(2)
@@ -76,8 +69,8 @@ class TxDescriptor(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class AuthnDescriptor(betterproto.Message):
     """
-    AuthnDescriptor provides information on how to sign transactions without
-    relying on the online RPCs GetTxMetadata and CombineUnsignedTxAndSignatures
+    AuthnDescriptor provides information on how to sign transactions without relying
+    on the online RPCs GetTxMetadata and CombineUnsignedTxAndSignatures
     """
 
     sign_modes: List["SigningModeDescriptor"] = betterproto.message_field(1)
@@ -87,10 +80,10 @@ class AuthnDescriptor(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class SigningModeDescriptor(betterproto.Message):
     """
-    SigningModeDescriptor provides information on a signing flow of the
-    application NOTE(fdymylja): here we could go as far as providing an entire
-    flow on how to sign a message given a SigningModeDescriptor, but it's
-    better to think about this another time
+    SigningModeDescriptor provides information on a signing flow of the application
+    NOTE(fdymylja): here we could go as far as providing an entire flow on how
+    to sign a message given a SigningModeDescriptor, but it's better to think about
+    this another time
     """
 
     name: str = betterproto.string_field(1)
@@ -101,9 +94,9 @@ class SigningModeDescriptor(betterproto.Message):
 
     authn_info_provider_method_fullname: str = betterproto.string_field(3)
     """
-    authn_info_provider_method_fullname defines the fullname of the method to
-    call to get the metadata required to authenticate using the provided
-    sign_modes
+    authn_info_provider_method_fullname defines the fullname of the method to call to
+    get
+    the metadata required to authenticate using the provided sign_modes
     """
 
 
@@ -135,14 +128,14 @@ class InterfaceDescriptor(betterproto.Message):
 
     interface_accepting_messages: List["InterfaceAcceptingMessageDescriptor"] = betterproto.message_field(2)
     """
-    interface_accepting_messages contains information regarding the proto
-    messages which contain the interface as google.protobuf.Any field
+    interface_accepting_messages contains information regarding the proto messages which
+    contain the interface as
+    google.protobuf.Any field
     """
 
     interface_implementers: List["InterfaceImplementerDescriptor"] = betterproto.message_field(3)
     """
-    interface_implementers is a list of the descriptors of the interface
-    implementers
+    interface_implementers is a list of the descriptors of the interface implementers
     """
 
 
@@ -155,38 +148,34 @@ class InterfaceImplementerDescriptor(betterproto.Message):
 
     type_url: str = betterproto.string_field(2)
     """
-    type_url defines the type URL used when marshalling the type as any this is
-    required so we can provide type safe google.protobuf.Any marshalling and
-    unmarshalling, making sure that we don't accept just 'any' type in our
-    interface fields
+    type_url defines the type URL used when marshalling the type as any
+    this is required so we can provide type safe google.protobuf.Any marshalling and
+    unmarshalling, making sure that we don't accept just 'any' type
+    in our interface fields
     """
 
 
 @dataclass(eq=False, repr=False)
 class InterfaceAcceptingMessageDescriptor(betterproto.Message):
     """
-    InterfaceAcceptingMessageDescriptor describes a protobuf message which
-    contains an interface represented as a google.protobuf.Any
+    InterfaceAcceptingMessageDescriptor describes a protobuf message which contains
+    an interface represented as a google.protobuf.Any
     """
 
     fullname: str = betterproto.string_field(1)
-    """
-    fullname is the protobuf fullname of the type containing the interface
-    """
+    """fullname is the protobuf fullname of the type containing the interface"""
 
     field_descriptor_names: List[str] = betterproto.string_field(2)
     """
-    field_descriptor_names is a list of the protobuf name (not fullname) of the
-    field which contains the interface as google.protobuf.Any (the interface is
-    the same, but it can be in multiple fields of the same proto message)
+    field_descriptor_names is a list of the protobuf name (not fullname) of the field
+    which contains the interface as google.protobuf.Any (the interface is the same, but
+    it can be in multiple fields of the same proto message)
     """
 
 
 @dataclass(eq=False, repr=False)
 class ConfigurationDescriptor(betterproto.Message):
-    """
-    ConfigurationDescriptor contains metadata information on the sdk.Config
-    """
+    """ConfigurationDescriptor contains metadata information on the sdk.Config"""
 
     bech32_account_address_prefix: str = betterproto.string_field(1)
     """bech32_account_address_prefix is the account address prefix"""
@@ -205,10 +194,7 @@ class MsgDescriptor(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class GetAuthnDescriptorRequest(betterproto.Message):
-    """
-    GetAuthnDescriptorRequest is the request used for the GetAuthnDescriptor
-    RPC
-    """
+    """GetAuthnDescriptorRequest is the request used for the GetAuthnDescriptor RPC"""
 
     pass
 
@@ -216,23 +202,18 @@ class GetAuthnDescriptorRequest(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class GetAuthnDescriptorResponse(betterproto.Message):
     """
-    GetAuthnDescriptorResponse is the response returned by the
-    GetAuthnDescriptor RPC
+    GetAuthnDescriptorResponse is the response returned by the GetAuthnDescriptor RPC
     """
 
     authn: "AuthnDescriptor" = betterproto.message_field(1)
     """
-    authn describes how to authenticate to the application when sending
-    transactions
+    authn describes how to authenticate to the application when sending transactions
     """
 
 
 @dataclass(eq=False, repr=False)
 class GetChainDescriptorRequest(betterproto.Message):
-    """
-    GetChainDescriptorRequest is the request used for the GetChainDescriptor
-    RPC
-    """
+    """GetChainDescriptorRequest is the request used for the GetChainDescriptor RPC"""
 
     pass
 
@@ -240,8 +221,7 @@ class GetChainDescriptorRequest(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class GetChainDescriptorResponse(betterproto.Message):
     """
-    GetChainDescriptorResponse is the response returned by the
-    GetChainDescriptor RPC
+    GetChainDescriptorResponse is the response returned by the GetChainDescriptor RPC
     """
 
     chain: "ChainDescriptor" = betterproto.message_field(1)
@@ -250,10 +230,7 @@ class GetChainDescriptorResponse(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class GetCodecDescriptorRequest(betterproto.Message):
-    """
-    GetCodecDescriptorRequest is the request used for the GetCodecDescriptor
-    RPC
-    """
+    """GetCodecDescriptorRequest is the request used for the GetCodecDescriptor RPC"""
 
     pass
 
@@ -261,8 +238,7 @@ class GetCodecDescriptorRequest(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class GetCodecDescriptorResponse(betterproto.Message):
     """
-    GetCodecDescriptorResponse is the response returned by the
-    GetCodecDescriptor RPC
+    GetCodecDescriptorResponse is the response returned by the GetCodecDescriptor RPC
     """
 
     codec: "CodecDescriptor" = betterproto.message_field(1)
@@ -316,18 +292,14 @@ class GetQueryServicesDescriptorResponse(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class GetTxDescriptorRequest(betterproto.Message):
-    """
-    GetTxDescriptorRequest is the request used for the GetTxDescriptor RPC
-    """
+    """GetTxDescriptorRequest is the request used for the GetTxDescriptor RPC"""
 
     pass
 
 
 @dataclass(eq=False, repr=False)
 class GetTxDescriptorResponse(betterproto.Message):
-    """
-    GetTxDescriptorResponse is the response returned by the GetTxDescriptor RPC
-    """
+    """GetTxDescriptorResponse is the response returned by the GetTxDescriptor RPC"""
 
     tx: "TxDescriptor" = betterproto.message_field(1)
     """
@@ -338,9 +310,7 @@ class GetTxDescriptorResponse(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class QueryServicesDescriptor(betterproto.Message):
-    """
-    QueryServicesDescriptor contains the list of cosmos-sdk queriable services
-    """
+    """QueryServicesDescriptor contains the list of cosmos-sdk queriable services"""
 
     query_services: List["QueryServiceDescriptor"] = betterproto.message_field(1)
     """query_services is a list of cosmos-sdk QueryServiceDescriptor"""
@@ -355,8 +325,7 @@ class QueryServiceDescriptor(betterproto.Message):
 
     is_module: bool = betterproto.bool_field(2)
     """
-    is_module describes if this service is actually exposed by an application's
-    module
+    is_module describes if this service is actually exposed by an application's module
     """
 
     methods: List["QueryMethodDescriptor"] = betterproto.message_field(3)
@@ -366,8 +335,8 @@ class QueryServiceDescriptor(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class QueryMethodDescriptor(betterproto.Message):
     """
-    QueryMethodDescriptor describes a queryable method of a query service no
-    other info is provided beside method name and tendermint queryable path
+    QueryMethodDescriptor describes a queryable method of a query service
+    no other info is provided beside method name and tendermint queryable path
     because it would be redundant with the grpc reflection service
     """
 
@@ -376,8 +345,8 @@ class QueryMethodDescriptor(betterproto.Message):
 
     full_query_path: str = betterproto.string_field(2)
     """
-    full_query_path is the path that can be used to query this method via
-    tendermint abci.Query
+    full_query_path is the path that can be used to query
+    this method via tendermint abci.Query
     """
 
 
@@ -601,18 +570,3 @@ class ReflectionServiceBase(ServiceBase):
                 GetTxDescriptorResponse,
             ),
         }
-
-
-AppDescriptor.__pydantic_model__.update_forward_refs()  # type: ignore
-TxDescriptor.__pydantic_model__.update_forward_refs()  # type: ignore
-AuthnDescriptor.__pydantic_model__.update_forward_refs()  # type: ignore
-CodecDescriptor.__pydantic_model__.update_forward_refs()  # type: ignore
-InterfaceDescriptor.__pydantic_model__.update_forward_refs()  # type: ignore
-GetAuthnDescriptorResponse.__pydantic_model__.update_forward_refs()  # type: ignore
-GetChainDescriptorResponse.__pydantic_model__.update_forward_refs()  # type: ignore
-GetCodecDescriptorResponse.__pydantic_model__.update_forward_refs()  # type: ignore
-GetConfigurationDescriptorResponse.__pydantic_model__.update_forward_refs()  # type: ignore
-GetQueryServicesDescriptorResponse.__pydantic_model__.update_forward_refs()  # type: ignore
-GetTxDescriptorResponse.__pydantic_model__.update_forward_refs()  # type: ignore
-QueryServicesDescriptor.__pydantic_model__.update_forward_refs()  # type: ignore
-QueryServiceDescriptor.__pydantic_model__.update_forward_refs()  # type: ignore

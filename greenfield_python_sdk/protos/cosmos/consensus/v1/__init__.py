@@ -2,14 +2,7 @@
 # sources: cosmos/consensus/v1/query.proto, cosmos/consensus/v1/tx.proto
 # plugin: python-betterproto
 # This file has been @generated
-
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from dataclasses import dataclass
-else:
-    from pydantic.dataclasses import dataclass
-
+from dataclasses import dataclass
 from typing import TYPE_CHECKING, Dict, Optional
 
 import betterproto
@@ -27,8 +20,7 @@ if TYPE_CHECKING:
 @dataclass(eq=False, repr=False)
 class QueryParamsRequest(betterproto.Message):
     """
-    QueryParamsRequest defines the request type for querying x/consensus
-    parameters.
+    QueryParamsRequest defines the request type for querying x/consensus parameters.
     """
 
     pass
@@ -37,8 +29,7 @@ class QueryParamsRequest(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class QueryParamsResponse(betterproto.Message):
     """
-    QueryParamsResponse defines the response type for querying x/consensus
-    parameters.
+    QueryParamsResponse defines the response type for querying x/consensus parameters.
     """
 
     params: "___tendermint_types__.ConsensusParams" = betterproto.message_field(1)
@@ -61,9 +52,10 @@ class MsgUpdateParams(betterproto.Message):
 
     block: "___tendermint_types__.BlockParams" = betterproto.message_field(2)
     """
-    params defines the x/consensus parameters to update. VersionsParams is not
-    included in this Msg because it is tracked separarately in x/upgrade. NOTE:
-    All parameters must be supplied.
+    params defines the x/consensus parameters to update.
+    VersionsParams is not included in this Msg because it is tracked
+    separarately in x/upgrade.
+    NOTE: All parameters must be supplied.
     """
 
     evidence: "___tendermint_types__.EvidenceParams" = betterproto.message_field(3)
@@ -158,7 +150,3 @@ class MsgBase(ServiceBase):
                 MsgUpdateParamsResponse,
             ),
         }
-
-
-QueryParamsResponse.__pydantic_model__.update_forward_refs()  # type: ignore
-MsgUpdateParams.__pydantic_model__.update_forward_refs()  # type: ignore

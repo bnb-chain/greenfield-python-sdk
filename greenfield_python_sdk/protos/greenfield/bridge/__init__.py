@@ -2,14 +2,7 @@
 # sources: greenfield/bridge/event.proto, greenfield/bridge/genesis.proto, greenfield/bridge/params.proto, greenfield/bridge/query.proto, greenfield/bridge/tx.proto
 # plugin: python-betterproto
 # This file has been @generated
-
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from dataclasses import dataclass
-else:
-    from pydantic.dataclasses import dataclass
-
+from dataclasses import dataclass
 from typing import TYPE_CHECKING, Dict, Optional
 
 import betterproto
@@ -32,9 +25,7 @@ class RefundReason(betterproto.Enum):
 
 @dataclass(eq=False, repr=False)
 class EventCrossTransferOut(betterproto.Message):
-    """
-    EventCrossTransferOut is emitted when a cross chain transfer out tx created
-    """
+    """EventCrossTransferOut is emitted when a cross chain transfer out tx created"""
 
     from_: str = betterproto.string_field(1)
     """From addres of the cross chain transfer tx"""
@@ -58,8 +49,7 @@ class EventCrossTransferOut(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class EventCrossTransferOutRefund(betterproto.Message):
     """
-    EventCrossTransferOutRefund is emitted when a cross chain transfer out tx
-    failed
+    EventCrossTransferOutRefund is emitted when a cross chain transfer out tx failed
     """
 
     refund_address: str = betterproto.string_field(1)
@@ -80,9 +70,7 @@ class EventCrossTransferOutRefund(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class EventCrossTransferIn(betterproto.Message):
-    """
-    EventCrossTransferIn is emitted when a cross chain transfer in tx happened
-    """
+    """EventCrossTransferIn is emitted when a cross chain transfer in tx happened"""
 
     amount: "__cosmos_base_v1_beta1__.Coin" = betterproto.message_field(1)
     """Amount of the cross chain transfer tx"""
@@ -109,8 +97,8 @@ class Params(betterproto.Message):
 
     bsc_transfer_out_ack_relayer_fee: str = betterproto.string_field(2)
     """
-    Relayer fee for the ACK or FAIL_ACK package of the cross chain transfer out
-    tx to bsc
+    Relayer fee for the ACK or FAIL_ACK package of the cross chain transfer out tx to
+    bsc
     """
 
 
@@ -131,9 +119,7 @@ class QueryParamsRequest(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class QueryParamsResponse(betterproto.Message):
-    """
-    QueryParamsResponse is response type for the Query/Params RPC method.
-    """
+    """QueryParamsResponse is response type for the Query/Params RPC method."""
 
     params: "Params" = betterproto.message_field(1)
     """params holds all the parameters of this module."""
@@ -172,8 +158,8 @@ class MsgUpdateParams(betterproto.Message):
 
     params: "Params" = betterproto.message_field(2)
     """
-    params defines the x/crosschain parameters to update. NOTE: All parameters
-    must be supplied.
+    params defines the x/crosschain parameters to update.
+    NOTE: All parameters must be supplied.
     """
 
 
@@ -296,12 +282,3 @@ class MsgBase(ServiceBase):
                 MsgUpdateParamsResponse,
             ),
         }
-
-
-EventCrossTransferOut.__pydantic_model__.update_forward_refs()  # type: ignore
-EventCrossTransferOutRefund.__pydantic_model__.update_forward_refs()  # type: ignore
-EventCrossTransferIn.__pydantic_model__.update_forward_refs()  # type: ignore
-GenesisState.__pydantic_model__.update_forward_refs()  # type: ignore
-QueryParamsResponse.__pydantic_model__.update_forward_refs()  # type: ignore
-MsgTransferOut.__pydantic_model__.update_forward_refs()  # type: ignore
-MsgUpdateParams.__pydantic_model__.update_forward_refs()  # type: ignore

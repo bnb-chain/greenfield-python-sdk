@@ -3,20 +3,13 @@
 # plugin: python-betterproto
 # This file has been @generated
 import warnings
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from dataclasses import dataclass
-else:
-    from pydantic.dataclasses import dataclass
-
+from dataclasses import dataclass
 from typing import TYPE_CHECKING, Dict, List, Optional
 
 import betterproto
 import betterproto.lib.google.protobuf as betterproto_lib_google_protobuf
 import grpclib
 from betterproto.grpc.grpclib_server import ServiceBase
-from pydantic import root_validator
 
 from ....tendermint import types as ___tendermint_types__
 from ...base import v1beta1 as __base_v1_beta1__
@@ -36,8 +29,8 @@ class OrderBy(betterproto.Enum):
 
     ORDER_BY_UNSPECIFIED = 0
     """
-    ORDER_BY_UNSPECIFIED specifies an unknown sorting order. OrderBy defaults
-    to ASC in this case.
+    ORDER_BY_UNSPECIFIED specifies an unknown sorting order. OrderBy defaults to ASC in
+    this case.
     """
 
     ORDER_BY_ASC = 1
@@ -49,8 +42,7 @@ class OrderBy(betterproto.Enum):
 
 class BroadcastMode(betterproto.Enum):
     """
-    BroadcastMode specifies the broadcast mode for the TxService.Broadcast RPC
-    method.
+    BroadcastMode specifies the broadcast mode for the TxService.Broadcast RPC method.
     """
 
     BROADCAST_MODE_UNSPECIFIED = 0
@@ -58,20 +50,20 @@ class BroadcastMode(betterproto.Enum):
 
     BROADCAST_MODE_BLOCK = 1
     """
-    DEPRECATED: use BROADCAST_MODE_SYNC instead, BROADCAST_MODE_BLOCK is not
-    supported by the SDK from v0.47.x onwards.
+    DEPRECATED: use BROADCAST_MODE_SYNC instead,
+    BROADCAST_MODE_BLOCK is not supported by the SDK from v0.47.x onwards.
     """
 
     BROADCAST_MODE_SYNC = 2
     """
-    BROADCAST_MODE_SYNC defines a tx broadcasting mode where the client waits
-    for a CheckTx execution response only.
+    BROADCAST_MODE_SYNC defines a tx broadcasting mode where the client waits for
+    a CheckTx execution response only.
     """
 
     BROADCAST_MODE_ASYNC = 3
     """
-    BROADCAST_MODE_ASYNC defines a tx broadcasting mode where the client
-    returns immediately.
+    BROADCAST_MODE_ASYNC defines a tx broadcasting mode where the client returns
+    immediately.
     """
 
 
@@ -128,9 +120,7 @@ class TxRaw(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class SignDoc(betterproto.Message):
-    """
-    SignDoc is the type used for generating sign bytes for SIGN_MODE_DIRECT.
-    """
+    """SignDoc is the type used for generating sign bytes for SIGN_MODE_DIRECT."""
 
     body_bytes: bytes = betterproto.bytes_field(1)
     """
@@ -146,8 +136,8 @@ class SignDoc(betterproto.Message):
 
     chain_id: str = betterproto.string_field(3)
     """
-    chain_id is the unique identifier of the chain this transaction targets. It
-    prevents signed transactions from being used on another chain by an
+    chain_id is the unique identifier of the chain this transaction targets.
+    It prevents signed transactions from being used on another chain by an
     attacker
     """
 
@@ -159,7 +149,8 @@ class SignDoc(betterproto.Message):
 class SignDocDirectAux(betterproto.Message):
     """
     SignDocDirectAux is the type used for generating sign bytes for
-    SIGN_MODE_DIRECT_AUX. Since: cosmos-sdk 0.46
+    SIGN_MODE_DIRECT_AUX.
+    Since: cosmos-sdk 0.46
     """
 
     body_bytes: bytes = betterproto.bytes_field(1)
@@ -173,8 +164,8 @@ class SignDocDirectAux(betterproto.Message):
 
     chain_id: str = betterproto.string_field(3)
     """
-    chain_id is the identifier of the chain this transaction targets. It
-    prevents signed transactions from being used on another chain by an
+    chain_id is the identifier of the chain this transaction targets.
+    It prevents signed transactions from being used on another chain by an
     attacker.
     """
 
@@ -188,22 +179,22 @@ class SignDocDirectAux(betterproto.Message):
     """
     Tip is the optional tip used for transactions fees paid in another denom.
     It should be left empty if the signer is not the tipper for this
-    transaction. This field is ignored if the chain didn't enable tips, i.e.
-    didn't add the `TipDecorator` in its posthandler.
+    transaction.
+    This field is ignored if the chain didn't enable tips, i.e. didn't add the
+    `TipDecorator` in its posthandler.
     """
 
 
 @dataclass(eq=False, repr=False)
 class SignDocEip712(betterproto.Message):
     """
-    SignDocEIP712 is the type used for generating sign bytes for
-    SIGN_MODE_EIP_712.
+    SignDocEIP712 is the type used for generating sign bytes for SIGN_MODE_EIP_712.
     """
 
     chain_id: int = betterproto.uint64_field(1)
     """
-    chain_id is the identifier of the chain this transaction targets. It
-    prevents signed transactions from being used on another chain by an
+    chain_id is the identifier of the chain this transaction targets.
+    It prevents signed transactions from being used on another chain by an
     attacker.
     """
 
@@ -229,18 +220,19 @@ class SignDocEip712(betterproto.Message):
 
     memo: str = betterproto.string_field(7)
     """
-    memo is any arbitrary note/comment to be added to the transaction. WARNING:
-    in clients, any publicly exposed text should not be called memo, but should
-    be called `note` instead (see https://github.com/cosmos/cosmos-
-    sdk/issues/9122).
+    memo is any arbitrary note/comment to be added to the transaction.
+    WARNING: in clients, any publicly exposed text should not be called memo,
+    but should be called `note` instead (see
+    https://github.com/cosmos/cosmos-sdk/issues/9122).
     """
 
     tip: "Tip" = betterproto.message_field(8)
     """
     Tip is the optional tip used for transactions fees paid in another denom.
     It should be left empty if the signer is not the tipper for this
-    transaction. This field is ignored if the chain didn't enable tips, i.e.
-    didn't add the `TipDecorator` in its posthandler.
+    transaction.
+    This field is ignored if the chain didn't enable tips, i.e. didn't add the
+    `TipDecorator` in its posthandler.
     """
 
 
@@ -253,37 +245,38 @@ class TxBody(betterproto.Message):
     messages is a list of messages to be executed. The required signers of
     those messages define the number and order of elements in AuthInfo's
     signer_infos and Tx's signatures. Each required signer address is added to
-    the list only the first time it occurs. By convention, the first required
-    signer (usually from the first message) is referred to as the primary
-    signer and pays the fee for the whole transaction.
+    the list only the first time it occurs.
+    By convention, the first required signer (usually from the first message)
+    is referred to as the primary signer and pays the fee for the whole
+    transaction.
     """
 
     memo: str = betterproto.string_field(2)
     """
-    memo is any arbitrary note/comment to be added to the transaction. WARNING:
-    in clients, any publicly exposed text should not be called memo, but should
-    be called `note` instead (see https://github.com/cosmos/cosmos-
-    sdk/issues/9122).
+    memo is any arbitrary note/comment to be added to the transaction.
+    WARNING: in clients, any publicly exposed text should not be called memo,
+    but should be called `note` instead (see
+    https://github.com/cosmos/cosmos-sdk/issues/9122).
     """
 
     timeout_height: int = betterproto.uint64_field(3)
     """
-    timeout is the block height after which this transaction will not be
-    processed by the chain
+    timeout is the block height after which this transaction will not
+    be processed by the chain
     """
 
     extension_options: List["betterproto_lib_google_protobuf.Any"] = betterproto.message_field(1023)
     """
-    extension_options are arbitrary options that can be added by chains when
-    the default options are not sufficient. If any of these are present and
-    can't be handled, the transaction will be rejected
+    extension_options are arbitrary options that can be added by chains
+    when the default options are not sufficient. If any of these are present
+    and can't be handled, the transaction will be rejected
     """
 
     non_critical_extension_options: List["betterproto_lib_google_protobuf.Any"] = betterproto.message_field(2047)
     """
-    extension_options are arbitrary options that can be added by chains when
-    the default options are not sufficient. If any of these are present and
-    can't be handled, they will be ignored
+    extension_options are arbitrary options that can be added by chains
+    when the default options are not sufficient. If any of these are present
+    and can't be handled, they will be ignored
     """
 
 
@@ -314,7 +307,8 @@ class AuthInfo(betterproto.Message):
     """
     Tip is the optional tip used for transactions fees paid in another denom.
     This field is ignored if the chain didn't enable tips, i.e. didn't add the
-    `TipDecorator` in its posthandler. Since: cosmos-sdk 0.46
+    `TipDecorator` in its posthandler.
+    Since: cosmos-sdk 0.46
     """
 
 
@@ -340,27 +334,21 @@ class SignerInfo(betterproto.Message):
 
     sequence: int = betterproto.uint64_field(3)
     """
-    sequence is the sequence of the account, which describes the number of
-    committed transactions signed by a given address. It is used to prevent
-    replay attacks.
+    sequence is the sequence of the account, which describes the
+    number of committed transactions signed by a given address. It is used to
+    prevent replay attacks.
     """
 
 
 @dataclass(eq=False, repr=False)
 class ModeInfo(betterproto.Message):
-    """
-    ModeInfo describes the signing mode of a single or nested multisig signer.
-    """
+    """ModeInfo describes the signing mode of a single or nested multisig signer."""
 
-    single: Optional["ModeInfoSingle"] = betterproto.message_field(1, optional=True, group="sum")
+    single: "ModeInfoSingle" = betterproto.message_field(1, group="sum")
     """single represents a single signer"""
 
-    multi: Optional["ModeInfoMulti"] = betterproto.message_field(2, optional=True, group="sum")
+    multi: "ModeInfoMulti" = betterproto.message_field(2, group="sum")
     """multi represents a nested multisig signer"""
-
-    @root_validator()
-    def check_oneof(cls, values):
-        return cls._validate_field_groups(values)
 
 
 @dataclass(eq=False, repr=False)
@@ -384,17 +372,17 @@ class ModeInfoMulti(betterproto.Message):
 
     mode_infos: List["ModeInfo"] = betterproto.message_field(2)
     """
-    mode_infos is the corresponding modes of the signers of the multisig which
-    could include nested multisig public keys
+    mode_infos is the corresponding modes of the signers of the multisig
+    which could include nested multisig public keys
     """
 
 
 @dataclass(eq=False, repr=False)
 class Fee(betterproto.Message):
     """
-    Fee includes the amount of coins paid in fees and the maximum gas to be
-    used by the transaction. The ratio yields an effective "gasprice", which
-    must be above some miminum to be accepted into the mempool.
+    Fee includes the amount of coins paid in fees and the maximum
+    gas to be used by the transaction. The ratio yields an effective "gasprice",
+    which must be above some miminum to be accepted into the mempool.
     """
 
     amount: List["__base_v1_beta1__.Coin"] = betterproto.message_field(1)
@@ -408,24 +396,29 @@ class Fee(betterproto.Message):
 
     payer: str = betterproto.string_field(3)
     """
-    if unset, the first signer is responsible for paying the fees. If set, the
-    specified account must pay the fees. the payer must be a tx signer (and
-    thus have signed this field in AuthInfo). setting this field does *not*
-    change the ordering of required signers for the transaction.
+    if unset, the first signer is responsible for paying the fees. If set, the specified
+    account must pay the fees.
+    the payer must be a tx signer (and thus have signed this field in AuthInfo).
+    setting this field does *not* change the ordering of required signers for the
+    transaction.
     """
 
     granter: str = betterproto.string_field(4)
     """
-    if set, the fee payer (either the first signer or the value of the payer
-    field) requests that a fee grant be used to pay fees instead of the fee
-    payer's own balance. If an appropriate fee grant does not exist or the
-    chain does not support fee grants, this will fail
+    if set, the fee payer (either the first signer or the value of the payer field)
+    requests that a fee grant be used
+    to pay fees instead of the fee payer's own balance. If an appropriate fee grant does
+    not exist or the chain does
+    not support fee grants, this will fail
     """
 
 
 @dataclass(eq=False, repr=False)
 class Tip(betterproto.Message):
-    """Tip is the tip used for meta-transactions. Since: cosmos-sdk 0.46"""
+    """
+    Tip is the tip used for meta-transactions.
+    Since: cosmos-sdk 0.46
+    """
 
     amount: List["__base_v1_beta1__.Coin"] = betterproto.message_field(1)
     """amount is the amount of the tip"""
@@ -440,7 +433,8 @@ class AuxSignerData(betterproto.Message):
     AuxSignerData is the intermediary format that an auxiliary signer (e.g. a
     tipper) builds and sends to the fee payer (who will build and broadcast the
     actual tx). AuxSignerData is not a valid tx in itself, and will be rejected
-    by the node if sent directly as-is. Since: cosmos-sdk 0.46
+    by the node if sent directly as-is.
+    Since: cosmos-sdk 0.46
     """
 
     address: str = betterproto.string_field(1)
@@ -467,8 +461,8 @@ class AuxSignerData(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class GetTxsEventRequest(betterproto.Message):
     """
-    GetTxsEventRequest is the request type for the Service.TxsByEvents RPC
-    method.
+    GetTxsEventRequest is the request type for the Service.TxsByEvents
+    RPC method.
     """
 
     events: List[str] = betterproto.string_field(1)
@@ -476,21 +470,21 @@ class GetTxsEventRequest(betterproto.Message):
 
     pagination: "__base_query_v1_beta1__.PageRequest" = betterproto.message_field(2)
     """
-    pagination defines a pagination for the request. Deprecated post v0.46.x:
-    use page and limit instead.
+    pagination defines a pagination for the request.
+    Deprecated post v0.46.x: use page and limit instead.
     """
 
     order_by: "OrderBy" = betterproto.enum_field(3)
     page: int = betterproto.uint64_field(4)
     """
-    page is the page number to query, starts at 1. If not provided, will
-    default to first page.
+    page is the page number to query, starts at 1. If not provided, will default to
+    first page.
     """
 
     limit: int = betterproto.uint64_field(5)
     """
-    limit is the total number of results to be returned in the result page. If
-    left empty it will default to a value to be set by each app.
+    limit is the total number of results to be returned in the result page.
+    If left empty it will default to a value to be set by each app.
     """
 
     def __post_init__(self) -> None:
@@ -502,8 +496,8 @@ class GetTxsEventRequest(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class GetTxsEventResponse(betterproto.Message):
     """
-    GetTxsEventResponse is the response type for the Service.TxsByEvents RPC
-    method.
+    GetTxsEventResponse is the response type for the Service.TxsByEvents
+    RPC method.
     """
 
     txs: List["Tx"] = betterproto.message_field(1)
@@ -514,8 +508,8 @@ class GetTxsEventResponse(betterproto.Message):
 
     pagination: "__base_query_v1_beta1__.PageResponse" = betterproto.message_field(3)
     """
-    pagination defines a pagination for the response. Deprecated post v0.46.x:
-    use total instead.
+    pagination defines a pagination for the response.
+    Deprecated post v0.46.x: use total instead.
     """
 
     total: int = betterproto.uint64_field(4)
@@ -543,8 +537,8 @@ class BroadcastTxRequest(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class BroadcastTxResponse(betterproto.Message):
     """
-    BroadcastTxResponse is the response type for the Service.BroadcastTx
-    method.
+    BroadcastTxResponse is the response type for the
+    Service.BroadcastTx method.
     """
 
     tx_response: "__base_abci_v1_beta1__.TxResponse" = betterproto.message_field(1)
@@ -554,16 +548,21 @@ class BroadcastTxResponse(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class SimulateRequest(betterproto.Message):
     """
-    SimulateRequest is the request type for the Service.Simulate RPC method.
+    SimulateRequest is the request type for the Service.Simulate
+    RPC method.
     """
 
     tx: "Tx" = betterproto.message_field(1)
     """
-    tx is the transaction to simulate. Deprecated. Send raw tx bytes instead.
+    tx is the transaction to simulate.
+    Deprecated. Send raw tx bytes instead.
     """
 
     tx_bytes: bytes = betterproto.bytes_field(2)
-    """tx_bytes is the raw transaction. Since: cosmos-sdk 0.43"""
+    """
+    tx_bytes is the raw transaction.
+    Since: cosmos-sdk 0.43
+    """
 
     def __post_init__(self) -> None:
         super().__post_init__()
@@ -574,7 +573,8 @@ class SimulateRequest(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class SimulateResponse(betterproto.Message):
     """
-    SimulateResponse is the response type for the Service.SimulateRPC method.
+    SimulateResponse is the response type for the
+    Service.SimulateRPC method.
     """
 
     gas_info: "__base_abci_v1_beta1__.GasInfo" = betterproto.message_field(1)
@@ -586,7 +586,10 @@ class SimulateResponse(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class GetTxRequest(betterproto.Message):
-    """GetTxRequest is the request type for the Service.GetTx RPC method."""
+    """
+    GetTxRequest is the request type for the Service.GetTx
+    RPC method.
+    """
 
     hash: str = betterproto.string_field(1)
     """hash is the tx hash to query, encoded as a hex string."""
@@ -607,7 +610,8 @@ class GetTxResponse(betterproto.Message):
 class GetBlockWithTxsRequest(betterproto.Message):
     """
     GetBlockWithTxsRequest is the request type for the Service.GetBlockWithTxs
-    RPC method. Since: cosmos-sdk 0.45.2
+    RPC method.
+    Since: cosmos-sdk 0.45.2
     """
 
     height: int = betterproto.int64_field(1)
@@ -620,8 +624,8 @@ class GetBlockWithTxsRequest(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class GetBlockWithTxsResponse(betterproto.Message):
     """
-    GetBlockWithTxsResponse is the response type for the
-    Service.GetBlockWithTxs method. Since: cosmos-sdk 0.45.2
+    GetBlockWithTxsResponse is the response type for the Service.GetBlockWithTxs method.
+    Since: cosmos-sdk 0.45.2
     """
 
     txs: List["Tx"] = betterproto.message_field(1)
@@ -636,7 +640,8 @@ class GetBlockWithTxsResponse(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class TxDecodeRequest(betterproto.Message):
     """
-    TxDecodeRequest is the request type for the Service.TxDecode RPC method.
+    TxDecodeRequest is the request type for the Service.TxDecode
+    RPC method.
     Since: cosmos-sdk 0.47
     """
 
@@ -647,7 +652,8 @@ class TxDecodeRequest(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class TxDecodeResponse(betterproto.Message):
     """
-    TxDecodeResponse is the response type for the Service.TxDecode method.
+    TxDecodeResponse is the response type for the
+    Service.TxDecode method.
     Since: cosmos-sdk 0.47
     """
 
@@ -658,7 +664,8 @@ class TxDecodeResponse(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class TxEncodeRequest(betterproto.Message):
     """
-    TxEncodeRequest is the request type for the Service.TxEncode RPC method.
+    TxEncodeRequest is the request type for the Service.TxEncode
+    RPC method.
     Since: cosmos-sdk 0.47
     """
 
@@ -669,7 +676,8 @@ class TxEncodeRequest(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class TxEncodeResponse(betterproto.Message):
     """
-    TxEncodeResponse is the response type for the Service.TxEncode method.
+    TxEncodeResponse is the response type for the
+    Service.TxEncode method.
     Since: cosmos-sdk 0.47
     """
 
@@ -680,8 +688,9 @@ class TxEncodeResponse(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class TxEncodeAminoRequest(betterproto.Message):
     """
-    TxEncodeAminoRequest is the request type for the Service.TxEncodeAmino RPC
-    method. Since: cosmos-sdk 0.47
+    TxEncodeAminoRequest is the request type for the Service.TxEncodeAmino
+    RPC method.
+    Since: cosmos-sdk 0.47
     """
 
     amino_json: str = betterproto.string_field(1)
@@ -691,7 +700,8 @@ class TxEncodeAminoRequest(betterproto.Message):
 class TxEncodeAminoResponse(betterproto.Message):
     """
     TxEncodeAminoResponse is the response type for the Service.TxEncodeAmino
-    RPC method. Since: cosmos-sdk 0.47
+    RPC method.
+    Since: cosmos-sdk 0.47
     """
 
     amino_binary: bytes = betterproto.bytes_field(1)
@@ -700,8 +710,9 @@ class TxEncodeAminoResponse(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class TxDecodeAminoRequest(betterproto.Message):
     """
-    TxDecodeAminoRequest is the request type for the Service.TxDecodeAmino RPC
-    method. Since: cosmos-sdk 0.47
+    TxDecodeAminoRequest is the request type for the Service.TxDecodeAmino
+    RPC method.
+    Since: cosmos-sdk 0.47
     """
 
     amino_binary: bytes = betterproto.bytes_field(1)
@@ -711,7 +722,8 @@ class TxDecodeAminoRequest(betterproto.Message):
 class TxDecodeAminoResponse(betterproto.Message):
     """
     TxDecodeAminoResponse is the response type for the Service.TxDecodeAmino
-    RPC method. Since: cosmos-sdk 0.47
+    RPC method.
+    Since: cosmos-sdk 0.47
     """
 
     amino_json: str = betterproto.string_field(1)
@@ -1017,28 +1029,3 @@ class ServiceBase(ServiceBase):
                 TxDecodeAminoResponse,
             ),
         }
-
-
-Tx.__pydantic_model__.update_forward_refs()  # type: ignore
-SignDocDirectAux.__pydantic_model__.update_forward_refs()  # type: ignore
-SignDocEip712.__pydantic_model__.update_forward_refs()  # type: ignore
-TxBody.__pydantic_model__.update_forward_refs()  # type: ignore
-AuthInfo.__pydantic_model__.update_forward_refs()  # type: ignore
-SignerInfo.__pydantic_model__.update_forward_refs()  # type: ignore
-ModeInfo.__pydantic_model__.update_forward_refs()  # type: ignore
-ModeInfoSingle.__pydantic_model__.update_forward_refs()  # type: ignore
-ModeInfoMulti.__pydantic_model__.update_forward_refs()  # type: ignore
-Fee.__pydantic_model__.update_forward_refs()  # type: ignore
-Tip.__pydantic_model__.update_forward_refs()  # type: ignore
-AuxSignerData.__pydantic_model__.update_forward_refs()  # type: ignore
-GetTxsEventRequest.__pydantic_model__.update_forward_refs()  # type: ignore
-GetTxsEventResponse.__pydantic_model__.update_forward_refs()  # type: ignore
-BroadcastTxRequest.__pydantic_model__.update_forward_refs()  # type: ignore
-BroadcastTxResponse.__pydantic_model__.update_forward_refs()  # type: ignore
-SimulateRequest.__pydantic_model__.update_forward_refs()  # type: ignore
-SimulateResponse.__pydantic_model__.update_forward_refs()  # type: ignore
-GetTxResponse.__pydantic_model__.update_forward_refs()  # type: ignore
-GetBlockWithTxsRequest.__pydantic_model__.update_forward_refs()  # type: ignore
-GetBlockWithTxsResponse.__pydantic_model__.update_forward_refs()  # type: ignore
-TxDecodeResponse.__pydantic_model__.update_forward_refs()  # type: ignore
-TxEncodeRequest.__pydantic_model__.update_forward_refs()  # type: ignore

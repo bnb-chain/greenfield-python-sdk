@@ -3,13 +3,7 @@
 # plugin: python-betterproto
 # This file has been @generated
 import warnings
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from dataclasses import dataclass
-else:
-    from pydantic.dataclasses import dataclass
-
+from dataclasses import dataclass
 from datetime import datetime, timedelta
 from typing import TYPE_CHECKING, Dict, List, Optional
 
@@ -28,10 +22,7 @@ if TYPE_CHECKING:
 
 
 class VoteOption(betterproto.Enum):
-    """
-    VoteOption enumerates the valid vote options for a given governance
-    proposal.
-    """
+    """VoteOption enumerates the valid vote options for a given governance proposal."""
 
     VOTE_OPTION_UNSPECIFIED = 0
     """VOTE_OPTION_UNSPECIFIED defines a no-op vote option."""
@@ -92,8 +83,7 @@ class WeightedVoteOption(betterproto.Message):
 
     option: "VoteOption" = betterproto.enum_field(1)
     """
-    option defines the valid vote options, it must not contain duplicate vote
-    options.
+    option defines the valid vote options, it must not contain duplicate vote options.
     """
 
     weight: str = betterproto.string_field(2)
@@ -125,18 +115,16 @@ class Proposal(betterproto.Message):
     """id defines the unique id of the proposal."""
 
     messages: List["betterproto_lib_google_protobuf.Any"] = betterproto.message_field(2)
-    """
-    messages are the arbitrary messages to be executed if the proposal passes.
-    """
+    """messages are the arbitrary messages to be executed if the proposal passes."""
 
     status: "ProposalStatus" = betterproto.enum_field(3)
     """status defines the proposal status."""
 
     final_tally_result: "TallyResult" = betterproto.message_field(4)
     """
-    final_tally_result is the final tally result of the proposal. When querying
-    a proposal via gRPC, this field is not populated until the proposal's
-    voting period has ended.
+    final_tally_result is the final tally result of the proposal. When
+    querying a proposal via gRPC, this field is not populated until the
+    proposal's voting period has ended.
     """
 
     submit_time: datetime = betterproto.message_field(5)
@@ -158,14 +146,21 @@ class Proposal(betterproto.Message):
     """metadata is any arbitrary metadata attached to the proposal."""
 
     title: str = betterproto.string_field(11)
-    """title is the title of the proposal Since: cosmos-sdk 0.47"""
+    """
+    title is the title of the proposal
+    Since: cosmos-sdk 0.47
+    """
 
     summary: str = betterproto.string_field(12)
-    """summary is a short summary of the proposal Since: cosmos-sdk 0.47"""
+    """
+    summary is a short summary of the proposal
+    Since: cosmos-sdk 0.47
+    """
 
     proposer: str = betterproto.string_field(13)
     """
-    Proposer is the address of the proposal sumbitter Since: cosmos-sdk 0.47
+    Proposer is the address of the proposal sumbitter
+    Since: cosmos-sdk 0.47
     """
 
     failed_reason: str = betterproto.string_field(14)
@@ -186,16 +181,14 @@ class TallyResult(betterproto.Message):
     """no_count is the number of no votes on a proposal."""
 
     no_with_veto_count: str = betterproto.string_field(4)
-    """
-    no_with_veto_count is the number of no with veto votes on a proposal.
-    """
+    """no_with_veto_count is the number of no with veto votes on a proposal."""
 
 
 @dataclass(eq=False, repr=False)
 class Vote(betterproto.Message):
     """
-    Vote defines a vote on a governance proposal. A Vote consists of a proposal
-    ID, the voter, and the vote option.
+    Vote defines a vote on a governance proposal.
+    A Vote consists of a proposal ID, the voter, and the vote option.
     """
 
     proposal_id: int = betterproto.uint64_field(1)
@@ -213,9 +206,7 @@ class Vote(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class DepositParams(betterproto.Message):
-    """
-    DepositParams defines the params for deposits on governance proposals.
-    """
+    """DepositParams defines the params for deposits on governance proposals."""
 
     min_deposit: List["__base_v1_beta1__.Coin"] = betterproto.message_field(1)
     """Minimum deposit for a proposal to enter voting period."""
@@ -237,9 +228,7 @@ class VotingParams(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class TallyParams(betterproto.Message):
-    """
-    TallyParams defines the params for tallying votes on governance proposals.
-    """
+    """TallyParams defines the params for tallying votes on governance proposals."""
 
     quorum: str = betterproto.string_field(1)
     """
@@ -248,21 +237,20 @@ class TallyParams(betterproto.Message):
     """
 
     threshold: str = betterproto.string_field(2)
-    """
-    Minimum proportion of Yes votes for proposal to pass. Default value: 0.5.
-    """
+    """Minimum proportion of Yes votes for proposal to pass. Default value: 0.5."""
 
     veto_threshold: str = betterproto.string_field(3)
     """
-    Minimum value of Veto votes to Total votes ratio for proposal to be vetoed.
-    Default value: 1/3.
+    Minimum value of Veto votes to Total votes ratio for proposal to be
+    vetoed. Default value: 1/3.
     """
 
 
 @dataclass(eq=False, repr=False)
 class Params(betterproto.Message):
     """
-    Params defines the parameters for the x/gov module. Since: cosmos-sdk 0.47
+    Params defines the parameters for the x/gov module.
+    Since: cosmos-sdk 0.47
     """
 
     min_deposit: List["__base_v1_beta1__.Coin"] = betterproto.message_field(1)
@@ -280,24 +268,22 @@ class Params(betterproto.Message):
     quorum: str = betterproto.string_field(4)
     """
     Minimum percentage of total stake needed to vote for a result to be
-    considered valid.
+     considered valid.
     """
 
     threshold: str = betterproto.string_field(5)
-    """
-    Minimum proportion of Yes votes for proposal to pass. Default value: 0.5.
-    """
+    """Minimum proportion of Yes votes for proposal to pass. Default value: 0.5."""
 
     veto_threshold: str = betterproto.string_field(6)
     """
     Minimum value of Veto votes to Total votes ratio for proposal to be
-    vetoed. Default value: 1/3.
+     vetoed. Default value: 1/3.
     """
 
     min_initial_deposit_ratio: str = betterproto.string_field(7)
     """
-    The ratio representing the proportion of the deposit value that must be
-    paid at proposal submission.
+    The ratio representing the proportion of the deposit value that must be paid at
+    proposal submission.
     """
 
     burn_vote_quorum: bool = betterproto.bool_field(13)
@@ -312,17 +298,13 @@ class Params(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class CrossChainParamsChange(betterproto.Message):
-    """
-    CrossChainParamsChange defines the parameter change or contract upgrade
-    """
+    """CrossChainParamsChange defines the parameter change or contract upgrade"""
 
     key: str = betterproto.string_field(1)
     """parameter to be updated or 'upgrade' for contract upgrade"""
 
     values: List[str] = betterproto.string_field(2)
-    """
-    values is a new parameter or slice of new contract addresses in hex format
-    """
+    """values is a new parameter or slice of new contract addresses in hex format"""
 
     targets: List[str] = betterproto.string_field(3)
     """targets defines a slice of addresses string in hex format"""
@@ -346,25 +328,26 @@ class GenesisState(betterproto.Message):
 
     deposit_params: "DepositParams" = betterproto.message_field(5)
     """
-    Deprecated: Prefer to use `params` instead. deposit_params defines all the
-    paramaters of related to deposit.
+    Deprecated: Prefer to use `params` instead.
+    deposit_params defines all the paramaters of related to deposit.
     """
 
     voting_params: "VotingParams" = betterproto.message_field(6)
     """
-    Deprecated: Prefer to use `params` instead. voting_params defines all the
-    paramaters of related to voting.
+    Deprecated: Prefer to use `params` instead.
+    voting_params defines all the paramaters of related to voting.
     """
 
     tally_params: "TallyParams" = betterproto.message_field(7)
     """
-    Deprecated: Prefer to use `params` instead. tally_params defines all the
-    paramaters of related to tally.
+    Deprecated: Prefer to use `params` instead.
+    tally_params defines all the paramaters of related to tally.
     """
 
     params: "Params" = betterproto.message_field(8)
     """
-    params defines all the paramaters of x/gov module. Since: cosmos-sdk 0.47
+    params defines all the paramaters of x/gov module.
+    Since: cosmos-sdk 0.47
     """
 
     def __post_init__(self) -> None:
@@ -379,9 +362,7 @@ class GenesisState(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class QueryProposalRequest(betterproto.Message):
-    """
-    QueryProposalRequest is the request type for the Query/Proposal RPC method.
-    """
+    """QueryProposalRequest is the request type for the Query/Proposal RPC method."""
 
     proposal_id: int = betterproto.uint64_field(1)
     """proposal_id defines the unique id of the proposal."""
@@ -389,10 +370,7 @@ class QueryProposalRequest(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class QueryProposalResponse(betterproto.Message):
-    """
-    QueryProposalResponse is the response type for the Query/Proposal RPC
-    method.
-    """
+    """QueryProposalResponse is the response type for the Query/Proposal RPC method."""
 
     proposal: "Proposal" = betterproto.message_field(1)
     """proposal is the requested governance proposal."""
@@ -400,10 +378,7 @@ class QueryProposalResponse(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class QueryProposalsRequest(betterproto.Message):
-    """
-    QueryProposalsRequest is the request type for the Query/Proposals RPC
-    method.
-    """
+    """QueryProposalsRequest is the request type for the Query/Proposals RPC method."""
 
     proposal_status: "ProposalStatus" = betterproto.enum_field(1)
     """proposal_status defines the status of the proposals."""
@@ -445,9 +420,7 @@ class QueryVoteRequest(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class QueryVoteResponse(betterproto.Message):
-    """
-    QueryVoteResponse is the response type for the Query/Vote RPC method.
-    """
+    """QueryVoteResponse is the response type for the Query/Vote RPC method."""
 
     vote: "Vote" = betterproto.message_field(1)
     """vote defines the queried vote."""
@@ -455,9 +428,7 @@ class QueryVoteResponse(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class QueryVotesRequest(betterproto.Message):
-    """
-    QueryVotesRequest is the request type for the Query/Votes RPC method.
-    """
+    """QueryVotesRequest is the request type for the Query/Votes RPC method."""
 
     proposal_id: int = betterproto.uint64_field(1)
     """proposal_id defines the unique id of the proposal."""
@@ -468,9 +439,7 @@ class QueryVotesRequest(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class QueryVotesResponse(betterproto.Message):
-    """
-    QueryVotesResponse is the response type for the Query/Votes RPC method.
-    """
+    """QueryVotesResponse is the response type for the Query/Votes RPC method."""
 
     votes: List["Vote"] = betterproto.message_field(1)
     """votes defines the queried votes."""
@@ -481,9 +450,7 @@ class QueryVotesResponse(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class QueryParamsRequest(betterproto.Message):
-    """
-    QueryParamsRequest is the request type for the Query/Params RPC method.
-    """
+    """QueryParamsRequest is the request type for the Query/Params RPC method."""
 
     params_type: str = betterproto.string_field(1)
     """
@@ -494,31 +461,30 @@ class QueryParamsRequest(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class QueryParamsResponse(betterproto.Message):
-    """
-    QueryParamsResponse is the response type for the Query/Params RPC method.
-    """
+    """QueryParamsResponse is the response type for the Query/Params RPC method."""
 
     voting_params: "VotingParams" = betterproto.message_field(1)
     """
-    Deprecated: Prefer to use `params` instead. voting_params defines the
-    parameters related to voting.
+    Deprecated: Prefer to use `params` instead.
+    voting_params defines the parameters related to voting.
     """
 
     deposit_params: "DepositParams" = betterproto.message_field(2)
     """
-    Deprecated: Prefer to use `params` instead. deposit_params defines the
-    parameters related to deposit.
+    Deprecated: Prefer to use `params` instead.
+    deposit_params defines the parameters related to deposit.
     """
 
     tally_params: "TallyParams" = betterproto.message_field(3)
     """
-    Deprecated: Prefer to use `params` instead. tally_params defines the
-    parameters related to tally.
+    Deprecated: Prefer to use `params` instead.
+    tally_params defines the parameters related to tally.
     """
 
     params: "Params" = betterproto.message_field(4)
     """
-    params defines all the paramaters of x/gov module. Since: cosmos-sdk 0.47
+    params defines all the paramaters of x/gov module.
+    Since: cosmos-sdk 0.47
     """
 
     def __post_init__(self) -> None:
@@ -533,9 +499,7 @@ class QueryParamsResponse(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class QueryDepositRequest(betterproto.Message):
-    """
-    QueryDepositRequest is the request type for the Query/Deposit RPC method.
-    """
+    """QueryDepositRequest is the request type for the Query/Deposit RPC method."""
 
     proposal_id: int = betterproto.uint64_field(1)
     """proposal_id defines the unique id of the proposal."""
@@ -546,9 +510,7 @@ class QueryDepositRequest(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class QueryDepositResponse(betterproto.Message):
-    """
-    QueryDepositResponse is the response type for the Query/Deposit RPC method.
-    """
+    """QueryDepositResponse is the response type for the Query/Deposit RPC method."""
 
     deposit: "Deposit" = betterproto.message_field(1)
     """deposit defines the requested deposit."""
@@ -556,9 +518,7 @@ class QueryDepositResponse(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class QueryDepositsRequest(betterproto.Message):
-    """
-    QueryDepositsRequest is the request type for the Query/Deposits RPC method.
-    """
+    """QueryDepositsRequest is the request type for the Query/Deposits RPC method."""
 
     proposal_id: int = betterproto.uint64_field(1)
     """proposal_id defines the unique id of the proposal."""
@@ -569,10 +529,7 @@ class QueryDepositsRequest(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class QueryDepositsResponse(betterproto.Message):
-    """
-    QueryDepositsResponse is the response type for the Query/Deposits RPC
-    method.
-    """
+    """QueryDepositsResponse is the response type for the Query/Deposits RPC method."""
 
     deposits: List["Deposit"] = betterproto.message_field(1)
     """deposits defines the requested deposits."""
@@ -583,9 +540,7 @@ class QueryDepositsResponse(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class QueryTallyResultRequest(betterproto.Message):
-    """
-    QueryTallyResultRequest is the request type for the Query/Tally RPC method.
-    """
+    """QueryTallyResultRequest is the request type for the Query/Tally RPC method."""
 
     proposal_id: int = betterproto.uint64_field(1)
     """proposal_id defines the unique id of the proposal."""
@@ -593,10 +548,7 @@ class QueryTallyResultRequest(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class QueryTallyResultResponse(betterproto.Message):
-    """
-    QueryTallyResultResponse is the response type for the Query/Tally RPC
-    method.
-    """
+    """QueryTallyResultResponse is the response type for the Query/Tally RPC method."""
 
     tally: "TallyResult" = betterproto.message_field(1)
     """tally defines the requested tally."""
@@ -605,19 +557,16 @@ class QueryTallyResultResponse(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class MsgSubmitProposal(betterproto.Message):
     """
-    MsgSubmitProposal defines an sdk.Msg type that supports submitting
-    arbitrary proposal Content.
+    MsgSubmitProposal defines an sdk.Msg type that supports submitting arbitrary
+    proposal Content.
     """
 
     messages: List["betterproto_lib_google_protobuf.Any"] = betterproto.message_field(1)
-    """
-    messages are the arbitrary messages to be executed if proposal passes.
-    """
+    """messages are the arbitrary messages to be executed if proposal passes."""
 
     initial_deposit: List["__base_v1_beta1__.Coin"] = betterproto.message_field(2)
     """
-    initial_deposit is the deposit value that must be paid at proposal
-    submission.
+    initial_deposit is the deposit value that must be paid at proposal submission.
     """
 
     proposer: str = betterproto.string_field(3)
@@ -627,17 +576,21 @@ class MsgSubmitProposal(betterproto.Message):
     """metadata is any arbitrary metadata attached to the proposal."""
 
     title: str = betterproto.string_field(5)
-    """title is the title of the proposal. Since: cosmos-sdk 0.47"""
+    """
+    title is the title of the proposal.
+    Since: cosmos-sdk 0.47
+    """
 
     summary: str = betterproto.string_field(6)
-    """summary is the summary of the proposal Since: cosmos-sdk 0.47"""
+    """
+    summary is the summary of the proposal
+    Since: cosmos-sdk 0.47
+    """
 
 
 @dataclass(eq=False, repr=False)
 class MsgSubmitProposalResponse(betterproto.Message):
-    """
-    MsgSubmitProposalResponse defines the Msg/SubmitProposal response type.
-    """
+    """MsgSubmitProposalResponse defines the Msg/SubmitProposal response type."""
 
     proposal_id: int = betterproto.uint64_field(1)
     """proposal_id defines the unique id of the proposal."""
@@ -646,9 +599,8 @@ class MsgSubmitProposalResponse(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class MsgExecLegacyContent(betterproto.Message):
     """
-    MsgExecLegacyContent is used to wrap the legacy content field into a
-    message. This ensures backwards compatibility with
-    v1beta1.MsgSubmitProposal.
+    MsgExecLegacyContent is used to wrap the legacy content field into a message.
+    This ensures backwards compatibility with v1beta1.MsgSubmitProposal.
     """
 
     content: "betterproto_lib_google_protobuf.Any" = betterproto.message_field(1)
@@ -660,10 +612,7 @@ class MsgExecLegacyContent(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class MsgExecLegacyContentResponse(betterproto.Message):
-    """
-    MsgExecLegacyContentResponse defines the Msg/ExecLegacyContent response
-    type.
-    """
+    """MsgExecLegacyContentResponse defines the Msg/ExecLegacyContent response type."""
 
     pass
 
@@ -718,9 +667,7 @@ class MsgVoteWeightedResponse(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class MsgDeposit(betterproto.Message):
-    """
-    MsgDeposit defines a message to submit a deposit to an existing proposal.
-    """
+    """MsgDeposit defines a message to submit a deposit to an existing proposal."""
 
     proposal_id: int = betterproto.uint64_field(1)
     """proposal_id defines the unique id of the proposal."""
@@ -742,8 +689,8 @@ class MsgDepositResponse(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class MsgUpdateParams(betterproto.Message):
     """
-    MsgUpdateParams is the Msg/UpdateParams request type. Since: cosmos-sdk
-    0.47
+    MsgUpdateParams is the Msg/UpdateParams request type.
+    Since: cosmos-sdk 0.47
     """
 
     authority: str = betterproto.string_field(1)
@@ -754,8 +701,8 @@ class MsgUpdateParams(betterproto.Message):
 
     params: "Params" = betterproto.message_field(2)
     """
-    params defines the x/gov parameters to update. NOTE: All parameters must be
-    supplied.
+    params defines the x/gov parameters to update.
+    NOTE: All parameters must be supplied.
     """
 
 
@@ -763,7 +710,8 @@ class MsgUpdateParams(betterproto.Message):
 class MsgUpdateParamsResponse(betterproto.Message):
     """
     MsgUpdateParamsResponse defines the response structure for executing a
-    MsgUpdateParams message. Since: cosmos-sdk 0.47
+    MsgUpdateParams message.
+    Since: cosmos-sdk 0.47
     """
 
     pass
@@ -788,8 +736,8 @@ class MsgUpdateCrossChainParams(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class MsgUpdateCrossChainParamsResponse(betterproto.Message):
     """
-    MsgUpdateCrossChainParamsResponse defines the response structure for
-    executing a MsgUpdateCrossChainParams message.
+    MsgUpdateCrossChainParamsResponse defines the response structure for executing a
+    MsgUpdateCrossChainParams message.
     """
 
     pass
@@ -1303,31 +1251,3 @@ class MsgBase(ServiceBase):
                 MsgUpdateCrossChainParamsResponse,
             ),
         }
-
-
-WeightedVoteOption.__pydantic_model__.update_forward_refs()  # type: ignore
-Deposit.__pydantic_model__.update_forward_refs()  # type: ignore
-Proposal.__pydantic_model__.update_forward_refs()  # type: ignore
-Vote.__pydantic_model__.update_forward_refs()  # type: ignore
-DepositParams.__pydantic_model__.update_forward_refs()  # type: ignore
-VotingParams.__pydantic_model__.update_forward_refs()  # type: ignore
-Params.__pydantic_model__.update_forward_refs()  # type: ignore
-GenesisState.__pydantic_model__.update_forward_refs()  # type: ignore
-QueryProposalResponse.__pydantic_model__.update_forward_refs()  # type: ignore
-QueryProposalsRequest.__pydantic_model__.update_forward_refs()  # type: ignore
-QueryProposalsResponse.__pydantic_model__.update_forward_refs()  # type: ignore
-QueryVoteResponse.__pydantic_model__.update_forward_refs()  # type: ignore
-QueryVotesRequest.__pydantic_model__.update_forward_refs()  # type: ignore
-QueryVotesResponse.__pydantic_model__.update_forward_refs()  # type: ignore
-QueryParamsResponse.__pydantic_model__.update_forward_refs()  # type: ignore
-QueryDepositResponse.__pydantic_model__.update_forward_refs()  # type: ignore
-QueryDepositsRequest.__pydantic_model__.update_forward_refs()  # type: ignore
-QueryDepositsResponse.__pydantic_model__.update_forward_refs()  # type: ignore
-QueryTallyResultResponse.__pydantic_model__.update_forward_refs()  # type: ignore
-MsgSubmitProposal.__pydantic_model__.update_forward_refs()  # type: ignore
-MsgExecLegacyContent.__pydantic_model__.update_forward_refs()  # type: ignore
-MsgVote.__pydantic_model__.update_forward_refs()  # type: ignore
-MsgVoteWeighted.__pydantic_model__.update_forward_refs()  # type: ignore
-MsgDeposit.__pydantic_model__.update_forward_refs()  # type: ignore
-MsgUpdateParams.__pydantic_model__.update_forward_refs()  # type: ignore
-MsgUpdateCrossChainParams.__pydantic_model__.update_forward_refs()  # type: ignore

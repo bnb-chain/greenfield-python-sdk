@@ -2,14 +2,7 @@
 # sources: greenfield/sp/authz.proto, greenfield/sp/events.proto, greenfield/sp/genesis.proto, greenfield/sp/params.proto, greenfield/sp/query.proto, greenfield/sp/tx.proto, greenfield/sp/types.proto
 # plugin: python-betterproto
 # This file has been @generated
-
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from dataclasses import dataclass
-else:
-    from pydantic.dataclasses import dataclass
-
+from dataclasses import dataclass
 from typing import TYPE_CHECKING, Dict, List, Optional
 
 import betterproto
@@ -40,9 +33,9 @@ class DepositAuthorization(betterproto.Message):
 
     max_deposit: "__cosmos_base_v1_beta1__.Coin" = betterproto.message_field(1)
     """
-    max_deposit specifies the maximum amount of tokens can be deposit to a
-    storage provider. If it is empty, there is no spend limit and any amount of
-    coins can be deposit.
+    max_deposit specifies the maximum amount of tokens can be deposit to a storage
+    provider. If it is
+    empty, there is no spend limit and any amount of coins can be deposit.
     """
 
     sp_address: str = betterproto.string_field(2)
@@ -57,9 +50,7 @@ class Description(betterproto.Message):
     """moniker defines a human-readable name for the storage provider"""
 
     identity: str = betterproto.string_field(2)
-    """
-    identity defines an optional identity signature (ex. UPort or Keybase).
-    """
+    """identity defines an optional identity signature (ex. UPort or Keybase)."""
 
     website: str = betterproto.string_field(3)
     """website defines an optional website link."""
@@ -76,50 +67,48 @@ class StorageProvider(betterproto.Message):
     """StorageProvider defines the meta info of storage provider"""
 
     id: int = betterproto.uint32_field(1)
-    """
-    // id is the identifier of the storage provider, used in virtual group
-    """
+    """// id is the identifier of the storage provider, used in virtual group"""
 
     operator_address: str = betterproto.string_field(2)
     """
-    operator_address defines the account address of the storage provider's
-    operator; It also is the unique index key of sp.
+    operator_address defines the account address of the storage provider's operator; It
+    also is the unique index key of sp.
     """
 
     funding_address: str = betterproto.string_field(3)
     """
-    funding_address defines one of the storage provider's accounts which is
-    used to deposit and reward.
+    funding_address defines one of the storage provider's accounts which is used to
+    deposit and reward.
     """
 
     seal_address: str = betterproto.string_field(4)
     """
-    seal_address defines one of the storage provider's accounts which is used
-    to SealObject
+    seal_address defines one of the storage provider's accounts which is used to
+    SealObject
     """
 
     approval_address: str = betterproto.string_field(5)
     """
-    approval_address defines one of the storage provider's accounts which is
-    used to approve use's createBucket/createObject request
+    approval_address defines one of the storage provider's accounts which is used to
+    approve use's createBucket/createObject request
     """
 
     gc_address: str = betterproto.string_field(6)
     """
-    gc_address defines one of the storage provider's accounts which is used for
-    gc purpose.
+    gc_address defines one of the storage provider's accounts which is used for gc
+    purpose.
     """
 
     maintenance_address: str = betterproto.string_field(7)
     """
-    maintenance_address defines one of the storage provider's accounts which is
-    used for testing while in maintenance mode
+    maintenance_address defines one of the storage provider's accounts which is used for
+    testing while in maintenance mode
     """
 
     total_deposit: str = betterproto.string_field(8)
     """
-    total_deposit defines the number of tokens deposited by this storage
-    provider for staking.
+    total_deposit defines the number of tokens deposited by this storage provider for
+    staking.
     """
 
     status: "Status" = betterproto.enum_field(9)
@@ -133,8 +122,8 @@ class StorageProvider(betterproto.Message):
 
     bls_key: bytes = betterproto.bytes_field(12)
     """
-    bls_key defines the bls pub key of the Storage provider for sealing object
-    and completing migration
+    bls_key defines the bls pub key of the Storage provider for sealing object and
+    completing migration
     """
 
 
@@ -189,8 +178,8 @@ class SpMaintenanceStats(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class MaintenanceRecord(betterproto.Message):
     """
-    MaintenanceRecord is to keep track of every time a sp request to be in
-    Maintenance mode
+    MaintenanceRecord is to keep track of every time a sp request to be in Maintenance
+    mode
     """
 
     height: int = betterproto.int64_field(1)
@@ -209,53 +198,45 @@ class MaintenanceRecord(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class EventCreateStorageProvider(betterproto.Message):
     """
-    EventCreateStorageProvider is emitted when there is a storage provider
-    created
+    EventCreateStorageProvider is emitted when there is a storage provider created
     """
 
     sp_id: int = betterproto.uint32_field(1)
-    """
-    sp_id defines the identifier of storage provider which generated on-chain
-    """
+    """sp_id defines the identifier of storage provider which generated on-chain"""
 
     sp_address: str = betterproto.string_field(2)
     """sp_address is the operator address of the storage provider"""
 
     funding_address: str = betterproto.string_field(3)
-    """
-    funding_address is the funding account address of the storage provider
-    """
+    """funding_address is the funding account address of the storage provider"""
 
     seal_address: str = betterproto.string_field(4)
     """seal_address is the account address for SealObject Tx"""
 
     approval_address: str = betterproto.string_field(5)
     """
-    approval_address is the account address for approve create bucket/object
-    signature
+    approval_address is the account address for approve create bucket/object signature
     """
 
     gc_address: str = betterproto.string_field(6)
     """
-    gc_address defines one of the storage provider's accounts which is used for
-    gc purpose
+    gc_address defines one of the storage provider's accounts which is used for gc
+    purpose
     """
 
     maintenance_address: str = betterproto.string_field(7)
     """
-    maintenance_address defines one of the storage provider's accounts which is
-    used for testing while in maintenance mode
+    maintenance_address defines one of the storage provider's accounts which is used for
+    testing while in maintenance mode
     """
 
     endpoint: str = betterproto.string_field(8)
-    """
-    endpoint is the domain name address used by SP to provide storage services
-    """
+    """endpoint is the domain name address used by SP to provide storage services"""
 
     total_deposit: "__cosmos_base_v1_beta1__.Coin" = betterproto.message_field(9)
     """
-    total_deposit is the token coin that the storage provider deposit to the
-    storage module
+    total_deposit is the token coin that the storage provider deposit to the storage
+    module
     """
 
     status: "Status" = betterproto.enum_field(10)
@@ -266,8 +247,8 @@ class EventCreateStorageProvider(betterproto.Message):
 
     bls_key: str = betterproto.string_field(12)
     """
-    bls_key defines the bls pub key owned by storage provider used when sealing
-    object and completing migration
+    bls_key defines the bls pub key owned by storage provider used when sealing object
+    and completing migration
     """
 
 
@@ -276,9 +257,7 @@ class EventEditStorageProvider(betterproto.Message):
     """EventEditStorageProvider is emitted when SP's metadata is edited."""
 
     sp_id: int = betterproto.uint32_field(1)
-    """
-    sp_id defines the identifier of storage provider which generated on-chain
-    """
+    """sp_id defines the identifier of storage provider which generated on-chain"""
 
     sp_address: str = betterproto.string_field(2)
     """sp_address is the operator address of the storage provider"""
@@ -294,26 +273,24 @@ class EventEditStorageProvider(betterproto.Message):
 
     approval_address: str = betterproto.string_field(6)
     """
-    approval_address is the account address for approve create bucket/object
-    signature
+    approval_address is the account address for approve create bucket/object signature
     """
 
     gc_address: str = betterproto.string_field(7)
     """
-    gc_address defines one of the storage provider's accounts which is used for
-    gc purpose
+    gc_address defines one of the storage provider's accounts which is used for gc
+    purpose
     """
 
     maintenance_address: str = betterproto.string_field(8)
     """
-    maintenance_address defines one of the storage provider's accounts which is
-    used for testing while in maintenance mode
+    maintenance_address defines one of the storage provider's accounts which is used for
+    testing while in maintenance mode
     """
 
     bls_key: str = betterproto.string_field(9)
     """
-    bls_key defines the bls pub key owned by storage provider used when sealing
-    object
+    bls_key defines the bls pub key owned by storage provider used when sealing object
     """
 
 
@@ -322,17 +299,13 @@ class EventDeposit(betterproto.Message):
     """EventDeposit is emitted when sp deposit tokens."""
 
     funding_address: str = betterproto.string_field(1)
-    """
-    funding_address is the funding account address of the storage provider
-    """
+    """funding_address is the funding account address of the storage provider"""
 
     deposit: str = betterproto.string_field(2)
     """deposit is the token coin deposited this message"""
 
     total_deposit: str = betterproto.string_field(3)
-    """
-    total_deposit is the total token coins this storage provider deposited
-    """
+    """total_deposit is the total token coins this storage provider deposited"""
 
 
 @dataclass(eq=False, repr=False)
@@ -376,9 +349,7 @@ class EventUpdateStorageProviderStatus(betterproto.Message):
     """
 
     sp_id: int = betterproto.uint32_field(1)
-    """
-    sp_id defines the identifier of storage provider which generated on-chain
-    """
+    """sp_id defines the identifier of storage provider which generated on-chain"""
 
     sp_address: str = betterproto.string_field(2)
     """sp_address is the operator address of the storage provider"""
@@ -398,14 +369,12 @@ class Params(betterproto.Message):
     """deposit_denom defines the staking coin denomination."""
 
     min_deposit: str = betterproto.string_field(2)
-    """
-    min_deposit defines the minimum deposit amount for storage providers.
-    """
+    """min_deposit defines the minimum deposit amount for storage providers."""
 
     secondary_sp_store_price_ratio: str = betterproto.string_field(3)
     """
-    the ratio of the store price of the secondary sp to the primary sp, the
-    default value is 80%
+    the ratio of the store price of the secondary sp to the primary sp, the default
+    value is 80%
     """
 
     num_of_historical_blocks_for_maintenance_records: int = betterproto.int64_field(4)
@@ -419,20 +388,20 @@ class Params(betterproto.Message):
 
     num_of_lockup_blocks_for_maintenance: int = betterproto.int64_field(6)
     """
-    the number of blocks to be wait for sp to be in maintenance mode again if
-    already requested
+    the number of blocks to be wait for sp to be in maintenance mode again if already
+    requested
     """
 
     update_global_price_interval: int = betterproto.uint64_field(7)
     """
-    the time interval to update global storage price, if it is not set then the
-    price will be updated at the first block of each natural month
+    the time interval to update global storage price, if it is not set then the price
+    will be updated at the first block of each natural month
     """
 
     update_price_disallowed_days: int = betterproto.uint32_field(8)
     """
-    the days counting backwards from end of a month in which a sp cannot update
-    its price
+    the days counting backwards from end of a month in which a sp cannot update its
+    price
     """
 
 
@@ -456,9 +425,7 @@ class QueryParamsRequest(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class QueryParamsResponse(betterproto.Message):
-    """
-    QueryParamsResponse is response type for the Query/Params RPC method.
-    """
+    """QueryParamsResponse is response type for the Query/Params RPC method."""
 
     params: "Params" = betterproto.message_field(1)
     """params holds all the parameters of this module."""
@@ -493,9 +460,7 @@ class QuerySpStoragePriceResponse(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class QueryGlobalSpStorePriceByTimeRequest(betterproto.Message):
     timestamp: int = betterproto.int64_field(1)
-    """
-    unix timestamp in seconds. If it's 0, it will return the latest price.
-    """
+    """unix timestamp in seconds. If it's 0, it will return the latest price."""
 
 
 @dataclass(eq=False, repr=False)
@@ -535,10 +500,7 @@ class QueryStorageProviderMaintenanceRecordsResponse(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class MsgCreateStorageProvider(betterproto.Message):
-    """
-    MsgCreateStorageProvider defines message for creating a new storage
-    provider.
-    """
+    """MsgCreateStorageProvider defines message for creating a new storage provider."""
 
     creator: str = betterproto.string_field(1)
     """creator is the msg signer"""
@@ -548,8 +510,8 @@ class MsgCreateStorageProvider(betterproto.Message):
 
     sp_address: str = betterproto.string_field(3)
     """
-    sp_address defines the address of the sp's operator; It also is the unqiue
-    index key of sp.
+    sp_address defines the address of the sp's operator; It also is the unqiue index key
+    of sp.
     """
 
     funding_address: str = betterproto.string_field(4)
@@ -559,9 +521,7 @@ class MsgCreateStorageProvider(betterproto.Message):
     """
 
     seal_address: str = betterproto.string_field(5)
-    """
-    seal_address is the account address of the storage provider for sealObject
-    """
+    """seal_address is the account address of the storage provider for sealObject"""
 
     approval_address: str = betterproto.string_field(6)
     """
@@ -571,14 +531,14 @@ class MsgCreateStorageProvider(betterproto.Message):
 
     gc_address: str = betterproto.string_field(7)
     """
-    gc_address defines one of the storage provider's accounts which is used for
-    gc purpose.
+    gc_address defines one of the storage provider's accounts which is used for gc
+    purpose.
     """
 
     maintenance_address: str = betterproto.string_field(8)
     """
-    maintenance_address defines one of the storage provider's accounts which is
-    used for testing while in maintenance mode
+    maintenance_address defines one of the storage provider's accounts which is used for
+    testing while in maintenance mode
     """
 
     endpoint: str = betterproto.string_field(9)
@@ -597,9 +557,7 @@ class MsgCreateStorageProvider(betterproto.Message):
     """store price, in bnb wei per charge byte"""
 
     bls_key: str = betterproto.string_field(14)
-    """
-    bls_key defines the bls pub key of the Storage provider for sealing object
-    """
+    """bls_key defines the bls pub key of the Storage provider for sealing object"""
 
     bls_proof: str = betterproto.string_field(15)
 
@@ -607,8 +565,8 @@ class MsgCreateStorageProvider(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class MsgCreateStorageProviderResponse(betterproto.Message):
     """
-    MsgCreateStorageProviderResponse defines the Msg/CreateStorageProvider
-    response type.
+    MsgCreateStorageProviderResponse defines the Msg/CreateStorageProvider response
+    type.
     """
 
     pass
@@ -646,9 +604,7 @@ class MsgEditStorageProvider(betterproto.Message):
     endpoint: str = betterproto.string_field(2)
     description: "Description" = betterproto.message_field(3)
     seal_address: str = betterproto.string_field(4)
-    """
-    seal_address is the account address of the storage provider for sealObject
-    """
+    """seal_address is the account address of the storage provider for sealObject"""
 
     approval_address: str = betterproto.string_field(5)
     """
@@ -658,20 +614,18 @@ class MsgEditStorageProvider(betterproto.Message):
 
     gc_address: str = betterproto.string_field(6)
     """
-    gc_address defines one of the storage provider's accounts which is used for
-    gc purpose
+    gc_address defines one of the storage provider's accounts which is used for gc
+    purpose
     """
 
     maintenance_address: str = betterproto.string_field(7)
     """
-    maintenance_address defines one of the storage provider's accounts which is
-    used for testing while in maintenance mode
+    maintenance_address defines one of the storage provider's accounts which is used for
+    testing while in maintenance mode
     """
 
     bls_key: str = betterproto.string_field(8)
-    """
-    bls_key defines the bls pub key of the Storage provider for sealing object
-    """
+    """bls_key defines the bls pub key of the Storage provider for sealing object"""
 
     bls_proof: str = betterproto.string_field(9)
 
@@ -679,8 +633,7 @@ class MsgEditStorageProvider(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class MsgEditStorageProviderResponse(betterproto.Message):
     """
-    MsgEditStorageProviderResponse defines the Msg/EditStorageProvider response
-    type.
+    MsgEditStorageProviderResponse defines the Msg/EditStorageProvider response type.
     """
 
     pass
@@ -718,8 +671,8 @@ class MsgUpdateParams(betterproto.Message):
 
     params: "Params" = betterproto.message_field(2)
     """
-    params defines the x/sp parameters to update. NOTE: All parameters must be
-    supplied.
+    params defines the x/sp parameters to update.
+    NOTE: All parameters must be supplied.
     """
 
 
@@ -735,10 +688,7 @@ class MsgUpdateParamsResponse(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class MsgUpdateStorageProviderStatus(betterproto.Message):
-    """
-    MsgUpdateStorageProviderStatus is used to update the status of a SP by
-    itself
-    """
+    """MsgUpdateStorageProviderStatus is used to update the status of a SP by itself"""
 
     sp_address: str = betterproto.string_field(1)
     """sp_address defines the operator address"""
@@ -753,8 +703,8 @@ class MsgUpdateStorageProviderStatus(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class MsgUpdateStorageProviderStatusResponse(betterproto.Message):
     """
-    MsgUpdateStorageProviderStatusResponse defines the
-    MsgUpdateStorageProviderStatus response type.
+    MsgUpdateStorageProviderStatusResponse defines the MsgUpdateStorageProviderStatus
+    response type.
     """
 
     pass
@@ -1232,25 +1182,3 @@ class MsgBase(ServiceBase):
                 MsgUpdateParamsResponse,
             ),
         }
-
-
-DepositAuthorization.__pydantic_model__.update_forward_refs()  # type: ignore
-StorageProvider.__pydantic_model__.update_forward_refs()  # type: ignore
-RewardInfo.__pydantic_model__.update_forward_refs()  # type: ignore
-SpMaintenanceStats.__pydantic_model__.update_forward_refs()  # type: ignore
-EventCreateStorageProvider.__pydantic_model__.update_forward_refs()  # type: ignore
-EventEditStorageProvider.__pydantic_model__.update_forward_refs()  # type: ignore
-GenesisState.__pydantic_model__.update_forward_refs()  # type: ignore
-QueryParamsResponse.__pydantic_model__.update_forward_refs()  # type: ignore
-QueryStorageProvidersRequest.__pydantic_model__.update_forward_refs()  # type: ignore
-QueryStorageProvidersResponse.__pydantic_model__.update_forward_refs()  # type: ignore
-QuerySpStoragePriceResponse.__pydantic_model__.update_forward_refs()  # type: ignore
-QueryGlobalSpStorePriceByTimeResponse.__pydantic_model__.update_forward_refs()  # type: ignore
-QueryStorageProviderResponse.__pydantic_model__.update_forward_refs()  # type: ignore
-QueryStorageProviderByOperatorAddressResponse.__pydantic_model__.update_forward_refs()  # type: ignore
-QueryStorageProviderMaintenanceRecordsResponse.__pydantic_model__.update_forward_refs()  # type: ignore
-MsgCreateStorageProvider.__pydantic_model__.update_forward_refs()  # type: ignore
-MsgDeposit.__pydantic_model__.update_forward_refs()  # type: ignore
-MsgEditStorageProvider.__pydantic_model__.update_forward_refs()  # type: ignore
-MsgUpdateParams.__pydantic_model__.update_forward_refs()  # type: ignore
-MsgUpdateStorageProviderStatus.__pydantic_model__.update_forward_refs()  # type: ignore

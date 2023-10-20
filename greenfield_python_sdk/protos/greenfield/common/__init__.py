@@ -2,13 +2,7 @@
 # sources: greenfield/common/approval.proto, greenfield/common/wrapper.proto
 # plugin: python-betterproto
 # This file has been @generated
-
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from dataclasses import dataclass
-else:
-    from pydantic.dataclasses import dataclass
+from dataclasses import dataclass
 
 import betterproto
 
@@ -16,10 +10,11 @@ import betterproto
 @dataclass(eq=False, repr=False)
 class Approval(betterproto.Message):
     """
-    Approval is the signature information returned by the Primary Storage
-    Provider (SP) to the user after allowing them to create a bucket or object,
-    which is then used for verification on the chain to ensure agreement
-    between the Primary SP and the user.
+    Approval is the signature information returned by the Primary Storage Provider (SP)
+    to the user
+    after allowing them to create a bucket or object, which is then used for
+    verification on the chain
+    to ensure agreement between the Primary SP and the user.
     """
 
     expired_height: int = betterproto.uint64_field(1)
@@ -35,8 +30,8 @@ class Approval(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class DoubleValue(betterproto.Message):
     """
-    Wrapper message for `double`. The JSON representation for `DoubleValue` is
-    JSON number.
+    Wrapper message for `double`.
+    The JSON representation for `DoubleValue` is JSON number.
     """
 
     value: float = betterproto.double_field(1)
@@ -46,8 +41,8 @@ class DoubleValue(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class FloatValue(betterproto.Message):
     """
-    Wrapper message for `float`. The JSON representation for `FloatValue` is
-    JSON number.
+    Wrapper message for `float`.
+    The JSON representation for `FloatValue` is JSON number.
     """
 
     value: float = betterproto.float_field(1)
@@ -57,8 +52,8 @@ class FloatValue(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class Int64Value(betterproto.Message):
     """
-    Wrapper message for `int64`. The JSON representation for `Int64Value` is
-    JSON string.
+    Wrapper message for `int64`.
+    The JSON representation for `Int64Value` is JSON string.
     """
 
     value: int = betterproto.int64_field(1)
@@ -68,8 +63,8 @@ class Int64Value(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class UInt64Value(betterproto.Message):
     """
-    Wrapper message for `uint64`. The JSON representation for `UInt64Value` is
-    JSON string.
+    Wrapper message for `uint64`.
+    The JSON representation for `UInt64Value` is JSON string.
     """
 
     value: int = betterproto.uint64_field(1)
@@ -79,8 +74,8 @@ class UInt64Value(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class Int32Value(betterproto.Message):
     """
-    Wrapper message for `int32`. The JSON representation for `Int32Value` is
-    JSON number.
+    Wrapper message for `int32`.
+    The JSON representation for `Int32Value` is JSON number.
     """
 
     value: int = betterproto.int32_field(1)
@@ -90,8 +85,8 @@ class Int32Value(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class UInt32Value(betterproto.Message):
     """
-    Wrapper message for `uint32`. The JSON representation for `UInt32Value` is
-    JSON number.
+    Wrapper message for `uint32`.
+    The JSON representation for `UInt32Value` is JSON number.
     """
 
     value: int = betterproto.uint32_field(1)
@@ -101,8 +96,8 @@ class UInt32Value(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class BoolValue(betterproto.Message):
     """
-    Wrapper message for `bool`. The JSON representation for `BoolValue` is JSON
-    `true` and `false`.
+    Wrapper message for `bool`.
+    The JSON representation for `BoolValue` is JSON `true` and `false`.
     """
 
     value: bool = betterproto.bool_field(1)
@@ -112,8 +107,8 @@ class BoolValue(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class StringValue(betterproto.Message):
     """
-    Wrapper message for `string`. The JSON representation for `StringValue` is
-    JSON string.
+    Wrapper message for `string`.
+    The JSON representation for `StringValue` is JSON string.
     """
 
     value: str = betterproto.string_field(1)
@@ -123,8 +118,8 @@ class StringValue(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class BytesValue(betterproto.Message):
     """
-    Wrapper message for `bytes`. The JSON representation for `BytesValue` is
-    JSON string.
+    Wrapper message for `bytes`.
+    The JSON representation for `BytesValue` is JSON string.
     """
 
     value: bytes = betterproto.bytes_field(1)
