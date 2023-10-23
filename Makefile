@@ -33,7 +33,7 @@ test-e2e-extra-go:
 test-e2e-local: #Test the package with poetry.
 test-e2e-local:
 	echo "Check that you have a running Greenfield node locally"
-	poetry run pytest tests -m "localnet" --asyncio-mode=auto
+	poetry run pytest tests -m "localnet and not requires_validator_account and not requires_storage_provider" --asyncio-mode=auto
 
 .PHONY: black
 black: #Run black.

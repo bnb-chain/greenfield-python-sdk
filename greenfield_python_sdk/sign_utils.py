@@ -19,7 +19,7 @@ from greenfield_python_sdk.__version__ import __version__
 from greenfield_python_sdk.key_manager import KeyManager
 from greenfield_python_sdk.models.eip712_messages import TYPES_MAP, URL_TO_PROTOS_TYPE_MAP
 from greenfield_python_sdk.models.eip712_messages.base import BASE_TYPES
-from greenfield_python_sdk.models.eip712_messages.group.group_url import CREATE_GROUP
+from greenfield_python_sdk.models.eip712_messages.group.group_url import CREATE_GROUP, UPDATE_GROUP_MEMBER
 from greenfield_python_sdk.models.eip712_messages.proposal.proposal_url import VOTE
 from greenfield_python_sdk.models.eip712_messages.sp.sp_url import (
     COSMOS_GRANT,
@@ -257,8 +257,10 @@ def convert_value_to_json(obj) -> bytes:
 
     # Convert the resulting value into a JSON string and then base64 encode it
     json_str = json.dumps(value, sort_keys=True).replace(": ", ":").replace(", ", ",")
-    result = base64.b64encode(json_str.encode())
 
+    if obj["type"] == CREATE_STORAGE_PROVIDER or obj["type"] == CREATE_VALIDATOR:
+        return json_str.encode()
+    result = base64.b64encode(json_str.encode())
     return result
 
 
@@ -268,7 +270,7 @@ def set_value(obj, value):
         value["store_price"] = str(format(Decimal(value["store_price"]) / 10**18, ".18f"))
 
     if obj["type"] == CREATE_VALIDATOR:
-        pubkey = {"@type": value["pubkey"]["type"], "key": value["pubkey"]["value"]}
+        pubkey = {"@type": value["pubkey"]["type_url"], "key": value["pubkey"]["value"]}
         value["pubkey"] = pubkey
         value["commission"]["max_rate"] = str(format(int(value["commission"]["max_rate"]) / 10**18, ".18f"))
         value["commission"]["max_change_rate"] = str(
@@ -318,15 +320,14 @@ async def get_signature(
 ):
     tx_types = TYPES_MAP[tx.body.messages[0].type_url]
 
-    # TODO: Move to other place
-    if tx.body.messages[0].type_url == CREATE_GROUP and message.members != None and len(tx_types["Msg1"]) == 4:
-        tx_types["Msg1"].insert(3, {"name": "members", "type": "string[]"})
-    elif (
-        tx.body.messages[0].type_url == CREATE_GROUP
-        and message.members == None
-        and tx_types["Msg1"][3]["name"] == "members"
-    ):
+    if tx.body.messages[0].type_url == CREATE_GROUP and tx_types["Msg1"][3]["name"] == "members":
         del tx_types["Msg1"][3]
+
+    if tx.body.messages[0].type_url == UPDATE_GROUP_MEMBER:
+        if len(message.members_to_delete) == 0 and len(tx_types["Msg1"]) == 6:
+            del tx_types["Msg1"][5]
+        if len(message.members_to_add) == 0 and tx_types["Msg1"][4]["name"] == "members_to_add":
+            del tx_types["Msg1"][4]
 
     full_types = {**BASE_TYPES, **tx_types}
     full_types = sorted_dict(full_types)
@@ -361,6 +362,15 @@ async def get_signature(
             message.grant.expiration.strftime("%Y-%m-%dT%H:%M:%S.%fZ") if message.grant.expiration.year > 2000 else ""
         )
 
+    if tx.body.messages[0].type_url == UPDATE_GROUP_MEMBER:
+        if hasattr(message, "members_to_add"):
+            for i, members in enumerate(tx_message.msg1["members_to_add"]):
+                members["expiration_time"] = message.members_to_add[i].expiration_time.strftime("%Y-%m-%dT%H:%M:%SZ")
+        if len(message.members_to_delete) == 0:
+            tx_message.msg1.pop("members_to_delete")
+        if len(message.members_to_add) == 0:
+            tx_message.msg1.pop("members_to_add")
+
     if hasattr(message, "statements"):
         del tx_message.msg1["statements"][0]["limit_size"]
         if not tx_message.msg1["statements"][0]["resources"]:
@@ -388,7 +398,6 @@ async def get_signature(
     payload["message"]["fee"]["amount"] = [
         {"amount": entry["amount"], "denom": entry["denom"]} for entry in payload["message"]["fee"]["amount"]
     ]
-
     eip712_hash = eip712_encode_hash(payload)
     signature = eip712_signature(eip712_hash, key_manager.private_key)
     signature = bytes.fromhex(signature.hex()[2:])

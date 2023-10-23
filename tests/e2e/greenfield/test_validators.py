@@ -1,9 +1,11 @@
 import pytest
 
 from greenfield_python_sdk import (
+    BLSKeyManager,
     GreenfieldClient,
     KeyManager,
     NetworkConfiguration,
+    NetworkLocalnet,
     NetworkTestnet,
     get_account_configuration,
 )
@@ -16,6 +18,7 @@ pytestmark = [pytest.mark.asyncio, pytest.mark.e2e]
 
 # Initialize the configuration, key manager
 network_configuration = NetworkConfiguration(**NetworkTestnet().model_dump())
+localnet_network_configuration = NetworkConfiguration(**NetworkLocalnet().model_dump())
 key_manager = KeyManager()
 
 
@@ -38,12 +41,15 @@ async def test_create_validator():
     config = get_account_configuration()
     key_manager = KeyManager(private_key=config.private_key)
 
-    async with GreenfieldClient(network_configuration=network_configuration, key_manager=key_manager) as client:
+    async with GreenfieldClient(
+        network_configuration=localnet_network_configuration, key_manager=key_manager
+    ) as client:
         await client.async_init()
         # Send some tokens to the new validator and the rest of accounts
 
         new_validator_key_manager = KeyManager()
         new_validator_account_ed25519 = AccountED25519()
+        bls_key_manager = BLSKeyManager()
 
         hash = await client.account.transfer(
             from_address=key_manager.address,
@@ -97,7 +103,8 @@ async def test_create_validator():
             relayer_address=new_relayer_key_manager.address,
             challenger_address=new_challenger_key_manager.address,
             # gnfd keys add validator_bls --keyring-backend test --algo eth_bls
-            bls_key="a5e140ee80a0ff1552a954701f599622adf029916f55b3157a649e16086a0669900f784d03bff79e69eb8eb7ccfd77d8",
+            bls_key=bls_key_manager.account.public_key,
+            bls_proof=bls_key_manager.account.bls_proof(),
             proposal_deposit_amount="1000000000000000000",
             proposal_title="create new validator",
             proposal_summary="create new validator",
@@ -116,7 +123,9 @@ async def test_delegate_validator():
     config = get_account_configuration()
     key_manager = KeyManager(private_key=config.private_key)
 
-    async with GreenfieldClient(network_configuration=network_configuration, key_manager=key_manager) as client:
+    async with GreenfieldClient(
+        network_configuration=localnet_network_configuration, key_manager=key_manager
+    ) as client:
         await client.async_init()
 
         response = await client.validator.list_validators()
@@ -148,7 +157,9 @@ async def test_begin_redelegate():
     config = get_account_configuration()
     key_manager = KeyManager(private_key=config.private_key)
 
-    async with GreenfieldClient(network_configuration=network_configuration, key_manager=key_manager) as client:
+    async with GreenfieldClient(
+        network_configuration=localnet_network_configuration, key_manager=key_manager
+    ) as client:
         await client.async_init()
 
         response = await client.validator.list_validators()
@@ -179,7 +190,9 @@ async def test_undelegate():
     config = get_account_configuration()
     key_manager = KeyManager(private_key=config.private_key)
 
-    async with GreenfieldClient(network_configuration=network_configuration, key_manager=key_manager) as client:
+    async with GreenfieldClient(
+        network_configuration=localnet_network_configuration, key_manager=key_manager
+    ) as client:
         await client.async_init()
 
         response = await client.validator.list_validators()
@@ -217,7 +230,9 @@ async def test_grant_delegation_for_validator():
     config = get_account_configuration()
     key_manager = KeyManager(private_key=config.private_key)
 
-    async with GreenfieldClient(network_configuration=network_configuration, key_manager=key_manager) as client:
+    async with GreenfieldClient(
+        network_configuration=localnet_network_configuration, key_manager=key_manager
+    ) as client:
         await client.async_init()
 
         hash = await client.validator.grant_delegation_for_validator(
@@ -237,7 +252,9 @@ async def test_unjail_validator():
     config = get_account_configuration()
     key_manager = KeyManager(private_key=config.private_key)
 
-    async with GreenfieldClient(network_configuration=network_configuration, key_manager=key_manager) as client:
+    async with GreenfieldClient(
+        network_configuration=localnet_network_configuration, key_manager=key_manager
+    ) as client:
         await client.async_init()
         with pytest.raises(Exception) as excinfo:
             await client.validator.unjail_validator()
@@ -253,7 +270,9 @@ async def test_impeach_validator():
     config = get_account_configuration()
     key_manager = KeyManager(private_key=config.private_key)
 
-    async with GreenfieldClient(network_configuration=network_configuration, key_manager=key_manager) as client:
+    async with GreenfieldClient(
+        network_configuration=localnet_network_configuration, key_manager=key_manager
+    ) as client:
         await client.async_init()
 
         response = await client.validator.list_validators()
@@ -280,7 +299,9 @@ async def test_edit_validator():
     config = get_account_configuration()
     key_manager = KeyManager(private_key=config.private_key)
 
-    async with GreenfieldClient(network_configuration=network_configuration, key_manager=key_manager) as client:
+    async with GreenfieldClient(
+        network_configuration=localnet_network_configuration, key_manager=key_manager
+    ) as client:
         await client.async_init()
 
         response = await client.validator.list_validators()

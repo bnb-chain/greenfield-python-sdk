@@ -176,7 +176,6 @@ async def test_put_bucket_policy():
                     ActionType.ACTION_UPDATE_BUCKET_INFO,
                     ActionType.ACTION_DELETE_BUCKET,
                 ],
-                resources=[f"grn:b::{bucket_name}"],
             )
         ]
         principal = Principal(type=PrincipalType.PRINCIPAL_TYPE_GNFD_ACCOUNT, value=principal_key_manager.address)

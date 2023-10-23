@@ -9,6 +9,7 @@ from greenfield_python_sdk.protos.greenfield.common import Approval
 from greenfield_python_sdk.protos.greenfield.storage import BucketInfo
 from greenfield_python_sdk.protos.greenfield.storage import VisibilityType
 from greenfield_python_sdk.protos.greenfield.storage import VisibilityType as Visibility
+from greenfield_python_sdk.protos.greenfield.virtualgroup import GlobalVirtualGroupFamily
 
 
 class MsgCreateBucket(BaseModel):
@@ -93,6 +94,7 @@ class ListBucketInfo(BaseModel):
     update_tx_hash: str = ""
     update_at: int = 0
     update_time: int = 0
+    vgf: GlobalVirtualGroupFamily = None
 
 
 class UpdateBucketOptions(BaseModel):

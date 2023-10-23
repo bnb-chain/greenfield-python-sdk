@@ -1,10 +1,12 @@
 from typing import List, Tuple
 
+import aiohttp
 from eth_utils import to_checksum_address
 
 from greenfield_python_sdk.blockchain.utils import parse_account, parse_module_account
 from greenfield_python_sdk.blockchain_client import BlockchainClient
 from greenfield_python_sdk.greenfield.basic import Basic
+from greenfield_python_sdk.models.account import PaginationParams
 from greenfield_python_sdk.protos.cosmos.auth.v1beta1 import (
     BaseAccount,
     ModuleAccount,
@@ -17,9 +19,8 @@ from greenfield_python_sdk.protos.cosmos.base.v1beta1 import Coin
 from greenfield_python_sdk.protos.greenfield.payment import (
     MsgCreatePaymentAccount,
     PaymentAccount,
-    QueryAllPaymentAccountRequest,
-    QueryGetPaymentAccountRequest,
-    QueryGetPaymentAccountsByOwnerRequest,
+    QueryPaymentAccountRequest,
+    QueryPaymentAccountsByOwnerRequest,
 )
 
 
@@ -30,6 +31,7 @@ class Account:
     def __init__(self, blockchain_client, basic):
         self.blockchain_client = blockchain_client
         self.basic = basic
+        self.headers = {"accept": "application/json"}
 
     async def get_account(self, address: str) -> BaseAccount:
         address = to_checksum_address(address)
@@ -65,22 +67,6 @@ class Account:
         response = await self.blockchain_client.cosmos.bank.get_balance(request)
         return int(response.balance.amount)
 
-    async def get_all_payment_accounts(self, pagination=None) -> Tuple[List[PaymentAccount], PaginationResponse]:
-        request = QueryAllPaymentAccountRequest(pagination=pagination)
-        response = await self.blockchain_client.payment.get_payment_account_all(request)
-        return response.payment_account, response.pagination
-
-    async def get_payment_account(self, address: str) -> PaymentAccount:
-        address = to_checksum_address(address)
-        request = QueryGetPaymentAccountRequest(addr=address)
-        response = await self.blockchain_client.payment.get_payment_account(request)
-        return response.payment_account
-
-    async def get_payment_accounts_by_owner(self, owner: str) -> List[str]:
-        request = QueryGetPaymentAccountsByOwnerRequest(owner=owner)
-        response = await self.blockchain_client.payment.get_get_payment_accounts_by_owner(request)
-        return response.payment_accounts
-
     async def transfer(self, from_address: str, to_address: str, amounts: List[Coin]) -> str:
         from_address = to_checksum_address(from_address)
         to_address = to_checksum_address(to_address)
@@ -95,3 +81,37 @@ class Account:
     async def multi_transfer(self, inputs: list, outputs: list) -> str:
         # TODO: implement
         raise NotImplementedError
+
+    async def get_payment_account(self, address: str) -> PaymentAccount:
+        addr = to_checksum_address(address)
+        request = QueryPaymentAccountRequest(addr)
+        response = await self.blockchain_client.payment.get_payment_account(request)
+        return response.payment_account
+
+    async def get_payment_accounts_by_owner(self, owner: str) -> List[str]:
+        owner = to_checksum_address(owner)
+        request = QueryPaymentAccountsByOwnerRequest(owner)
+        response = await self.blockchain_client.payment.get_payment_accounts_by_owner(request)
+        return response.payment_accounts
+
+    async def get_all_payment_accounts(self, pagination: PaginationParams = None) -> List[PaymentAccount]:
+        endpoint = "/greenfield/payment/payment_accounts"
+        if pagination:
+            query_params = "&".join(
+                [
+                    f"pagination.{field}={value if field != 'key' else value.decode()}"
+                    for field, value in pagination.__dict__.items()
+                    if value is not None
+                ]
+            )
+            if query_params:
+                endpoint += f"?{query_params}"
+        payment_accounts = []
+        pagination = b""
+
+        async with aiohttp.ClientSession() as session:
+            res = await session.get(self.blockchain_client.channel.base_url + endpoint, headers=self.headers)
+            payment_accounts = [PaymentAccount(**account) for account in (await res.json())["payment_accounts"]]
+            pagination = PaginationResponse(**(await res.json())["pagination"])
+
+        return payment_accounts, pagination

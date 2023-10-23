@@ -62,7 +62,7 @@ class Header(betterproto.Message):
     evidence_hash: bytes = betterproto.bytes_field(13)
     """consensus info"""
 
-    proposer_address: bytes = betterproto.bytes_field(14)  # DO NOT CHANGE !!
+    proposer_address: str = betterproto.string_field(14)
     """
     proposer_address is the original block proposer address, formatted as a hex string.
     In Tendermint, this type is `bytes`, but in the SDK, we convert it to a hex string
@@ -170,7 +170,7 @@ class GetLatestBlockResponse(betterproto.Message):
     """
 
     block_id: "____tendermint_types__.BlockId" = betterproto.message_field(1)
-    block: "Block" = betterproto.message_field(2)
+    block: "____tendermint_types__.Block" = betterproto.message_field(2)
     """Deprecated: please use `sdk_block` instead"""
 
     sdk_block: "Block" = betterproto.message_field(3)

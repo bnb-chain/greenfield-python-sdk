@@ -1,5 +1,5 @@
+import ast
 import ctypes
-import hashlib
 import io
 import json
 import os
@@ -12,21 +12,25 @@ import coincurve
 from Crypto.Hash import keccak
 
 from greenfield_python_sdk.key_manager import KeyManager
-from greenfield_python_sdk.models.const import AUTH_V1, ETH_ADDRESS_LENGTH, SIGN_ALGORITHM, SUPPORT_HEADERS
+from greenfield_python_sdk.models.const import ETH_ADDRESS_LENGTH, SIGN_ALGORITHM, SUPPORT_HEADERS, ListInfoKeys
 from greenfield_python_sdk.models.object import ObjectStat
-from greenfield_python_sdk.protos.greenfield.storage import RedundancyType
+from greenfield_python_sdk.protos.greenfield.storage import (
+    BucketStatus,
+    ObjectStatus,
+    RedundancyType,
+    SourceType,
+    VisibilityType,
+)
 
 
 def sign_message(message, key_manager: KeyManager):
     unsigned_message_string = bytes(message, "utf-8")
-    sha256_hash = hashlib.sha256(unsigned_message_string)
-    sha256_bytes = sha256_hash.digest()
-    keccak_hash = keccak.new(digest_bits=256, data=sha256_bytes).digest()
+    keccak_hash = keccak.new(digest_bits=256, data=unsigned_message_string).digest()
 
     privkey = coincurve.PrivateKey(key_manager.account.private_key)
     signature = privkey.sign_recoverable(keccak_hash, hasher=None)
 
-    return keccak_hash, signature
+    return signature
 
 
 async def generate_authorization_header(metadata: dict, key_manager: KeyManager, headers: dict):
@@ -37,11 +41,8 @@ async def generate_authorization_header(metadata: dict, key_manager: KeyManager,
             unsigned_msg_string += "\n" + head.lower() + ":" + headers[head]
             h += head.lower() + ";"
     unsigned_msg_string += f"\n{metadata['base_url'][8:]}\n\n" + h[:-1]
-
-    keccak_hash, signedMsg = sign_message(unsigned_msg_string, key_manager)
-    signed_msg_string = ", ".join(
-        [f"{AUTH_V1} {SIGN_ALGORITHM}", f"SignedMsg={keccak_hash.hex()}", f"Signature={signedMsg.hex()}"]
-    )
+    signature = sign_message(unsigned_msg_string, key_manager)
+    signed_msg_string = ", ".join([f"{SIGN_ALGORITHM}", f"Signature={signature.hex()}"])
 
     return signed_msg_string
 
@@ -181,6 +182,9 @@ async def generate_headers(metadata, key_manager: KeyManager) -> Dict[str, str]:
     if metadata["content_type"]:
         headers["Content-Type"] = metadata["content_type"]
 
+    if metadata["expiry_timestamp"]:
+        headers["X-Gnfd-Expiry-Timestamp"] = metadata["expiry_timestamp"]
+
     headers["Authorization"] = await generate_authorization_header(metadata, key_manager, headers)
 
     return headers
@@ -189,7 +193,7 @@ async def generate_headers(metadata, key_manager: KeyManager) -> Dict[str, str]:
 def get_obj_info(object_name: str, http_response) -> ObjectStat:
     content_length = http_response.headers.get("Content-Length") or 0
     content_type = http_response.headers.get("Content-Type")
-    if content_type == "":
+    if content_type == "" or content_type == None:
         content_type = "application/octet-stream"
 
     return ObjectStat(
@@ -200,7 +204,7 @@ def get_obj_info(object_name: str, http_response) -> ObjectStat:
 
 
 def compute_integrity_hash_go(
-    reader, segment_size: int, data_shards: int, parity_shards: int
+    reader, segment_size: int, data_shards: int, parity_shards: int, is_serial_compute_mode: str
 ) -> Tuple[List[bytes], int, RedundancyType]:
     dir_path = getDirPath()
     value = reader.getvalue()
@@ -208,17 +212,19 @@ def compute_integrity_hash_go(
     data_redundancy = ctypes.cdll.LoadLibrary(dir_path).GenerateDataRedundancy
 
     c_data = ctypes.c_char_p(value)
+    c_serial = ctypes.c_char_p(is_serial_compute_mode.encode("utf-8"))
     data_redundancy.argtypes = [
         ctypes.c_int,
         ctypes.c_int,
         ctypes.c_int,
         ctypes.c_int,
         ctypes.c_char_p,
+        ctypes.c_char_p,
     ]
     data_redundancy.restype = ctypes.c_void_p
 
     data_redundancy_output = ctypes.string_at(
-        data_redundancy(segment_size, data_shards, parity_shards, content_lenght, c_data), 224
+        data_redundancy(segment_size, data_shards, parity_shards, content_lenght, c_data, c_serial), 224
     )
 
     part_size = len(data_redundancy_output) // 7
@@ -233,3 +239,37 @@ def getDirPath():
         if os.name == "nt"
         else os.path.dirname(os.path.realpath(__file__)) + "/../go_library/main.so"
     )
+
+
+def convert_key(key):
+    if key in ListInfoKeys.__members__:
+        return ListInfoKeys[key].value
+    return key
+
+
+def convert_value(key, data):
+    if isinstance(data, list) and len(data) == 1 and isinstance(data[0], dict) and "_value" in data[0]:
+        return safe_literal_eval(key, data[0]["_value"]) if "0x" not in data[0]["_value"] else data[0]["_value"]
+    elif len(data) > 1:
+        return [checksum["_value"] for checksum in data]
+    else:
+        if data[0] == {}:
+            return ""
+        return {convert_key(key): convert_value(key, value) for key, value in data[0].items()}
+
+
+def safe_literal_eval(key, value):
+    try:
+        if key == "visibility":
+            return VisibilityType(int(value))
+        if key == "sourcetype":
+            return SourceType(int(value))
+        if key == "bucketstatus":
+            return BucketStatus(int(value))
+        if key == "id":
+            return value
+        if key == "removed":
+            return False if value == "false" else True
+        return ast.literal_eval(value)
+    except (SyntaxError, ValueError):
+        return value

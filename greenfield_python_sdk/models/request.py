@@ -31,6 +31,7 @@ class RequestMeta(BaseModel):
     base_url: str = ""
     url: str = ""
     query_str: str = ""
+    expiry_timestamp: str = ""
 
 
 class SendOptions(BaseModel):

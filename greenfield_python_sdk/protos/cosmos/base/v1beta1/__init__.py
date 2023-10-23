@@ -2,8 +2,9 @@
 # sources: cosmos/base/v1beta1/coin.proto
 # plugin: python-betterproto
 # This file has been @generated
+from dataclasses import dataclass
+
 import betterproto
-from pydantic.dataclasses import dataclass
 
 
 @dataclass(eq=False, repr=False)
