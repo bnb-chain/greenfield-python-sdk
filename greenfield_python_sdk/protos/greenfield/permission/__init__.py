@@ -2,13 +2,13 @@
 # sources: greenfield/permission/common.proto, greenfield/permission/events.proto, greenfield/permission/genesis.proto, greenfield/permission/params.proto, greenfield/permission/query.proto, greenfield/permission/tx.proto, greenfield/permission/types.proto
 # plugin: python-betterproto
 # This file has been @generated
+from dataclasses import dataclass
 from datetime import datetime
 from typing import TYPE_CHECKING, Dict, List, Optional
 
 import betterproto
 import grpclib
 from betterproto.grpc.grpclib_server import ServiceBase
-from pydantic.dataclasses import dataclass
 
 from .. import common as _common__
 from .. import resource as _resource__
@@ -180,6 +180,9 @@ class GroupMember(betterproto.Message):
     member: str = betterproto.string_field(3)
     """member is the account address of the member"""
 
+    expiration_time: datetime = betterproto.message_field(4)
+    """expiration_time defines the expiration time of the group member"""
+
 
 @dataclass(eq=False, repr=False)
 class EventPutPolicy(betterproto.Message):
@@ -238,6 +241,9 @@ class Params(betterproto.Message):
     be made more robust and better
     enforced, thereby reducing the chances of DDos and other security incidents.
     """
+
+    maximum_remove_expired_policies_iteration: int = betterproto.uint64_field(3)
+    """the maximum iteration number of `RemoveExpiredPolicies` loops in endblocker"""
 
 
 @dataclass(eq=False, repr=False)

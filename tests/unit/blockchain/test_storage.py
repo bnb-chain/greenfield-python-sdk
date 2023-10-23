@@ -13,7 +13,6 @@ from greenfield_python_sdk.protos.greenfield.storage import (
     QueryHeadObjectByIdRequest,
     QueryHeadObjectRequest,
     QueryListBucketsRequest,
-    QueryListGroupRequest,
     QueryListObjectsByBucketIdRequest,
     QueryListObjectsRequest,
     QueryNftRequest,
@@ -128,12 +127,6 @@ async def test_get_head_group(mock_storage):
     group_name = "your_group_name"
     await mock_storage.get_head_group(QueryHeadGroupRequest(group_owner=group_owner, group_name=group_name))
     mock_storage.query_stub.head_group.assert_called_once()
-
-
-async def test_list_group(mock_storage):
-    group_owner = "your_group_owner"
-    await mock_storage.list_group(QueryListGroupRequest(group_owner=group_owner))
-    mock_storage.query_stub.list_group.assert_called_once()
 
 
 async def test_get_head_group_member(mock_storage):

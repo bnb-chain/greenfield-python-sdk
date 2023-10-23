@@ -730,6 +730,8 @@ class MsgUpdateCrossChainParams(betterproto.Message):
     params: "CrossChainParamsChange" = betterproto.message_field(2)
     """for cross chain param change or contract upgrade"""
 
+    dest_chain_id: int = betterproto.uint32_field(3)
+
 
 @dataclass(eq=False, repr=False)
 class MsgUpdateCrossChainParamsResponse(betterproto.Message):

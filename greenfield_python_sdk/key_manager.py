@@ -2,6 +2,7 @@ import binascii
 import hashlib
 import os
 from typing import Optional
+
 import ecdsa
 import hdwallets
 from Crypto.PublicKey import ECC

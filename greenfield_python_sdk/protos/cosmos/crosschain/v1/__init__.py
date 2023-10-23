@@ -99,10 +99,13 @@ class QueryCrossChainPackageRequest(betterproto.Message):
     RPC method.
     """
 
-    channel_id: int = betterproto.uint32_field(1)
+    dest_chain_id: int = betterproto.uint32_field(1)
+    """destination chain id"""
+
+    channel_id: int = betterproto.uint32_field(2)
     """channel id of the cross chain package"""
 
-    sequence: int = betterproto.uint64_field(2)
+    sequence: int = betterproto.uint64_field(3)
     """sequence of the cross chain package"""
 
 
@@ -123,7 +126,10 @@ class QuerySendSequenceRequest(betterproto.Message):
     QuerySendSequenceRequest is the request type for the Query/SendSequence RPC method.
     """
 
-    channel_id: int = betterproto.uint32_field(1)
+    dest_chain_id: int = betterproto.uint32_field(1)
+    """destination chain id"""
+
+    channel_id: int = betterproto.uint32_field(2)
     """channel id of the cross chain package"""
 
 
@@ -145,7 +151,10 @@ class QueryReceiveSequenceRequest(betterproto.Message):
     method.
     """
 
-    channel_id: int = betterproto.uint32_field(1)
+    dest_chain_id: int = betterproto.uint32_field(1)
+    """destination chain id"""
+
+    channel_id: int = betterproto.uint32_field(2)
     """channel id of the cross chain package"""
 
 
@@ -208,6 +217,34 @@ class MsgUpdateChannelPermissionsResponse(betterproto.Message):
     """
     MsgUpdateChannelPermissionsResponse defines the response structure for executing a
     MsgUpdateChannelPermissions message.
+    """
+
+    pass
+
+
+@dataclass(eq=False, repr=False)
+class MsgMintModuleTokens(betterproto.Message):
+    """
+    MsgMintModuleTokens is the Msg/MintModuleTokens request type.
+    The Msg is used to mint tokens for the crosschain module.
+    This Only permitted to be called by the authority(gov).
+    """
+
+    authority: str = betterproto.string_field(1)
+    """
+    authority is the address that controls the module (defaults to x/gov unless
+    overwritten).
+    """
+
+    amount: str = betterproto.string_field(2)
+    """initial balance to mint for crosschain module when the chain starts"""
+
+
+@dataclass(eq=False, repr=False)
+class MsgMintModuleTokensResponse(betterproto.Message):
+    """
+    MsgMintModuleTokensResponse defines the response structure for executing a
+    MsgMintModuleTokens message.
     """
 
     pass
@@ -318,6 +355,23 @@ class MsgStub(betterproto.ServiceStub):
             metadata=metadata,
         )
 
+    async def mint_module_tokens(
+        self,
+        msg_mint_module_tokens: "MsgMintModuleTokens",
+        *,
+        timeout: Optional[float] = None,
+        deadline: Optional["Deadline"] = None,
+        metadata: Optional["MetadataLike"] = None
+    ) -> "MsgMintModuleTokensResponse":
+        return await self._unary_unary(
+            "/cosmos.crosschain.v1.Msg/MintModuleTokens",
+            msg_mint_module_tokens,
+            MsgMintModuleTokensResponse,
+            timeout=timeout,
+            deadline=deadline,
+            metadata=metadata,
+        )
+
 
 class QueryBase(ServiceBase):
     async def params(self, query_params_request: "QueryParamsRequest") -> "QueryParamsResponse":
@@ -405,6 +459,9 @@ class MsgBase(ServiceBase):
     ) -> "MsgUpdateChannelPermissionsResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
+    async def mint_module_tokens(self, msg_mint_module_tokens: "MsgMintModuleTokens") -> "MsgMintModuleTokensResponse":
+        raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
+
     async def __rpc_update_params(
         self, stream: "grpclib.server.Stream[MsgUpdateParams, MsgUpdateParamsResponse]"
     ) -> None:
@@ -420,6 +477,14 @@ class MsgBase(ServiceBase):
         response = await self.update_channel_permissions(request)
         await stream.send_message(response)
 
+    async def __rpc_mint_module_tokens(
+        self,
+        stream: "grpclib.server.Stream[MsgMintModuleTokens, MsgMintModuleTokensResponse]",
+    ) -> None:
+        request = await stream.recv_message()
+        response = await self.mint_module_tokens(request)
+        await stream.send_message(response)
+
     def __mapping__(self) -> Dict[str, grpclib.const.Handler]:
         return {
             "/cosmos.crosschain.v1.Msg/UpdateParams": grpclib.const.Handler(
@@ -433,5 +498,11 @@ class MsgBase(ServiceBase):
                 grpclib.const.Cardinality.UNARY_UNARY,
                 MsgUpdateChannelPermissions,
                 MsgUpdateChannelPermissionsResponse,
+            ),
+            "/cosmos.crosschain.v1.Msg/MintModuleTokens": grpclib.const.Handler(
+                self.__rpc_mint_module_tokens,
+                grpclib.const.Cardinality.UNARY_UNARY,
+                MsgMintModuleTokens,
+                MsgMintModuleTokensResponse,
             ),
         }

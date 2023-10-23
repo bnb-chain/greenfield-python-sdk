@@ -4,6 +4,7 @@ from greenfield_python_sdk import (
     GreenfieldClient,
     KeyManager,
     NetworkConfiguration,
+    NetworkLocalnet,
     NetworkTestnet,
     get_account_configuration,
 )
@@ -14,6 +15,7 @@ pytestmark = [pytest.mark.asyncio, pytest.mark.e2e]
 
 # Initialize the configuration, key manager
 network_configuration = NetworkConfiguration(**NetworkTestnet().model_dump())
+localnet_network_configuration = NetworkConfiguration(**NetworkLocalnet().model_dump())
 
 
 @pytest.mark.requires_config
@@ -45,12 +47,15 @@ async def test_deposit():
 @pytest.mark.requires_config
 @pytest.mark.tx
 @pytest.mark.slow
+@pytest.mark.localnet
 async def test_withdraw():
     # Depends on account
     config = get_account_configuration()
     key_manager = KeyManager(private_key=config.private_key)
 
-    async with GreenfieldClient(network_configuration=network_configuration, key_manager=key_manager) as client:
+    async with GreenfieldClient(
+        network_configuration=localnet_network_configuration, key_manager=key_manager
+    ) as client:
         await client.async_init()
 
         new_key_manager = KeyManager()
@@ -88,12 +93,15 @@ async def test_withdraw():
 @pytest.mark.requires_config
 @pytest.mark.tx
 @pytest.mark.slow
+@pytest.mark.localnet
 async def test_disable_refund():
     # Depends on account
     config = get_account_configuration()
     key_manager = KeyManager(private_key=config.private_key)
 
-    async with GreenfieldClient(network_configuration=network_configuration, key_manager=key_manager) as client:
+    async with GreenfieldClient(
+        network_configuration=localnet_network_configuration, key_manager=key_manager
+    ) as client:
         await client.async_init()
 
         new_key_manager = KeyManager()
@@ -131,12 +139,15 @@ async def test_disable_refund():
 @pytest.mark.requires_config
 @pytest.mark.tx
 @pytest.mark.slow
+@pytest.mark.localnet
 async def test_get_stream_record():
     # Depends on account
     config = get_account_configuration()
     key_manager = KeyManager(private_key=config.private_key)
 
-    async with GreenfieldClient(network_configuration=network_configuration, key_manager=key_manager) as client:
+    async with GreenfieldClient(
+        network_configuration=localnet_network_configuration, key_manager=key_manager
+    ) as client:
         await client.async_init()
 
         new_key_manager = KeyManager()

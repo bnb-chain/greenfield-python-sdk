@@ -8,6 +8,7 @@ from greenfield_python_sdk import (
     GreenfieldClient,
     KeyManager,
     NetworkConfiguration,
+    NetworkLocalnet,
     NetworkTestnet,
     get_account_configuration,
 )
@@ -74,7 +75,7 @@ async def test_submit_challenge():
         )
         assert put_object == "Object added successfully"
 
-        await asyncio.sleep(5)
+        await asyncio.sleep(8)
         tx_hash = await client.challenge.submit_challenge(
             key_manager.address,
             sps[0].operator_address,

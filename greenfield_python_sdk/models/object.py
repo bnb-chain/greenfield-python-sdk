@@ -2,7 +2,7 @@ from typing import List, Optional
 
 from pydantic import BaseModel
 
-from greenfield_python_sdk.protos.greenfield.storage import VisibilityType
+from greenfield_python_sdk.protos.greenfield.storage import ObjectInfo, VisibilityType
 
 
 class CreateObjectOptions(BaseModel):
@@ -11,6 +11,7 @@ class CreateObjectOptions(BaseModel):
     content_type: Optional[str] = ""  # TODO: add enum
     is_replica_type: Optional[bool] = None
     is_async_mode: Optional[bool] = None
+    is_serial_compute_mode: Optional[str] = "true"
 
 
 class PutObjectOptions(BaseModel):
@@ -62,20 +63,19 @@ class ObjectInfo(BaseModel):
     object_name: str
     id: str
     payload_size: int
-    visibility: VisibilityType
+    visibility: str
     content_type: str
-    checksums: str
+    checksums: List[str]
     create_at: int
 
 
 class ListObjectsResult(BaseModel):
     objects: List[ObjectInfo]
-    key_count: str
-    max_keys: str
+    key_count: int
+    max_keys: int
     is_truncated: bool
     next_continuation_token: str
     name: str
     prefix: str
     delimiter: str
-    common_prefixes: List[str]
     continuation_token: str

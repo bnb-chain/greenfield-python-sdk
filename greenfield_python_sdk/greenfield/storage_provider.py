@@ -25,10 +25,8 @@ from greenfield_python_sdk.protos.greenfield.sp import (
     Description,
     MsgCreateStorageProvider,
     MsgUpdateSpStoragePrice,
-    QueryGetSecondarySpStorePriceByTimeRequest,
-    QueryGetSpStoragePriceByTimeRequest,
+    QuerySpStoragePriceRequest,
     QueryStorageProviderRequest,
-    SecondarySpStorePrice,
     SpStoragePrice,
     Status,
 )
@@ -68,22 +66,11 @@ class StorageProvider:
         return response.storage_provider
 
     async def get_storage_price(self, sp_addr: str) -> SpStoragePrice:
-        response = await self.blockchain_client.sp.get_sp_storage_price_by_time(
-            QueryGetSpStoragePriceByTimeRequest(sp_addr, 0)
-        )
+        response = await self.blockchain_client.sp.get_sp_storage_price(QuerySpStoragePriceRequest(sp_addr))
         if response.sp_storage_price is None:
             raise Exception("Storage price not found")
 
         return response.sp_storage_price
-
-    async def get_secondary_sp_store_price(self) -> SecondarySpStorePrice:
-        response = await self.blockchain_client.sp.get_secondary_sp_store_price_by_time(
-            QueryGetSecondarySpStorePriceByTimeRequest(timestamp=0)
-        )
-        if response.secondary_sp_store_price is None:
-            raise Exception("Secondary storage price not found")
-
-        return response.secondary_sp_store_price
 
     async def grant_deposit_for_storage_provider(
         self, sp_addr: str, deposit_amount: int, opts: GrantDepositOptions
@@ -116,9 +103,12 @@ class StorageProvider:
         seal_addr: str,
         approval_addr: str,
         gc_addr: str,
+        maintenance_addr: str,
         endpoint: str,
         deposit_amount: int,
         description: Description,
+        bls_key: str,
+        bls_proof: str,
         opts: CreateStorageProviderOptions,
     ) -> Tuple[int, str]:
         gov_module = await self.blockchain_client.cosmos.auth.get_module_account_by_name(
@@ -144,11 +134,14 @@ class StorageProvider:
             seal_address=seal_addr,
             approval_address=approval_addr,
             gc_address=gc_addr,
+            maintenance_address=maintenance_addr,
             endpoint=endpoint,
             deposit=Coin(denom="BNB", amount=str(deposit_amount)),
             read_price=str(opts.read_price * 10**18),
             free_read_quota=opts.free_read_quota,
             store_price=str(opts.store_price * 10**18),
+            bls_key=bls_key,
+            bls_proof=bls_proof,
         )
         msg_create_sp = AnyMessage(type_url=CREATE_STORAGE_PROVIDER, value=bytes(create_sp))
         msg_submit_proposal = MsgSubmitProposal(

@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 from typing import List, Optional
 
 from greenfield_python_sdk.blockchain_client import BlockchainClient
@@ -17,6 +18,7 @@ from greenfield_python_sdk.protos.greenfield.storage import (
     MsgCreateGroup,
     MsgDeleteGroup,
     MsgDeletePolicy,
+    MsgGroupMember,
     MsgLeaveGroup,
     MsgPutPolicy,
     MsgUpdateGroupMember,
@@ -41,7 +43,7 @@ class Group:
         msg_create_group = MsgCreateGroup(
             creator=self.storage_client.key_manager.address,
             group_name=group_name,
-            members=opts.init_group_members,
+            # members=opts.init_group_members,
             extra=opts.extra,
         )
         tx_hash = await self.blockchain_client.broadcast_message(message=msg_create_group, type_url=CREATE_GROUP)
@@ -69,21 +71,27 @@ class Group:
             raise ValueError("No changes to group members")
 
         add_members = []
-        removed_members = []
 
         for address in add_addresses:
-            add_members.append(check_address(address))
-
-        for address in remove_addresses:
-            removed_members.append(check_address(address))
+            add_members.append(
+                MsgGroupMember(
+                    member=check_address(address),
+                    expiration_time=datetime(2099, 12, 31, 23, 59, 59, tzinfo=timezone.utc),
+                )
+            )
 
         msg_update_group_member = MsgUpdateGroupMember(
             operator=self.storage_client.key_manager.address,
             group_owner=group_owner,
             group_name=group_name,
-            members_to_add=add_members,
-            members_to_delete=removed_members,
         )
+
+        if len(add_members) > 0:
+            msg_update_group_member.members_to_add = add_members
+
+        if len(remove_addresses) > 0:
+            msg_update_group_member.members_to_delete = remove_addresses
+
         tx_hash = await self.blockchain_client.broadcast_message(
             message=msg_update_group_member, type_url=UPDATE_GROUP_MEMBER
         )

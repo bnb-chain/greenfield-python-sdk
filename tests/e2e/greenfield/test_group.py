@@ -147,7 +147,7 @@ async def test_policy_group():
                     ActionType.ACTION_UPDATE_BUCKET_INFO,
                     ActionType.ACTION_DELETE_BUCKET,
                 ],
-                resources=[f"grn:b::{bucket_name}"],
+                # resources=[f"grn:b::{bucket_name}"],
             )
         ]
         principal = Principal(type=PrincipalType.PRINCIPAL_TYPE_GNFD_GROUP, value=group_head.id)
@@ -192,7 +192,6 @@ async def test_policy_group():
                     ActionType.ACTION_CREATE_OBJECT,
                     ActionType.ACTION_DELETE_OBJECT,
                 ],
-                resources=[f"grn:g:{key_manager.address}/{group_name}"],
             )
         ]
         principal = Principal(type=PrincipalType.PRINCIPAL_TYPE_GNFD_GROUP, value=group_head.id)
@@ -220,7 +219,6 @@ async def test_policy_group():
                     ActionType.ACTION_UPDATE_GROUP_MEMBER,
                     ActionType.ACTION_DELETE_GROUP,
                 ],
-                resources=[""],
             )
         ]
 

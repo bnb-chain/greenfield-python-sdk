@@ -58,7 +58,7 @@ class Object:
 
         storage_params = await self.blockchain_client.storage.get_params()
         get_approval, sp_signature, checksums = await self.storage_client.object.get_object_approval(
-            bucket_name, object_name, opts, sp["operator_address"], reader, storage_params
+            bucket_name, object_name, opts, sp["operator_address"], reader, storage_params, opts.is_serial_compute_mode
         )
         response = await self.blockchain_client.broadcast_message(
             message=get_approval,

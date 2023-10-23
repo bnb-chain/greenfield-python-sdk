@@ -3,6 +3,7 @@ import json
 from datetime import datetime, timedelta
 from typing import List, Tuple
 
+import html_to_json
 import xmltodict
 
 from greenfield_python_sdk.models.bucket import (
@@ -17,7 +18,12 @@ from greenfield_python_sdk.models.request import RequestMeta
 from greenfield_python_sdk.protos.greenfield.common import Approval
 from greenfield_python_sdk.protos.greenfield.storage import MsgCreateBucket
 from greenfield_python_sdk.storage_provider.request import Client
-from greenfield_python_sdk.storage_provider.utils import check_valid_bucket_name, get_unsigned_bytes_from_message
+from greenfield_python_sdk.storage_provider.utils import (
+    check_valid_bucket_name,
+    convert_key,
+    convert_value,
+    get_unsigned_bytes_from_message,
+)
 
 
 class Bucket:
@@ -59,12 +65,19 @@ class Bucket:
             user_address=self.client.key_manager.address,
         ).model_dump()
         response = await self.client.prepare_request(base_url, request_metadata)
+        list_bucket_info = html_to_json.convert(await response.text())
 
-        list_bucket_info = json.loads(await response.text())["buckets"]
-        for i, bucket_info in enumerate(list_bucket_info):
-            list_bucket_info[i] = ListBucketInfo(**bucket_info)
+        buckets = []
+        if "gfspgetuserbucketsresponse" in list_bucket_info:
+            list_bucket_info = list_bucket_info["gfspgetuserbucketsresponse"][0]["buckets"]
+            for _, bucket_info in enumerate(list_bucket_info):
+                converted_data = {
+                    convert_key(key): convert_value(key, value) if value[0] else ""
+                    for key, value in bucket_info.items()
+                }
+                buckets.append(ListBucketInfo(**converted_data))
 
-        return list_bucket_info
+        return buckets
 
     async def list_bucket_read_record(
         self, bucket_name: str, primary_sp_address, opts: ListReadRecordOptions
@@ -95,12 +108,13 @@ class Bucket:
         query_parameters["start-timestamp"] = str(start_time_stamp)
 
         base_url = await self.client._get_sp_url_by_addr(primary_sp_address, bucket_name)
-
+        expiry = (datetime.utcnow() + timedelta(seconds=1000)).strftime("%Y-%m-%dT%H:%M:%SZ")
         request_metadata = RequestMeta(
             query_parameters=query_parameters,
             bucket_name=bucket_name,
             disable_close_body=True,
             base_url=base_url,
+            expiry_timestamp=expiry,
         ).model_dump()
 
         response = await self.client.prepare_request(base_url, request_metadata, request_metadata["query_parameters"])
@@ -127,12 +141,13 @@ class Bucket:
         query_parameters = {"read-quota": "", "year-month": date}
 
         base_url = await self.client._get_sp_url_by_addr(primary_sp_address, bucket_name)
-
+        expiry = (datetime.utcnow() + timedelta(seconds=1000)).strftime("%Y-%m-%dT%H:%M:%SZ")
         request_metadata = RequestMeta(
             query_parameters=query_parameters,
             bucket_name=bucket_name,
             disable_close_body=True,
             base_url=base_url,
+            expiry_timestamp=expiry,
         ).model_dump()
 
         response = await self.client.prepare_request(base_url, request_metadata, request_metadata["query_parameters"])
@@ -154,12 +169,14 @@ class Bucket:
         query_parameters = {"action": CREATE_BUCKET_ACTION}
         endpoint = "get-approval"
 
+        expiry = (datetime.utcnow() + timedelta(seconds=1000)).strftime("%Y-%m-%dT%H:%M:%SZ")
         request_metadata = RequestMeta(
             query_parameters=query_parameters,
             txn_msg=binascii.hexlify(unsigned_bytes),
             is_admin_api=True,
             base_url=base_url,
             endpoint=endpoint,
+            expiry_timestamp=expiry,
         ).model_dump()
 
         response = await self.client.prepare_request(

@@ -1,7 +1,7 @@
 TYPES = {
     "Msg1": [
         {
-            "name": "type",
+            "name": "expiration_time",
             "type": "string",
         },
         {
@@ -21,7 +21,7 @@ TYPES = {
             "type": "TypeMsg1Statements[]",
         },
         {
-            "name": "expiration_time",
+            "name": "type",
             "type": "string",
         },
     ],
@@ -37,16 +37,12 @@ TYPES = {
     ],
     "TypeMsg1Statements": [
         {
-            "name": "effect",
-            "type": "string",
-        },
-        {
             "name": "actions",
             "type": "string[]",
         },
         {
-            "name": "resources",
-            "type": "string[]",
+            "name": "effect",
+            "type": "string",
         },
         {
             "name": "expiration_time",

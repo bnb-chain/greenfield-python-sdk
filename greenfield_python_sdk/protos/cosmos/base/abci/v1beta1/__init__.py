@@ -120,6 +120,9 @@ class GasInfo(betterproto.Message):
     min_gas_price: str = betterproto.string_field(3)
     """MinGasPrice are the min gas price."""
 
+    rw_used: int = betterproto.uint64_field(4)
+    """RWUsed is the amount of r/w actually consumed."""
+
 
 @dataclass(eq=False, repr=False)
 class Result(betterproto.Message):
@@ -195,6 +198,9 @@ class TxMsgData(betterproto.Message):
     msg_responses contains the Msg handler responses packed into Anys.
     Since: cosmos-sdk 0.46
     """
+
+    extra_data: bytes = betterproto.bytes_field(3)
+    """extra data - the r/w info"""
 
     def __post_init__(self) -> None:
         super().__post_init__()

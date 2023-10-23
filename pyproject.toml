@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "greenfield-python-sdk"
-version = "0.2.0"
+version = "0.3.0"
 description = "A Greenfield python SDK"
 authors = ["BNB Chain"]
 readme = "README.md"
@@ -31,6 +31,7 @@ python-dotenv = "1.0.0"
 pytest-timeout = "2.1.0"
 pydantic-settings = "2.0.3"
 py-ecc = "^6.0.0"
+html-to-json = "^2.0.0"
 
 [tool.poetry.group.dev.dependencies]
 mypy = "*"

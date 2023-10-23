@@ -3,13 +3,13 @@ from greenfield_python_sdk.protos.greenfield.sp import MsgCreateStorageProvider
 
 TYPES = {
     "Msg1": [
-        {"name": "type", "type": "string"},
-        {"name": "messages", "type": "TypeAny[]"},
         {"name": "initial_deposit", "type": "TypeMsg1InitialDeposit[]"},
-        {"name": "proposer", "type": "string"},
+        {"name": "messages", "type": "TypeAny[]"},
         {"name": "metadata", "type": "string"},
-        {"name": "title", "type": "string"},
+        {"name": "proposer", "type": "string"},
         {"name": "summary", "type": "string"},
+        {"name": "title", "type": "string"},
+        {"name": "type", "type": "string"},
     ],
     "TypeAny": [{"name": "type", "type": "string"}, {"name": "value", "type": "bytes"}],
     "TypeMsg1InitialDeposit": [
