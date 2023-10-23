@@ -204,7 +204,7 @@ def get_obj_info(object_name: str, http_response) -> ObjectStat:
 
 
 def compute_integrity_hash_go(
-    reader, segment_size: int, data_shards: int, parity_shards: int
+    reader, segment_size: int, data_shards: int, parity_shards: int, is_serial_compute_mode: str
 ) -> Tuple[List[bytes], int, RedundancyType]:
     dir_path = getDirPath()
     value = reader.getvalue()
@@ -212,17 +212,19 @@ def compute_integrity_hash_go(
     data_redundancy = ctypes.cdll.LoadLibrary(dir_path).GenerateDataRedundancy
 
     c_data = ctypes.c_char_p(value)
+    c_serial = ctypes.c_char_p(is_serial_compute_mode.encode("utf-8"))
     data_redundancy.argtypes = [
         ctypes.c_int,
         ctypes.c_int,
         ctypes.c_int,
         ctypes.c_int,
         ctypes.c_char_p,
+        ctypes.c_char_p,
     ]
     data_redundancy.restype = ctypes.c_void_p
 
     data_redundancy_output = ctypes.string_at(
-        data_redundancy(segment_size, data_shards, parity_shards, content_lenght, c_data), 224
+        data_redundancy(segment_size, data_shards, parity_shards, content_lenght, c_data, c_serial), 224
     )
 
     part_size = len(data_redundancy_output) // 7

@@ -11,6 +11,7 @@ class CreateObjectOptions(BaseModel):
     content_type: Optional[str] = ""  # TODO: add enum
     is_replica_type: Optional[bool] = None
     is_async_mode: Optional[bool] = None
+    is_serial_compute_mode: Optional[str] = "true"
 
 
 class PutObjectOptions(BaseModel):

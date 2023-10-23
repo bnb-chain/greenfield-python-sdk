@@ -43,11 +43,14 @@ class Object:
         primary_sp_address: str,
         reader: io.BytesIO,
         storage_params,
+        is_serial_compute_mode: str,
     ) -> Tuple[MsgCreateObject, str, List[str]]:
         check_valid_bucket_name(bucket_name)
         check_valid_object_name(object_name)
 
-        expect_check_Sums, size, redundancy_type = await self.compute_hash_roots(storage_params, reader)
+        expect_check_Sums, size, redundancy_type = await self.compute_hash_roots(
+            storage_params, reader, is_serial_compute_mode
+        )
 
         if opts.content_type != "" and opts.content_type != None:
             content_type = opts.content_type
@@ -85,13 +88,15 @@ class Object:
             checksums,
         )
 
-    async def compute_hash_roots(self, storage_params, reader: io.BytesIO) -> Tuple[List[bytes], int, RedundancyType]:
+    async def compute_hash_roots(
+        self, storage_params, reader: io.BytesIO, is_serial_compute_mode: str
+    ) -> Tuple[List[bytes], int, RedundancyType]:
         data_blocks = storage_params.params.versioned_params.redundant_data_chunk_num
         parity_blocks = storage_params.params.versioned_params.redundant_parity_chunk_num
         seg_size = storage_params.params.versioned_params.max_segment_size
 
         expectCheckSums, size, redundancy_type = compute_integrity_hash_go(
-            reader, int(seg_size), int(data_blocks), int(parity_blocks)
+            reader, int(seg_size), int(data_blocks), int(parity_blocks), is_serial_compute_mode
         )
         return expectCheckSums, size, redundancy_type
 
