@@ -13,8 +13,10 @@ from greenfield_python_sdk.models.storage_provider import CreateStorageProviderO
 from greenfield_python_sdk.protos.cosmos.base.v1beta1 import Coin
 from greenfield_python_sdk.protos.greenfield.sp import (
     Description,
+    GlobalSpStorePrice,
     QueryStorageProvidersRequest,
     SpStoragePrice,
+    Status,
     StorageProvider,
 )
 
@@ -63,6 +65,13 @@ async def test_get_storage_price():
         storage_price = await client.storage_provider.get_storage_price(list_providers[0]["operatorAddress"])
         assert storage_price
         assert isinstance(storage_price, SpStoragePrice)
+
+
+async def test_get_global_sp_store_price():
+    async with GreenfieldClient(network_configuration=network_configuration, key_manager=key_manager) as client:
+        global_sp_store_price = await client.storage_provider.get_global_sp_store_price()
+        assert global_sp_store_price
+        assert isinstance(global_sp_store_price, GlobalSpStorePrice)
 
 
 @pytest.mark.requires_config
@@ -193,3 +202,23 @@ async def test_update_sp_storage_price():
         assert hash
         assert len(hash) == 64
         assert isinstance(hash, str)
+
+
+@pytest.mark.requires_config
+@pytest.mark.tx
+@pytest.mark.slow
+@pytest.mark.localnet
+@pytest.mark.requires_storage_provider
+async def test_update_sp_storage_price():
+    config = get_account_configuration()
+    key_manager = KeyManager(private_key=config.private_key)
+    async with GreenfieldClient(
+        network_configuration=localnet_network_configuration, key_manager=key_manager
+    ) as client:
+        await client.async_init()
+        tx_hash = await client.storage_provider.update_sp_status(
+            key_manager.address, Status.STATUS_IN_MAINTENANCE, 1000
+        )
+        assert tx_hash
+        assert len(tx_hash) == 64
+        assert isinstance(tx_hash, str)

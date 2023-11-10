@@ -79,6 +79,9 @@ message Header {
   // consensus info
   bytes evidence_hash    = 13;  // evidence included in the block
   bytes proposer_address = 14;  // original proposer of the block
+
+  // randao info
+  bytes randao_mix    = 15;  // randao mix
 }
 
 // Data contains the set of transactions included in the block

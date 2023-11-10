@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "greenfield-python-sdk"
-version = "0.3.0"
+version = "0.4.0"
 description = "A Greenfield python SDK"
 authors = ["BNB Chain"]
 readme = "README.md"
@@ -9,8 +9,8 @@ packages = [{include = "greenfield_python_sdk"}]
 [tool.poetry.dependencies]
 python = "^3.9"
 betterproto = {git = "https://github.com/danielgtaylor/python-betterproto", rev = "e7f07fa2a113bcaef42571b4a67b3ddfbe0ab935"}
-grpcio-tools = "1.57.0"
-httpx = "0.24.1"
+grpcio-tools = "1.59.0"
+httpx = "0.25.0"
 jinja2 = "3.1.2"
 pydantic = "2.3.0"
 grpclib = "0.4.5"

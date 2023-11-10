@@ -140,7 +140,7 @@ class StreamRecord(betterproto.Message):
     object is sealed
     """
 
-    status: "StreamAccountStatus" = betterproto.enum_field(7)
+    status: StreamAccountStatus = betterproto.enum_field(7)
     """the status of the stream account"""
 
     settle_timestamp: int = betterproto.int64_field(8)

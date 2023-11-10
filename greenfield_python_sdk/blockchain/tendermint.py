@@ -48,7 +48,7 @@ class Tendermint:
         response = await self.query_stub.get_block_by_height(request)
         return response
 
-    async def get_latest_validator_set(
+    async def get_validator_set(
         self, request: GetLatestValidatorSetRequest = GetLatestValidatorSetRequest()
     ) -> GetLatestValidatorSetResponse:
         response = await self.query_stub.get_latest_validator_set(request)

@@ -73,6 +73,9 @@ class Request(betterproto.Message):
     prepare_proposal: "RequestPrepareProposal" = betterproto.message_field(16, group="value")
     process_proposal: "RequestProcessProposal" = betterproto.message_field(17, group="value")
     eth_query: "RequestEthQuery" = betterproto.message_field(18, group="value")
+    pre_begin_block: "RequestPreBeginBlock" = betterproto.message_field(19, group="value")
+    pre_deliver_tx: "RequestPreDeliverTx" = betterproto.message_field(20, group="value")
+    pre_commit: "RequestPreCommit" = betterproto.message_field(21, group="value")
 
 
 @dataclass(eq=False, repr=False)
@@ -216,6 +219,24 @@ class RequestEthQuery(betterproto.Message):
 
 
 @dataclass(eq=False, repr=False)
+class RequestPreBeginBlock(betterproto.Message):
+    state_number: int = betterproto.int64_field(1)
+    hash: bytes = betterproto.bytes_field(2)
+    header: "_types__.Header" = betterproto.message_field(3)
+
+
+@dataclass(eq=False, repr=False)
+class RequestPreDeliverTx(betterproto.Message):
+    state_index: int = betterproto.int64_field(1)
+    tx: bytes = betterproto.bytes_field(2)
+
+
+@dataclass(eq=False, repr=False)
+class RequestPreCommit(betterproto.Message):
+    state_index: int = betterproto.int64_field(1)
+
+
+@dataclass(eq=False, repr=False)
 class Response(betterproto.Message):
     exception: "ResponseException" = betterproto.message_field(1, group="value")
     echo: "ResponseEcho" = betterproto.message_field(2, group="value")
@@ -235,6 +256,7 @@ class Response(betterproto.Message):
     prepare_proposal: "ResponsePrepareProposal" = betterproto.message_field(17, group="value")
     process_proposal: "ResponseProcessProposal" = betterproto.message_field(18, group="value")
     eth_query: "ResponseEthQuery" = betterproto.message_field(19, group="value")
+    prefetch: "ResponsePrefetch" = betterproto.message_field(20, group="value")
 
 
 @dataclass(eq=False, repr=False)
@@ -288,6 +310,7 @@ class ResponseQuery(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class ResponseBeginBlock(betterproto.Message):
     events: List["Event"] = betterproto.message_field(1)
+    extra_data: bytes = betterproto.bytes_field(2)
 
 
 @dataclass(eq=False, repr=False)
@@ -326,6 +349,7 @@ class ResponseEndBlock(betterproto.Message):
     validator_updates: List["ValidatorUpdate"] = betterproto.message_field(1)
     consensus_param_updates: "_types__.ConsensusParams" = betterproto.message_field(2)
     events: List["Event"] = betterproto.message_field(3)
+    extra_data: bytes = betterproto.bytes_field(4)
 
 
 @dataclass(eq=False, repr=False)
@@ -374,6 +398,12 @@ class ResponseEthQuery(betterproto.Message):
     log: str = betterproto.string_field(2)
     codespace: str = betterproto.string_field(3)
     response: bytes = betterproto.bytes_field(4)
+
+
+@dataclass(eq=False, repr=False)
+class ResponsePrefetch(betterproto.Message):
+    code: int = betterproto.uint32_field(1)
+    error: str = betterproto.string_field(2)
 
 
 @dataclass(eq=False, repr=False)
@@ -443,6 +473,8 @@ class ValidatorUpdate(betterproto.Message):
 
     pub_key: "_crypto__.PublicKey" = betterproto.message_field(1)
     power: int = betterproto.int64_field(2)
+    bls_key: bytes = betterproto.bytes_field(3)
+    relayer_address: bytes = betterproto.bytes_field(4)
 
 
 @dataclass(eq=False, repr=False)
@@ -779,6 +811,57 @@ class AbciApplicationStub(betterproto.ServiceStub):
             metadata=metadata,
         )
 
+    async def pre_begin_block(
+        self,
+        request_pre_begin_block: "RequestPreBeginBlock",
+        *,
+        timeout: Optional[float] = None,
+        deadline: Optional["Deadline"] = None,
+        metadata: Optional["MetadataLike"] = None
+    ) -> "ResponsePrefetch":
+        return await self._unary_unary(
+            "/tendermint.abci.ABCIApplication/PreBeginBlock",
+            request_pre_begin_block,
+            ResponsePrefetch,
+            timeout=timeout,
+            deadline=deadline,
+            metadata=metadata,
+        )
+
+    async def pre_deliver_tx(
+        self,
+        request_pre_deliver_tx: "RequestPreDeliverTx",
+        *,
+        timeout: Optional[float] = None,
+        deadline: Optional["Deadline"] = None,
+        metadata: Optional["MetadataLike"] = None
+    ) -> "ResponsePrefetch":
+        return await self._unary_unary(
+            "/tendermint.abci.ABCIApplication/PreDeliverTx",
+            request_pre_deliver_tx,
+            ResponsePrefetch,
+            timeout=timeout,
+            deadline=deadline,
+            metadata=metadata,
+        )
+
+    async def pre_commit(
+        self,
+        request_pre_commit: "RequestPreCommit",
+        *,
+        timeout: Optional[float] = None,
+        deadline: Optional["Deadline"] = None,
+        metadata: Optional["MetadataLike"] = None
+    ) -> "ResponsePrefetch":
+        return await self._unary_unary(
+            "/tendermint.abci.ABCIApplication/PreCommit",
+            request_pre_commit,
+            ResponsePrefetch,
+            timeout=timeout,
+            deadline=deadline,
+            metadata=metadata,
+        )
+
 
 class AbciApplicationBase(ServiceBase):
     async def echo(self, request_echo: "RequestEcho") -> "ResponseEcho":
@@ -834,6 +917,15 @@ class AbciApplicationBase(ServiceBase):
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
     async def eth_query(self, request_eth_query: "RequestEthQuery") -> "ResponseEthQuery":
+        raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
+
+    async def pre_begin_block(self, request_pre_begin_block: "RequestPreBeginBlock") -> "ResponsePrefetch":
+        raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
+
+    async def pre_deliver_tx(self, request_pre_deliver_tx: "RequestPreDeliverTx") -> "ResponsePrefetch":
+        raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
+
+    async def pre_commit(self, request_pre_commit: "RequestPreCommit") -> "ResponsePrefetch":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
     async def __rpc_echo(self, stream: "grpclib.server.Stream[RequestEcho, ResponseEcho]") -> None:
@@ -939,6 +1031,25 @@ class AbciApplicationBase(ServiceBase):
         response = await self.eth_query(request)
         await stream.send_message(response)
 
+    async def __rpc_pre_begin_block(
+        self, stream: "grpclib.server.Stream[RequestPreBeginBlock, ResponsePrefetch]"
+    ) -> None:
+        request = await stream.recv_message()
+        response = await self.pre_begin_block(request)
+        await stream.send_message(response)
+
+    async def __rpc_pre_deliver_tx(
+        self, stream: "grpclib.server.Stream[RequestPreDeliverTx, ResponsePrefetch]"
+    ) -> None:
+        request = await stream.recv_message()
+        response = await self.pre_deliver_tx(request)
+        await stream.send_message(response)
+
+    async def __rpc_pre_commit(self, stream: "grpclib.server.Stream[RequestPreCommit, ResponsePrefetch]") -> None:
+        request = await stream.recv_message()
+        response = await self.pre_commit(request)
+        await stream.send_message(response)
+
     def __mapping__(self) -> Dict[str, grpclib.const.Handler]:
         return {
             "/tendermint.abci.ABCIApplication/Echo": grpclib.const.Handler(
@@ -1042,5 +1153,23 @@ class AbciApplicationBase(ServiceBase):
                 grpclib.const.Cardinality.UNARY_UNARY,
                 RequestEthQuery,
                 ResponseEthQuery,
+            ),
+            "/tendermint.abci.ABCIApplication/PreBeginBlock": grpclib.const.Handler(
+                self.__rpc_pre_begin_block,
+                grpclib.const.Cardinality.UNARY_UNARY,
+                RequestPreBeginBlock,
+                ResponsePrefetch,
+            ),
+            "/tendermint.abci.ABCIApplication/PreDeliverTx": grpclib.const.Handler(
+                self.__rpc_pre_deliver_tx,
+                grpclib.const.Cardinality.UNARY_UNARY,
+                RequestPreDeliverTx,
+                ResponsePrefetch,
+            ),
+            "/tendermint.abci.ABCIApplication/PreCommit": grpclib.const.Handler(
+                self.__rpc_pre_commit,
+                grpclib.const.Cardinality.UNARY_UNARY,
+                RequestPreCommit,
+                ResponsePrefetch,
             ),
         }

@@ -15,10 +15,11 @@ from greenfield_python_sdk.blockchain.sp import Sp
 from greenfield_python_sdk.blockchain.storage import Storage
 from greenfield_python_sdk.blockchain.tendermint import Tendermint
 from greenfield_python_sdk.blockchain.utils import CustomChannel
+from greenfield_python_sdk.blockchain.virtual_group import VirtualGroup
 from greenfield_python_sdk.config import NetworkConfiguration
 from greenfield_python_sdk.key_manager import KeyManager
 from greenfield_python_sdk.models.broadcast import BroadcastMode
-from greenfield_python_sdk.models.eip712_messages.storage.bucket_url import CREATE_BUCKET
+from greenfield_python_sdk.models.eip712_messages.storage.bucket_url import CREATE_BUCKET, MIGRATE_BUCKET
 from greenfield_python_sdk.models.eip712_messages.storage.object_url import CREATE_OBJECT
 from greenfield_python_sdk.models.transaction import BroadcastOption
 from greenfield_python_sdk.protos.cosmos.base.v1beta1 import Coin
@@ -65,6 +66,7 @@ class BlockchainClient:
         self.permission = Permission(self.channel)
         self.sp = Sp(self.channel)
         self.storage = Storage(self.channel)
+        self.virtual_group = VirtualGroup(self.channel)
 
         # Initialize Cosmos-SDK
         self.cosmos = Cosmos(self.channel)
@@ -96,6 +98,10 @@ class BlockchainClient:
         if type_url == CREATE_BUCKET or type_url == CREATE_OBJECT:  # TODO: Move to other place
             sp_approval = base64.b64decode(message.primary_sp_approval.sig)
             message.primary_sp_approval.sig = bytes(sp_approval)
+
+        if type_url == MIGRATE_BUCKET:
+            sp_approval = base64.b64decode(message.dst_primary_sp_approval.sig)
+            message.dst_primary_sp_approval.sig = bytes(sp_approval)
 
         wrapped_message = AnyMessage(
             type_url=type_url,

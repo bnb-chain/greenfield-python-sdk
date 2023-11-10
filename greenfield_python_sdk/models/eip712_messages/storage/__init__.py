@@ -5,6 +5,7 @@ from greenfield_python_sdk.models.eip712_messages.storage import (
     msg_delete_bucket,
     msg_delete_object,
     msg_delete_policy,
+    msg_migrate_bucket,
     msg_mirror_bucket,
     msg_mirror_group,
     msg_mirror_object,
@@ -15,6 +16,7 @@ from greenfield_python_sdk.models.eip712_messages.storage import (
 from greenfield_python_sdk.models.eip712_messages.storage.bucket_url import (
     CREATE_BUCKET,
     DELETE_BUCKET,
+    MIGRATE_BUCKET,
     UPDATE_BUCKET_INFO,
 )
 from greenfield_python_sdk.models.eip712_messages.storage.object_url import (
@@ -30,6 +32,7 @@ TYPES_MAP = {
     CREATE_OBJECT: msg_create_object.TYPES,
     DELETE_OBJECT: msg_delete_object.TYPES,
     UPDATE_OBJECT_INFO: msg_update_object_info.TYPES,
+    MIGRATE_BUCKET: msg_migrate_bucket.TYPES,
     CREATE_BUCKET: msg_create_bucket.TYPES,
     DELETE_BUCKET: msg_delete_bucket.TYPES,
     UPDATE_BUCKET_INFO: msg_update_bucket_info.TYPES,

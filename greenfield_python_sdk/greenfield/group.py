@@ -2,14 +2,27 @@ from datetime import datetime, timezone
 from typing import List, Optional
 
 from greenfield_python_sdk.blockchain_client import BlockchainClient
+from greenfield_python_sdk.models.bucket import EndPointOptions
 from greenfield_python_sdk.models.eip712_messages.group.group_url import (
     CREATE_GROUP,
     DELETE_GROUP,
     LEAVE_GROUP,
+    RENEW_GROUP_MEMEBER,
     UPDATE_GROUP_MEMBER,
 )
 from greenfield_python_sdk.models.eip712_messages.storage.policy_url import DELETE_POLICY, PUT_POLICY
-from greenfield_python_sdk.models.group import CreateGroupOptions, GroupsResult, ListGroupsOptions
+from greenfield_python_sdk.models.group import (
+    CreateGroupOptions,
+    GroupMembersPaginationOptions,
+    GroupMembersResult,
+    GroupsOwnerPaginationOptions,
+    GroupsPaginationOptions,
+    GroupsResult,
+    ListGroupsByGroupIDResponse,
+    ListGroupsOptions,
+    RenewGroupMemberOption,
+    UpdateGroupMemberOption,
+)
 from greenfield_python_sdk.models.request import Principal, PutPolicyOption, ResourceType
 from greenfield_python_sdk.protos.greenfield.permission import ActionType, Effect, Policy, PrincipalType, Statement
 from greenfield_python_sdk.protos.greenfield.resource import ResourceType as UserType
@@ -21,6 +34,7 @@ from greenfield_python_sdk.protos.greenfield.storage import (
     MsgGroupMember,
     MsgLeaveGroup,
     MsgPutPolicy,
+    MsgRenewGroupMember,
     MsgUpdateGroupMember,
     QueryHeadGroupMemberRequest,
     QueryHeadGroupRequest,
@@ -43,7 +57,6 @@ class Group:
         msg_create_group = MsgCreateGroup(
             creator=self.storage_client.key_manager.address,
             group_name=group_name,
-            # members=opts.init_group_members,
             extra=opts.extra,
         )
         tx_hash = await self.blockchain_client.broadcast_message(message=msg_create_group, type_url=CREATE_GROUP)
@@ -63,6 +76,7 @@ class Group:
         group_owner: str,
         add_addresses: List[str],
         remove_addresses: List[str],
+        opts: UpdateGroupMemberOption,
     ) -> str:
         group_owner = check_address(group_owner)
         if group_name == "":
@@ -72,11 +86,16 @@ class Group:
 
         add_members = []
 
-        for address in add_addresses:
+        for index, address in enumerate(add_addresses):
+            check_address(address)
+            if opts.expiration_time != None and opts.expiration_time[index] != None:
+                expiration_time = opts.expiration_time[index]
+            else:
+                expiration_time = datetime(2099, 12, 31, 23, 59, 59, tzinfo=timezone.utc)
             add_members.append(
                 MsgGroupMember(
-                    member=check_address(address),
-                    expiration_time=datetime(2099, 12, 31, 23, 59, 59, tzinfo=timezone.utc),
+                    member=address,
+                    expiration_time=expiration_time,
                 )
             )
 
@@ -177,6 +196,55 @@ class Group:
     async def list_group(self, name: str, prefix: str, opts: ListGroupsOptions) -> List[GroupsResult]:
         list_group = await self.storage_client.group.list_group(name, prefix, opts)
         return list_group
+
+    async def renew_group_member(
+        self, group_owner_addr: str, group_name: str, member_addresses: List[str], opts: RenewGroupMemberOption
+    ):
+        group_owner_addr = check_address(group_owner_addr)
+        if group_name == "":
+            raise ValueError("Group name cannot be empty")
+
+        if opts.expiration_time != None and len(member_addresses) != len(opts.expiration_time):
+            raise ValueError("Please provide expirationTime for every new add member")
+
+        members = []
+        for index, addr in enumerate(member_addresses):
+            check_address(addr)
+            if opts.expiration_time != None and opts.expiration_time[index] != None:
+                expiration_time = opts.expiration_time[index]
+            else:
+                expiration_time = datetime(2099, 12, 31, 23, 59, 59, tzinfo=timezone.utc)
+
+            members.append(
+                MsgGroupMember(
+                    member=check_address(addr),
+                    expiration_time=expiration_time,
+                )
+            )
+        msg_renew_group_member = MsgRenewGroupMember(
+            operator=self.storage_client.key_manager.address,
+            group_owner=group_owner_addr,
+            group_name=group_name,
+            members=members,
+        )
+        tx_hash = await self.blockchain_client.broadcast_message(
+            message=msg_renew_group_member, type_url=RENEW_GROUP_MEMEBER
+        )
+        return tx_hash
+
+    async def list_group_members(self, group_id: int, opts: GroupMembersPaginationOptions) -> GroupMembersResult:
+        return await self.storage_client.group.list_group_members(group_id, opts)
+
+    async def list_groups_by_account(self, opts: GroupsPaginationOptions) -> GroupMembersResult:
+        return await self.storage_client.group.list_groups_by_account(opts)
+
+    async def list_groups_by_owner(self, opts: GroupsOwnerPaginationOptions) -> GroupMembersResult:
+        return await self.storage_client.group.list_groups_by_owner(opts)
+
+    async def list_groups_by_group_id(
+        self, group_ids: List[int], opts: EndPointOptions
+    ) -> List[ListGroupsByGroupIDResponse]:
+        return await self.storage_client.group.list_groups_by_group_id(group_ids, opts)
 
     def prepare_policy(self, policy: Policy) -> Policy:
         if policy == None:

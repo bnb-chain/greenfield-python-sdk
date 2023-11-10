@@ -2,21 +2,26 @@ import base64
 import binascii
 import io
 import json
+import re
 from datetime import datetime, timedelta
 from typing import Any, List, Tuple
 
 import html_to_json
 
+from greenfield_python_sdk.models.bucket import EndPointOptions
 from greenfield_python_sdk.models.const import CREATE_OBJECT_ACTION
 from greenfield_python_sdk.models.object import (
     CreateObjectOptions,
     GetObjectOption,
+    ListObjectPoliciesOptions,
     ListObjectsOptions,
     ListObjectsResult,
+    ObjectMeta,
     PutObjectOptions,
 )
 from greenfield_python_sdk.models.request import RequestMeta, SendOptions
 from greenfield_python_sdk.protos.greenfield.common import Approval
+from greenfield_python_sdk.protos.greenfield.permission import ActionType
 from greenfield_python_sdk.protos.greenfield.storage import MsgCreateObject, ObjectInfo, RedundancyType, VisibilityType
 from greenfield_python_sdk.storage_provider.request import Client
 from greenfield_python_sdk.storage_provider.utils import (
@@ -32,7 +37,7 @@ from greenfield_python_sdk.storage_provider.utils import (
 
 
 class Object:
-    def __init__(self, client: Client) -> MsgCreateObject:
+    def __init__(self, client: Client):
         self.client = client
 
     async def get_object_approval(
@@ -150,8 +155,8 @@ class Object:
         self,
         bucket_name: str,
         object_name: str,
+        primary_sp_address: str,
         opts: GetObjectOption,
-        primary_sp_address,
     ) -> Tuple[Any, ObjectInfo]:
         check_valid_bucket_name(bucket_name)
         check_valid_object_name(object_name)
@@ -177,7 +182,9 @@ class Object:
         res = await response.text()
         return info, res
 
-    async def list_objects(self, bucket_name: str, opts: ListObjectsOptions, primary_sp_address) -> ListObjectsResult:
+    async def list_objects(
+        self, bucket_name: str, primary_sp_address: str, opts: ListObjectsOptions
+    ) -> ListObjectsResult:
         check_valid_bucket_name(bucket_name)
 
         if opts.max_keys == 0 or opts.max_keys == None:
@@ -209,7 +216,6 @@ class Object:
 
         base_url = await self.client._get_sp_url_by_addr(primary_sp_address, bucket_name)
         request_metadata = RequestMeta(
-            bucket_name=bucket_name,
             base_url=base_url,
             disable_close_body=True,
         ).model_dump()
@@ -268,3 +274,53 @@ class Object:
         )
         signed_raw_msg = response.headers.get("X-Gnfd-Signed-Msg")
         return binascii.unhexlify(signed_raw_msg)
+
+    async def list_object_by_object_id(self, object_ids: List[int], opts: EndPointOptions) -> List[ObjectMeta]:
+        maximum_list_objects_size = 100
+        if len(object_ids) == 0 and len(object_ids) > maximum_list_objects_size:
+            raise ValueError("object_ids must be less than or equal to 100")
+
+        query_parameters = {"objects-query": "", "ids": ",".join([str(i) for i in object_ids])}
+        base_url = await self.client.get_url(opts.endpoint, opts.sp_address)
+
+        request_metadata = RequestMeta(disable_close_body=True, query_parameters=query_parameters).model_dump()
+
+        response = await self.client.prepare_request(
+            base_url,
+            request_metadata,
+            request_metadata["query_parameters"],
+        )
+        list_object = html_to_json.convert(await response.text())["gfsplistobjectsbyidsresponse"][0]["objectentry"]
+        current_object = []
+
+        if "value" in list_object[0]:
+            for _, object in enumerate(list_object):
+                converted_data_list = {
+                    convert_key(key): convert_value(key, value) if value[0] else "" for key, value in object.items()
+                }
+                current_object.append(ObjectMeta(**converted_data_list["value"]))
+
+        return current_object
+
+    async def list_object_policies(
+        self, object_name: str, bucket_name: str, action_type: ActionType, opts: ListObjectPoliciesOptions
+    ):
+        # TODO: finish implementation
+        query_parameters = {
+            "object-policies": "",
+            "start-after": opts.start_after,
+            "limit": int(opts.limit),
+            "action-type": action_type,
+        }
+        base_url = await self.client.get_url(opts.endpoint, opts.sp_address)
+
+        request_metadata = RequestMeta(
+            disable_close_body=True, query_parameters=query_parameters, bucket_name=bucket_name, object_name=object_name
+        ).model_dump()
+        response = await self.client.prepare_request(
+            base_url,
+            request_metadata,
+            request_metadata["query_parameters"],
+        )
+        list_policies = html_to_json.convert(await response.text())
+        raise NotImplementedError

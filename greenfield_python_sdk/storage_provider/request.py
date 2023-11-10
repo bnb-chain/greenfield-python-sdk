@@ -1,4 +1,5 @@
 import logging
+import re
 import urllib.request
 from typing import Any, Dict, Optional, Union
 from urllib.parse import urlparse
@@ -81,6 +82,14 @@ class Client:
         else:
             raise KeyError(f"Address {address} not found in sp_endpoints")
 
+    async def _get_sp_url_by_id(self, id: int) -> str:
+        if self.sp_endpoints:
+            for key in self.sp_endpoints:
+                if self.sp_endpoints[key]["id"] == id:
+                    return self.sp_endpoints[key]["endpoint"]
+        else:
+            raise KeyError(f"Id {id} not found in sp_endpoints")
+
     async def _get_in_service_sp(self):
         if self.sp_endpoints:
             return self.sp_endpoints[list(self.sp_endpoints.keys())[0]]["endpoint"]
@@ -108,6 +117,7 @@ class Client:
             query_parameters=query_parameters,
             is_admin_api=is_admin_api,
             object_name=request_metadata["object_name"],
+            bucket_name=request_metadata["bucket_name"],
         )
         request_metadata["url"] = url
 
@@ -123,6 +133,16 @@ class Client:
         headers = await generate_headers(metadata=request_metadata, key_manager=self.key_manager)
 
         return await self.fetch(method=request_metadata["method"], url=url, headers=headers, data=body)
+
+    async def get_url(self, endpoint: str, sp_address: str) -> str:
+        if endpoint == "" and sp_address == "":
+            return await self._get_in_service_sp()
+        elif endpoint != "":
+            if bool(re.search(r"^(https?://)", endpoint)) is False:
+                return "https://" + endpoint
+            return endpoint
+        elif sp_address != "":
+            return await self._get_sp_url_by_addr(sp_address)
 
     async def __aexit__(self, exc_type, exc, tb):
         await self.close()

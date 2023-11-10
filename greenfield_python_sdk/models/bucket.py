@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Optional
+from typing import List, Optional
 
 from pydantic import BaseModel
 from pydantic.dataclasses import dataclass
@@ -127,3 +127,62 @@ class CreateBucketOptions(BaseModel):
     payment_address: Optional[str] = ""
     primary_sp_approval: Optional[Approval] = Approval(expired_height=0)
     visibility: Optional[VisibilityType] = VisibilityType.VISIBILITY_TYPE_UNSPECIFIED
+
+
+class ListBucketsByBucketIDResponse(BaseModel):
+    bucket_info: BucketInfo = None
+    removed: bool = None
+    delete_at: int = None
+    delete_reason: str = None
+    operator: str = None
+    create_tx_hash: str = None
+    update_tx_hash: str = None
+    update_at: int = None
+    update_time: int = None
+
+
+class EndPointOptions(BaseModel):
+    endpoint: Optional[str] = ""
+    sp_address: Optional[str] = ""
+
+
+class MigrateBucketOptions(BaseModel):
+    is_async_mode: Optional[bool] = None
+
+
+class CancelMigrateBucketOptions(BaseModel):
+    proposal_deposit_amount: Optional[int] = None
+    proposal_title: Optional[str] = None
+    proposal_summary: Optional[str] = None
+    proposal_metadata: Optional[str] = None
+    is_async_mode: Optional[bool] = None
+
+
+class ListBucketsByPaymentAccountOptions(BaseModel):
+    endpoint: Optional[str] = ""
+    sp_address: Optional[str] = ""
+
+
+class ListBucketsByPaymentAccountResponse(BaseModel):
+    bucket_info: BucketInfo = None
+    removed: bool = None
+    delete_at: int = None
+    delete_reason: str = None
+    operator: str = None
+    create_tx_hash: str = None
+    update_tx_hash: str = None
+    update_at: int = None
+    update_time: int = None
+
+
+class GetBucketMeta(BaseModel):
+    bucket_info: BucketInfo = None
+    removed: bool = None
+    delete_at: int = None
+    delete_reason: str = None
+    operator: str = None
+    create_tx_hash: str = None
+    update_tx_hash: str = None
+    update_at: int = None
+    update_time: int = None
+    vgf: GlobalVirtualGroupFamily = None

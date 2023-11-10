@@ -13,6 +13,8 @@ Greenfield Python SDK is a Python package for interacting with the Greenfield AP
 
 It provides an asynchronous client that can be used to interact with the Greenfield blockchain API and the Greenfield storage provider.
 
+This SDK support latest Greenfield Mainnet version (v1.0.0).
+
 ## Installation
 
 First you will need to `generate a shared library` to be able to use the object module.
