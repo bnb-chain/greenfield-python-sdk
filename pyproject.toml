@@ -42,7 +42,7 @@ pytest = "*"
 pytest-cov = "*"
 pytest-asyncio = "*"
 coverage = "*"
-pytest-mock = "3.11.1"
+pytest-mock = "3.12.0"
 
 [tool.pytest.ini_options]
 markers = [
