@@ -8,6 +8,7 @@ from greenfield_python_sdk import (
     get_account_configuration,
 )
 from greenfield_python_sdk.greenfield.account import Coin
+from greenfield_python_sdk.models.basic import ResultBlockResults, ResultCommit, ResultStatus
 from greenfield_python_sdk.protos.cosmos.bank.v1beta1 import MsgSend
 from greenfield_python_sdk.protos.cosmos.base.query.v1beta1 import PageResponse as PaginationResponse
 from greenfield_python_sdk.protos.cosmos.base.tendermint.v1beta1 import (
@@ -49,8 +50,8 @@ async def test_get_latest_block():
 
 async def test_get_syncing():
     async with GreenfieldClient(network_configuration=network_configuration, key_manager=key_manager) as client:
-        with pytest.raises(NotImplementedError):
-            await client.basic.get_syncing()
+        response = await client.basic.get_syncing()
+        assert isinstance(response, bool)
 
 
 async def test_get_block_by_height():
@@ -61,13 +62,42 @@ async def test_get_block_by_height():
         assert isinstance(response, GetBlockByHeightResponse)
 
 
-async def test_get_latest_validator_set():
+async def test_get_validator_set():
     async with GreenfieldClient(network_configuration=network_configuration, key_manager=key_manager) as client:
-        validators, pagination_response = await client.basic.get_latest_validator_set()
+        block_height, validators = await client.basic.get_validator_set()
         assert validators
         assert isinstance(validators, list)
         assert isinstance(validators[0], Validator)
-        assert isinstance(pagination_response, PaginationResponse)
+        assert isinstance(block_height, int)
+
+
+async def test_get_status():
+    async with GreenfieldClient(network_configuration=network_configuration, key_manager=key_manager) as client:
+        response = await client.basic.get_status()
+        assert response
+        assert isinstance(response, ResultStatus)
+
+
+async def test_get_commit():
+    async with GreenfieldClient(network_configuration=network_configuration, key_manager=key_manager) as client:
+        response = await client.basic.get_commit(height=1)
+        assert response
+        assert isinstance(response, ResultCommit)
+
+
+async def test_get_block_result_by_height():
+    async with GreenfieldClient(network_configuration=network_configuration, key_manager=key_manager) as client:
+        response = await client.basic.get_block_result_by_height(height=1)
+        assert response
+        assert isinstance(response, ResultBlockResults)
+
+
+async def test_get_validators_by_height():
+    async with GreenfieldClient(network_configuration=network_configuration, key_manager=key_manager) as client:
+        response = await client.basic.get_validators_by_height(height=1)
+        assert response
+        assert isinstance(response, list)
+        assert isinstance(response[0], Validator)
 
 
 @pytest.mark.slow

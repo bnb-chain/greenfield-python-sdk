@@ -267,7 +267,7 @@ class GroupInfo(betterproto.Message):
     group_name: str = betterproto.string_field(2)
     """group_name is the name of group which is unique under an account."""
 
-    source_type: "SourceType" = betterproto.enum_field(3)
+    source_type: SourceType = betterproto.enum_field(3)
     """source_type"""
 
     id: str = betterproto.string_field(4)

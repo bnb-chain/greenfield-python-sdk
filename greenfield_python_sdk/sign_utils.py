@@ -19,11 +19,16 @@ from greenfield_python_sdk.__version__ import __version__
 from greenfield_python_sdk.key_manager import KeyManager
 from greenfield_python_sdk.models.eip712_messages import TYPES_MAP, URL_TO_PROTOS_TYPE_MAP
 from greenfield_python_sdk.models.eip712_messages.base import BASE_TYPES
-from greenfield_python_sdk.models.eip712_messages.group.group_url import CREATE_GROUP, UPDATE_GROUP_MEMBER
+from greenfield_python_sdk.models.eip712_messages.group.group_url import (
+    CREATE_GROUP,
+    RENEW_GROUP_MEMEBER,
+    UPDATE_GROUP_MEMBER,
+)
 from greenfield_python_sdk.models.eip712_messages.proposal.proposal_url import VOTE
 from greenfield_python_sdk.models.eip712_messages.sp.sp_url import (
     COSMOS_GRANT,
     CREATE_STORAGE_PROVIDER,
+    UPDATE_SP_STATUS,
     UPDATE_SP_STORAGE_PRICE,
 )
 from greenfield_python_sdk.models.eip712_messages.staking.staking_url import (
@@ -31,7 +36,7 @@ from greenfield_python_sdk.models.eip712_messages.staking.staking_url import (
     EDIT_VALIDATOR,
     STAKE_AUTHORIZATION,
 )
-from greenfield_python_sdk.models.eip712_messages.storage.bucket_url import CREATE_BUCKET
+from greenfield_python_sdk.models.eip712_messages.storage.bucket_url import CREATE_BUCKET, MIGRATE_BUCKET
 from greenfield_python_sdk.models.eip712_messages.storage.object_url import CREATE_OBJECT
 from greenfield_python_sdk.models.eip712_messages.storage.policy_url import DELETE_POLICY, PUT_POLICY
 from greenfield_python_sdk.models.storage_provider import Any
@@ -39,6 +44,7 @@ from greenfield_python_sdk.models.transaction import BroadcastOption
 from greenfield_python_sdk.protos.cosmos.gov.v1 import VoteOption
 from greenfield_python_sdk.protos.cosmos.tx.v1beta1 import Tx
 from greenfield_python_sdk.protos.greenfield.permission import ActionType, Effect, PrincipalType
+from greenfield_python_sdk.protos.greenfield.sp import Status
 from greenfield_python_sdk.protos.greenfield.storage import RedundancyType, VisibilityType
 
 IGNORED_TYPES = [
@@ -371,6 +377,10 @@ async def get_signature(
         if len(message.members_to_add) == 0:
             tx_message.msg1.pop("members_to_add")
 
+    if tx.body.messages[0].type_url == RENEW_GROUP_MEMEBER:
+        for i, members in enumerate(tx_message.msg1["members"]):
+            members["expiration_time"] = message.members[i].expiration_time.strftime("%Y-%m-%dT%H:%M:%SZ")
+
     if hasattr(message, "statements"):
         del tx_message.msg1["statements"][0]["limit_size"]
         if not tx_message.msg1["statements"][0]["resources"]:
@@ -438,9 +448,17 @@ def set_message(url, message, broadcast_option: Optional[BroadcastOption] = None
     if url == CREATE_BUCKET:
         message.primary_sp_approval.sig = bytes(broadcast_option.sp_signature, "utf-8")
 
+    if url == MIGRATE_BUCKET:
+        message.dst_primary_sp_approval.sig = bytes(broadcast_option.sp_signature, "utf-8")
+
     if url == VOTE:
         if isinstance(message.option, VoteOption) == True:
             message.option = VoteOption(message.option).name
+
+    if url == UPDATE_SP_STATUS:
+        if isinstance(message.status, Status) == True:
+            message.status = Status(message.status).name
+            message.duration = str(message.duration)
 
     if hasattr(message, "visibility"):
         if isinstance(message.visibility, VisibilityType) == True:

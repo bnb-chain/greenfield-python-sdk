@@ -1,14 +1,24 @@
+from datetime import datetime, timedelta
+from typing import List
+
+import html_to_json
 from eth_utils import to_checksum_address
 
 from greenfield_python_sdk.blockchain_client import BlockchainClient
+from greenfield_python_sdk.models.payment import ListUserPaymentAccountsOptions, ListUserPaymentAccountsResult
+from greenfield_python_sdk.models.request import RequestMeta
+from greenfield_python_sdk.protos.cosmos.base.query.v1beta1 import PageResponse as PaginationResponse
 from greenfield_python_sdk.protos.greenfield.payment import (
     MsgDeposit,
     MsgDisableRefund,
     MsgWithdraw,
+    PaymentAccount,
     QueryGetStreamRecordRequest,
+    QueryPaymentAccountsRequest,
     StreamRecord,
 )
 from greenfield_python_sdk.storage_client import StorageClient
+from greenfield_python_sdk.storage_provider.utils import convert_key, convert_value
 
 
 class Payment:
@@ -63,3 +73,43 @@ class Payment:
         )
 
         return tx
+
+    async def list_user_payment_accounts(self, opts: ListUserPaymentAccountsOptions) -> ListUserPaymentAccountsResult:
+        query_parameters = {
+            "user-payments": "",
+        }
+        account = opts.account
+        if account == "":
+            account = self.storage_client.key_manager.address
+
+        expiry = (datetime.utcnow() + timedelta(seconds=1000)).strftime("%Y-%m-%dT%H:%M:%SZ")
+        base_url = await self.storage_client.client.get_url(opts.endpoint, opts.sp_address)
+        request_metadata = RequestMeta(
+            disable_close_body=True,
+            user_address=account,
+            query_parameters=query_parameters,
+            base_url=base_url,
+            expiry_timestamp=expiry,
+        ).model_dump()
+        response = await self.storage_client.client.prepare_request(
+            base_url,
+            request_metadata,
+            request_metadata["query_parameters"],
+        )
+        list_payment_accounts = html_to_json.convert(await response.text())["gfsplistuserpaymentaccountsresponse"][0]
+
+        if "paymentaccounts" in list_payment_accounts:
+            converted_data_list = {
+                convert_key(key): convert_value(key, value) if value[0] else ""
+                for key, value in list_payment_accounts["paymentaccounts"][0].items()
+            }
+            fields = ["netflow_rate", "static_balance", "buffer_balance", "lock_balance", "frozen_netflow_rate"]
+            for field in fields:
+                converted_data_list["stream_record"][field] = str(converted_data_list["stream_record"][field])
+            return ListUserPaymentAccountsResult(**converted_data_list)
+        return ListUserPaymentAccountsResult()
+
+    async def get_all_payment_accounts(self, pagination: PaginationResponse = None) -> List["PaymentAccount"]:
+        request = QueryPaymentAccountsRequest(pagination)
+        response = await self.blockchain_client.payment.get_payment_accounts(request)
+        return response.payment_accounts

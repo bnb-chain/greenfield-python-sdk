@@ -1,20 +1,26 @@
-from typing import List
-
-from betterproto import Casing
+from typing import List, Tuple
 
 from greenfield_python_sdk.blockchain_client import BlockchainClient
 from greenfield_python_sdk.key_manager import KeyManager
 from greenfield_python_sdk.models.bucket import (
+    CancelMigrateBucketOptions,
     CreateBucketOptions,
+    EndPointOptions,
+    GetBucketMeta,
     ListBucketInfo,
     ListBucketReadRecord,
+    ListBucketsByBucketIDResponse,
+    ListBucketsByPaymentAccountOptions,
+    ListBucketsByPaymentAccountResponse,
     ListReadRecordOptions,
+    MigrateBucketOptions,
     ReadQuota,
     UpdateBucketOptions,
 )
 from greenfield_python_sdk.models.eip712_messages.storage.bucket_url import (
     CREATE_BUCKET,
     DELETE_BUCKET,
+    MIGRATE_BUCKET,
     UPDATE_BUCKET_INFO,
 )
 from greenfield_python_sdk.models.eip712_messages.storage.policy_url import DELETE_POLICY, PUT_POLICY
@@ -236,3 +242,28 @@ class Bucket:
     async def get_bucket_read_quota(self, bucket_name: str) -> ReadQuota:
         sp = await self.blockchain_client.sp.get_first_in_service_storage_provider()
         return await self.storage_client.bucket.get_bucket_read_quota(bucket_name, sp["operator_address"])
+
+    async def list_buckets_by_bucket_id(
+        self, bucket_id: List[int], opts: EndPointOptions
+    ) -> List[ListBucketsByBucketIDResponse]:
+        return await self.storage_client.bucket.list_buckets_by_bucket_id(bucket_id, opts)
+
+    async def migrate_bucket(self, bucket_name: str, dst_primary_sp_id: int, opts: MigrateBucketOptions) -> str:
+        get_approval, sp_signature = await self.storage_client.bucket.get_migrate_bucket_approval(
+            bucket_name, dst_primary_sp_id, opts
+        )
+        tx_hash = await self.blockchain_client.broadcast_message(
+            message=get_approval, type_url=MIGRATE_BUCKET, broadcast_option=BroadcastOption(sp_signature=sp_signature)
+        )
+        return tx_hash
+
+    async def cancel_migrate_bucket(self, bucket_name: str, opts: CancelMigrateBucketOptions) -> Tuple[int, str]:
+        raise NotImplementedError
+
+    async def list_bucket_by_payment_account(
+        self, payment_account: str, opts: ListBucketsByPaymentAccountOptions
+    ) -> List[ListBucketsByPaymentAccountResponse]:
+        return await self.storage_client.bucket.list_bucket_by_payment_account(payment_account, opts)
+
+    async def get_bucket_meta(self, bucket_name: str, opts: EndPointOptions) -> GetBucketMeta:
+        return await self.storage_client.bucket.get_bucket_meta(bucket_name, opts)

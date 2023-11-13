@@ -1,3 +1,5 @@
+import base64
+
 import pytest
 
 from greenfield_python_sdk import (
@@ -75,7 +77,7 @@ async def test_get_all_payment_accounts_pagination():
 
         # Test pagination limit + next_key
         accounts_1, pagination_response_1 = await client.account.get_all_payment_accounts(
-            pagination=PaginationParams(limit=3, key=pagination_response_0.next_key)
+            pagination=PaginationParams(limit=3, key=base64.b64encode(bytes(pagination_response_0.next_key, "utf-8")))
         )
 
         assert accounts_1

@@ -18,6 +18,7 @@ from greenfield_python_sdk.greenfield.payment import Payment
 from greenfield_python_sdk.greenfield.proposal import Proposal
 from greenfield_python_sdk.greenfield.storage_provider import StorageProvider
 from greenfield_python_sdk.greenfield.validator import Validator
+from greenfield_python_sdk.greenfield.virtual_group import VirtualGroup
 from greenfield_python_sdk.key_manager import Account, KeyManager
 from greenfield_python_sdk.storage_client import StorageClient
 
@@ -40,6 +41,7 @@ class GreenfieldClient:
     proposal: Proposal
     storage_provider: StorageProvider
     validator: Validator
+    virtual_group: VirtualGroup
 
     def __init__(
         self,
@@ -78,6 +80,7 @@ class GreenfieldClient:
         self.proposal = Proposal(self.blockchain_client, self.storage_client)
         self.storage_provider = StorageProvider(self.blockchain_client, self.key_manager, self.storage_client)
         self.validator = Validator(self.blockchain_client, self.storage_client, self.basic, self.account)
+        self.virtual_group = VirtualGroup(self.blockchain_client, self.key_manager)
 
         return self
 

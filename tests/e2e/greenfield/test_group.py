@@ -13,8 +13,18 @@ from greenfield_python_sdk import (
     get_account_configuration,
 )
 from greenfield_python_sdk.greenfield.account import Coin
-from greenfield_python_sdk.models.bucket import CreateBucketOptions
-from greenfield_python_sdk.models.group import CreateGroupOptions, ListGroupsOptions
+from greenfield_python_sdk.models.bucket import CreateBucketOptions, EndPointOptions
+from greenfield_python_sdk.models.group import (
+    CreateGroupOptions,
+    GroupMembersPaginationOptions,
+    GroupMembersResult,
+    GroupsMembers,
+    GroupsOwnerPaginationOptions,
+    GroupsPaginationOptions,
+    ListGroupsOptions,
+    RenewGroupMemberOption,
+    UpdateGroupMemberOption,
+)
 from greenfield_python_sdk.models.object import CreateObjectOptions, PutObjectOptions
 from greenfield_python_sdk.models.request import Principal, PutPolicyOption
 from greenfield_python_sdk.protos.greenfield.permission import ActionType, Effect, PrincipalType, Statement
@@ -36,6 +46,16 @@ async def test_create_group():
     config = get_account_configuration()
     key_manager = KeyManager(private_key=config.private_key)
     async with GreenfieldClient(network_configuration=network_configuration, key_manager=key_manager) as client:
+        list_groups_by_account = await client.group.list_groups_by_owner(GroupsOwnerPaginationOptions())
+        if "group" in list_groups_by_account:
+            groups = [group.group.group_name for group in list_groups_by_account]
+            for group_name in groups:
+                tx_hash = await client.group.delete_group(
+                    group_name,
+                )
+                assert tx_hash
+                await client.basic.wait_for_tx(hash=tx_hash)
+
         group_name = "".join(random.choices(string.ascii_lowercase + string.digits, k=random.randint(5, 11)))
         await client.async_init()
 
@@ -47,9 +67,21 @@ async def test_create_group():
         assert isinstance(tx_hash, str)
         await client.basic.wait_for_tx(hash=tx_hash)
 
-        group_head = await client.group.get_group_head(group_name=group_name, group_owner=key_manager.address)
+        group_head = await client.group.get_group_head(group_name, group_owner=key_manager.address)
         assert group_head.group_name == group_name
         assert group_head.owner == key_manager.address
+
+        list_groups_by_owner = await client.group.list_groups_by_owner(GroupsOwnerPaginationOptions())
+        assert list_groups_by_owner
+        assert isinstance(list_groups_by_owner, list)
+        assert len(list_groups_by_owner) == 1
+        assert list_groups_by_owner[0].group.group_name == group_name
+
+        list_groups_by_group_id = await client.group.list_groups_by_group_id([group_head.id], EndPointOptions())
+        assert list_groups_by_group_id
+        assert isinstance(list_groups_by_group_id, list)
+        assert len(list_groups_by_group_id) == 1
+        assert list_groups_by_group_id[0].group.group_name == group_name
 
         tx_hash = await client.group.delete_group(group_name=group_name)
         assert tx_hash
@@ -79,6 +111,7 @@ async def test_add_group_members():
             group_owner=key_manager.address,
             add_addresses=[key_manager.address],
             remove_addresses=[],
+            opts=UpdateGroupMemberOption(),
         )
         assert tx_hash
         assert len(tx_hash) == 64
@@ -89,6 +122,32 @@ async def test_add_group_members():
             group_name=group_name, group_owner=key_manager.address, head_member=key_manager.address
         )
         assert group_member_head == True
+
+        tx_hash = await client.group.renew_group_member(
+            group_owner_addr=key_manager.address,
+            group_name=group_name,
+            member_addresses=[key_manager.address],
+            opts=RenewGroupMemberOption(),
+        )
+        assert tx_hash
+        assert len(tx_hash) == 64
+        assert isinstance(tx_hash, str)
+        await client.basic.wait_for_tx(hash=tx_hash)
+
+        group_head = await client.group.get_group_head(group_name, group_owner=key_manager.address)
+        assert group_head.group_name == group_name
+        assert group_head.owner == key_manager.address
+
+        list_group_members = await client.group.list_group_members(group_head.id, GroupMembersPaginationOptions())
+        assert list_group_members
+        assert isinstance(list_group_members, list)
+        assert isinstance(list_group_members[0], GroupsMembers)
+        assert list_group_members[0].group.group_name == group_name
+
+        group_by_account = await client.group.list_groups_by_account(GroupsPaginationOptions())
+        assert group_by_account
+        assert isinstance(group_by_account, list)
+        assert group_by_account[0].group.group_name == group_name
 
         tx_hash = await client.group.leave_group(group_name=group_name, group_owner=key_manager.address)
         assert tx_hash

@@ -14,11 +14,12 @@ from greenfield_python_sdk import (
     NetworkTestnet,
     get_account_configuration,
 )
-from greenfield_python_sdk.models.bucket import CreateBucketOptions
+from greenfield_python_sdk.models.bucket import CreateBucketOptions, EndPointOptions
 from greenfield_python_sdk.models.object import (
     CreateObjectOptions,
     GetObjectOption,
     ListObjectsOptions,
+    ObjectMeta,
     PutObjectOptions,
 )
 from greenfield_python_sdk.models.request import Principal, PutPolicyOption
@@ -58,12 +59,21 @@ async def test_create_object():
             list_object = await client.object.list_objects(bucket_name, ListObjectsOptions())
             if list_object.key_count > 0:
                 for object in list_object.objects:
-                    tx_hash = await client.object.delete_object(
-                        bucket_name,
-                        object.object_name,
-                    )
-                    assert tx_hash
-                    await client.basic.wait_for_tx(hash=tx_hash)
+                    try:
+                        tx_hash = await client.object.delete_object(
+                            bucket_name,
+                            object.object_name,
+                        )
+                        assert tx_hash
+                        await client.basic.wait_for_tx(hash=tx_hash)
+                    except Exception as e:
+                        if "Object not sealed" in str(e):
+                            tx_hash = await client.object.cancel_create_object(
+                                bucket_name,
+                                object.object_name,
+                            )
+                            assert tx_hash
+                            await client.basic.wait_for_tx(hash=tx_hash)
 
             tx_hash = await client.bucket.delete_bucket(bucket_name)
             assert tx_hash
@@ -112,13 +122,20 @@ async def test_create_object():
         assert object_id.object_name == object_name
         assert isinstance(object_id, ObjectInfo)
 
+        list_object_by_object_id = await client.object.list_object_by_object_id([head_object.id], EndPointOptions())
+        assert list_object_by_object_id
+        assert isinstance(list_object_by_object_id, list)
+        assert isinstance(list_object_by_object_id[0], ObjectMeta)
+        assert list_object_by_object_id[0].object_info.bucket_name == bucket_name
+        assert list_object_by_object_id[0].object_info.object_name == object_name
+
         await asyncio.sleep(9)
         info, object = await client.object.get_object(bucket_name, object_name, GetObjectOption())
         assert object
         assert info
         assert info.object_name == object_name
         assert info.content_type == "application/octet-stream"
-        assert info.size == 214
+        assert info.size == CONTENT.getbuffer().nbytes
 
         list_object = await client.object.list_objects(bucket_name, ListObjectsOptions())
 

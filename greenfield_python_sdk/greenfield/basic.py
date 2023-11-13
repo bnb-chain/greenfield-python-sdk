@@ -1,4 +1,5 @@
 import asyncio
+import json
 import time
 from typing import List, Tuple
 
@@ -6,16 +7,18 @@ import aiohttp
 
 from greenfield_python_sdk.__version__ import __version__
 from greenfield_python_sdk.blockchain_client import BlockchainClient
-from greenfield_python_sdk.protos.cosmos.base.query.v1beta1 import PageResponse as PaginationResponse
+from greenfield_python_sdk.models.basic import ResultBlockResults, ResultCommit, ResultStatus
 from greenfield_python_sdk.protos.cosmos.base.tendermint.v1beta1 import (
     GetBlockByHeightRequest,
     GetBlockByHeightResponse,
     GetLatestBlockResponse,
     GetLatestValidatorSetRequest,
     GetNodeInfoResponse,
+    GetValidatorSetByHeightRequest,
     Validator,
 )
 from greenfield_python_sdk.protos.cosmos.tx.v1beta1 import GetTxRequest, SimulateResponse
+from greenfield_python_sdk.protos.tendermint.services.block_results.v1 import GetBlockResultsRequest
 
 
 class Basic:
@@ -41,11 +44,17 @@ class Basic:
                 else "v1.0.0"
             )
 
-    async def get_status(self):
-        raise NotImplementedError
+    async def get_status(self) -> ResultStatus:
+        self.response = await self.make_requests("status", {})
+        self.response["node_info"]["default_node_id"] = self.response["node_info"]["id"]
+        return ResultStatus(**self.response)
 
-    async def get_commit(self):
-        raise NotImplementedError
+    async def get_commit(self, height: int) -> ResultCommit:
+        self.response = await self.make_requests("commit", {"height": f"{height if height else 0}"})
+        for i in range(len(self.response["signed_header"]["commit"]["signatures"])):
+            if self.response["signed_header"]["commit"]["signatures"][i]["signature"] == None:
+                self.response["signed_header"]["commit"]["signatures"][i]["signature"] = ""
+        return ResultCommit(**self.response)
 
     async def get_latest_block_height(self) -> int:
         response = await self.blockchain_client.tendermint.get_latest_block_height()
@@ -55,28 +64,39 @@ class Basic:
         response = await self.blockchain_client.tendermint.get_latest_block()
         return response
 
-    async def get_syncing(self):
+    async def get_syncing(self) -> bool:
         response = await self.blockchain_client.tendermint.get_syncing()
-        if response.to_pydict():
-            return response
-        raise NotImplementedError
+        if response.syncing:
+            return response.syncing
+        else:
+            return False
 
     async def get_block_by_height(self, height: int) -> GetBlockByHeightResponse:
         request = GetBlockByHeightRequest(height=height)
         response = await self.blockchain_client.tendermint.get_block_by_height(request)
         return response
 
-    async def get_latest_validator_set(self, pagination=None) -> Tuple[List[Validator], PaginationResponse]:
+    async def get_block_result_by_height(self, height: int) -> ResultBlockResults:
+        self.response = await self.make_requests("block_results", {"height": f"{height if height else 0}"})
+        self.response["consensus_param_updates"]["evidence"]["max_age_duration"] = (
+            int(self.response["consensus_param_updates"]["evidence"]["max_age_duration"]) / 1000000000
+        )
+        fields = ["begin_block_events", "end_block_events", "txs_results", "validator_updates"]
+        for field in fields:
+            self.response[field] = self.response[field] if self.response[field] else []
+        return ResultBlockResults(**self.response)
+
+    async def get_validator_set(self, pagination=None) -> Tuple[int, List[Validator]]:
         request = GetLatestValidatorSetRequest(pagination=pagination)
 
-        response = await self.blockchain_client.tendermint.get_latest_validator_set(request)
-        return response.validators, response.pagination
+        response = await self.blockchain_client.tendermint.get_validator_set(request)
+        return response.block_height, response.validators
 
-    async def get_validator_set(self):
-        raise NotImplementedError
+    async def get_validators_by_height(self, height: int) -> List[Validator]:
+        request = GetValidatorSetByHeightRequest(height=height)
 
-    async def get_validators_by_height(self):
-        raise NotImplementedError
+        response = await self.blockchain_client.tendermint.get_validator_set_by_height(request)
+        return response.validators
 
     async def wait_for_block_height(self, height: int) -> int:
         """Waits for the block with the given height to be committed to the blockchain.
@@ -138,3 +158,17 @@ class Basic:
 
     async def query_vote(self):
         raise NotImplementedError
+
+    async def make_requests(self, method: str, params):
+        headers = {"Content-Type": "application/json"}
+        data = {
+            "jsonrpc": "2.0",
+            "id": 1,
+            "method": method,
+            "params": params,
+        }
+        async with aiohttp.ClientSession() as session:
+            self._resp = await session.post(
+                self.blockchain_client.channel.base_url, data=json.dumps(data), headers=headers
+            )
+            return (await self._resp.json())["result"]

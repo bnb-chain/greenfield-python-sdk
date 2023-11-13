@@ -87,6 +87,7 @@ async def main():
             bucket_name=bucket_name,
         )
         logging.info(f"Result: {delete_bucket}\n\n")
+        await client.basic.wait_for_tx(hash=delete_bucket)
 
 
 if __name__ == "__main__":

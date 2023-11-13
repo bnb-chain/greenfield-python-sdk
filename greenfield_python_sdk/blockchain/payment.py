@@ -11,6 +11,8 @@ from greenfield_python_sdk.protos.greenfield.payment import (
     QueryPaymentAccountResponse,
     QueryPaymentAccountsByOwnerRequest,
     QueryPaymentAccountsByOwnerResponse,
+    QueryPaymentAccountsRequest,
+    QueryPaymentAccountsResponse,
     QueryStub,
 )
 
@@ -40,4 +42,8 @@ class Payment:
         self, request: QueryPaymentAccountsByOwnerRequest
     ) -> QueryPaymentAccountsByOwnerResponse:
         response = await self.query_stub.payment_accounts_by_owner(request)
+        return response
+
+    async def get_payment_accounts(self, request: QueryPaymentAccountsRequest) -> QueryPaymentAccountsResponse:
+        response = await self.query_stub.payment_accounts(request)
         return response

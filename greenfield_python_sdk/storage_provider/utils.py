@@ -107,7 +107,7 @@ def is_valid_object_prefix(prefix) -> bool:
 
 def create_example_object() -> io.BytesIO:
     buffer = io.StringIO()
-    line = "1234567890,1234567890,1234567890,1234567890,1234567890,1234567890,1234567890,1234567890,1234567890"
+    line = "1234567890,1234567890,1234567890,1234567890,1234567890,1234567890,1234567890,1234567890,123456789012"
     for i in range(2 * 1):
         buffer.write(f"[{i:05d}] {line}\n")
 

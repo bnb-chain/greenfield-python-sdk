@@ -59,7 +59,7 @@ class ObjectStat(BaseModel):
     size: int
 
 
-class ObjectInfo(BaseModel):
+class ObjectInfoResult(BaseModel):
     object_name: str
     id: str
     payload_size: int
@@ -70,7 +70,7 @@ class ObjectInfo(BaseModel):
 
 
 class ListObjectsResult(BaseModel):
-    objects: List[ObjectInfo]
+    objects: List[ObjectInfoResult]
     key_count: int
     max_keys: int
     is_truncated: bool
@@ -79,3 +79,23 @@ class ListObjectsResult(BaseModel):
     prefix: str
     delimiter: str
     continuation_token: str
+
+
+class ObjectMeta(BaseModel):
+    object_info: ObjectInfo
+    locked_balance: str
+    removed: bool
+    update_at: int
+    delete_at: int
+    delete_reason: str
+    operator: str
+    create_tx_hash: str
+    update_tx_hash: str
+    seal_tx_hash: str
+
+
+class ListObjectPoliciesOptions(BaseModel):
+    limit: Optional[int] = 50
+    start_after: Optional[str] = ""
+    endpoint: Optional[str] = ""
+    sp_address: Optional[str] = ""

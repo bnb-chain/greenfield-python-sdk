@@ -9,6 +9,7 @@ from greenfield_python_sdk import (
     get_account_configuration,
 )
 from greenfield_python_sdk.greenfield.account import Coin
+from greenfield_python_sdk.models.payment import ListUserPaymentAccountsOptions, ListUserPaymentAccountsResult
 
 pytestmark = [pytest.mark.asyncio, pytest.mark.e2e]
 
@@ -16,6 +17,22 @@ pytestmark = [pytest.mark.asyncio, pytest.mark.e2e]
 # Initialize the configuration, key manager
 network_configuration = NetworkConfiguration(**NetworkTestnet().model_dump())
 localnet_network_configuration = NetworkConfiguration(**NetworkLocalnet().model_dump())
+
+
+async def test_get_payments_account():
+    key_manager = KeyManager()
+    async with GreenfieldClient(network_configuration=network_configuration, key_manager=key_manager) as client:
+        all_payment_accounts = await client.payment.get_all_payment_accounts()
+        assert all_payment_accounts
+        assert isinstance(all_payment_accounts, list)
+
+        list_user_payment_accounts = await client.payment.list_user_payment_accounts(
+            ListUserPaymentAccountsOptions(account=all_payment_accounts[0].owner)
+        )
+        assert list_user_payment_accounts
+        assert isinstance(list_user_payment_accounts, ListUserPaymentAccountsResult)
+        assert all_payment_accounts[0].addr == list_user_payment_accounts.payment_account.address
+        assert all_payment_accounts[0].owner == list_user_payment_accounts.payment_account.owner
 
 
 @pytest.mark.requires_config

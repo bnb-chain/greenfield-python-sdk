@@ -12,6 +12,7 @@ from greenfield_python_sdk.models.eip712_messages.sp.sp_url import (
     CREATE_STORAGE_PROVIDER,
     GRANT_DEPOSIT,
     SUBMIT_PROPOSAL,
+    UPDATE_SP_STATUS,
     UPDATE_SP_STORAGE_PRICE,
 )
 from greenfield_python_sdk.models.storage_provider import CreateStorageProviderOptions, GrantDepositOptions
@@ -23,8 +24,11 @@ from greenfield_python_sdk.protos.cosmos.tx.v1beta1 import GetTxRequest
 from greenfield_python_sdk.protos.greenfield.sp import (
     DepositAuthorization,
     Description,
+    GlobalSpStorePrice,
     MsgCreateStorageProvider,
     MsgUpdateSpStoragePrice,
+    MsgUpdateStorageProviderStatus,
+    QueryGlobalSpStorePriceByTimeRequest,
     QuerySpStoragePriceRequest,
     QueryStorageProviderRequest,
     SpStoragePrice,
@@ -32,6 +36,7 @@ from greenfield_python_sdk.protos.greenfield.sp import (
 )
 from greenfield_python_sdk.protos.greenfield.sp import StorageProvider as SpStorageProvider
 from greenfield_python_sdk.storage_client import StorageClient
+from greenfield_python_sdk.storage_provider.utils import check_address
 
 
 class StorageProvider:
@@ -71,6 +76,15 @@ class StorageProvider:
             raise Exception("Storage price not found")
 
         return response.sp_storage_price
+
+    async def get_global_sp_store_price(self) -> GlobalSpStorePrice:
+        response = await self.blockchain_client.sp.get_global_sp_store_price_by_time(
+            QueryGlobalSpStorePriceByTimeRequest(timestamp=0)
+        )
+        if response.global_sp_store_price is None:
+            raise Exception("Storage price not found")
+
+        return response.global_sp_store_price
 
     async def grant_deposit_for_storage_provider(
         self, sp_addr: str, deposit_amount: int, opts: GrantDepositOptions
@@ -182,4 +196,13 @@ class StorageProvider:
             type_url=UPDATE_SP_STORAGE_PRICE,
         )
 
+        return hash
+
+    async def update_sp_status(self, sp_addr: str, status: Status, duration: int) -> str:
+        sp_addr = check_address(sp_addr)
+        msg_update_sp_status = MsgUpdateStorageProviderStatus(sp_address=sp_addr, status=status, duration=duration)
+        hash = await self.blockchain_client.broadcast_message(
+            message=msg_update_sp_status,
+            type_url=UPDATE_SP_STATUS,
+        )
         return hash
