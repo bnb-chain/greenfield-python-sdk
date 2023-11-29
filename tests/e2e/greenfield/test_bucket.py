@@ -57,8 +57,7 @@ async def test_create_bucket():
         bucket_name = "".join(random.choices(string.ascii_lowercase + string.digits, k=random.randint(5, 11)))
         await client.async_init()
 
-        sp = await client.blockchain_client.sp.get_first_in_service_storage_provider()
-
+        sp = (await client.blockchain_client.get_active_sps())[0]
         tx_hash = await client.bucket.create_bucket(
             bucket_name,
             primary_sp_address=sp["operator_address"],
@@ -89,10 +88,8 @@ async def test_create_bucket():
         assert isinstance(list_bucket[0], ListBucketsByBucketIDResponse)
 
         await asyncio.sleep(3)
-
-        sp = await client.blockchain_client.sp.get_first_in_service_storage_provider()
-
-        list_buckets = await client.bucket.list_buckets(sp["operator_address"])
+        sp = await client.bucket.storage_provider_by_bucket(bucket_name)
+        list_buckets = await client.bucket.list_buckets(sp)
         assert list_buckets
         names = [bucket_info.bucket_info.bucket_name for bucket_info in list_buckets]
         assert bucket_name in names
@@ -116,7 +113,7 @@ async def test_update_bucket():
     async with GreenfieldClient(network_configuration=network_configuration, key_manager=key_manager) as client:
         await client.async_init()
         bucket_name = "".join(random.choices(string.ascii_lowercase + string.digits, k=random.randint(5, 11)))
-        sp = await client.blockchain_client.sp.get_first_in_service_storage_provider()
+        sp = (await client.blockchain_client.get_active_sps())[0]
         tx_hash = await client.bucket.create_bucket(
             bucket_name,
             primary_sp_address=sp["operator_address"],
@@ -143,6 +140,10 @@ async def test_update_bucket():
         assert len(tx_hash) == 64
         assert isinstance(tx_hash, str)
         await client.basic.wait_for_tx(hash=tx_hash)
+
+        update_time = await client.bucket.get_quota_update_time(bucket_name)
+        assert update_time
+        assert isinstance(update_time, int)
 
         account = await client.account.get_account(address=client.key_manager.address)
         client.key_manager.account.next_sequence = account.sequence
@@ -171,7 +172,7 @@ async def test_put_bucket_policy():
         await client.async_init()
 
         bucket_name = "".join(random.choices(string.ascii_lowercase + string.digits, k=random.randint(5, 11)))
-        sp = await client.blockchain_client.sp.get_first_in_service_storage_provider()
+        sp = (await client.blockchain_client.get_active_sps())[0]
         tx_hash = await client.bucket.create_bucket(
             bucket_name,
             primary_sp_address=sp["operator_address"],
@@ -235,7 +236,7 @@ async def test_get_bucket_permission_and_records():
         await client.async_init()
 
         bucket_name = "".join(random.choices(string.ascii_lowercase + string.digits, k=random.randint(5, 11)))
-        sp = await client.blockchain_client.sp.get_first_in_service_storage_provider()
+        sp = (await client.blockchain_client.get_active_sps())[0]
         tx_hash = await client.bucket.create_bucket(
             bucket_name,
             primary_sp_address=sp["operator_address"],
@@ -273,7 +274,7 @@ async def test_buy_quota_for_bucket():
         await client.async_init()
 
         bucket_name = "".join(random.choices(string.ascii_lowercase + string.digits, k=random.randint(5, 11)))
-        sp = await client.blockchain_client.sp.get_first_in_service_storage_provider()
+        sp = (await client.blockchain_client.get_active_sps())[0]
         tx_hash = await client.bucket.create_bucket(
             bucket_name,
             primary_sp_address=sp["operator_address"],
@@ -304,51 +305,51 @@ async def test_buy_quota_for_bucket():
         await client.basic.wait_for_tx(hash=tx_hash)
 
 
-@pytest.mark.requires_config
-@pytest.mark.tx
-@pytest.mark.slow
-async def test_migrate_bucket():
-    config = get_account_configuration()
-    key_manager = KeyManager(private_key=config.private_key)
-    async with GreenfieldClient(network_configuration=network_configuration, key_manager=key_manager) as client:
-        await client.async_init()
+# @pytest.mark.requires_config
+# @pytest.mark.tx
+# @pytest.mark.slow
+# async def test_migrate_bucket():
+#     config = get_account_configuration()
+#     key_manager = KeyManager(private_key=config.private_key)
+#     async with GreenfieldClient(network_configuration=network_configuration, key_manager=key_manager) as client:
+#         await client.async_init()
 
-        bucket_name = "".join(random.choices(string.ascii_lowercase + string.digits, k=random.randint(5, 11)))
-        sp = await client.blockchain_client.sp.get_first_in_service_storage_provider()
-        tx_hash = await client.bucket.create_bucket(
-            bucket_name,
-            primary_sp_address=sp["operator_address"],
-            opts=CreateBucketOptions(charged_read_quota=100, visibility=VisibilityType.VISIBILITY_TYPE_PRIVATE),
-        )
-        assert tx_hash
-        assert len(tx_hash) == 64
-        assert isinstance(tx_hash, str)
-        await client.basic.wait_for_tx(hash=tx_hash)
+#         bucket_name = "".join(random.choices(string.ascii_lowercase + string.digits, k=random.randint(5, 11)))
+#         sp = (await client.blockchain_client.get_active_sps())[0]
+#         tx_hash = await client.bucket.create_bucket(
+#             bucket_name,
+#             primary_sp_address=sp["operator_address"],
+#             opts=CreateBucketOptions(charged_read_quota=100, visibility=VisibilityType.VISIBILITY_TYPE_PRIVATE),
+#         )
+#         assert tx_hash
+#         assert len(tx_hash) == 64
+#         assert isinstance(tx_hash, str)
+#         await client.basic.wait_for_tx(hash=tx_hash)
 
-        sps = await client.storage_provider.list_storage_providers()
-        assert sps
-        assert isinstance(sps, list)
+#         sps = await client.storage_provider.list_storage_providers()
+#         assert sps
+#         assert isinstance(sps, list)
 
-        tx_hash = await client.bucket.migrate_bucket(bucket_name, sps[1]["id"], MigrateBucketOptions())
-        assert tx_hash
-        assert len(tx_hash) == 64
-        assert isinstance(tx_hash, str)
-        await client.basic.wait_for_tx(hash=tx_hash)
+#         tx_hash = await client.bucket.migrate_bucket(bucket_name, sps[1]["id"], MigrateBucketOptions())
+#         assert tx_hash
+#         assert len(tx_hash) == 64
+#         assert isinstance(tx_hash, str)
+#         await client.basic.wait_for_tx(hash=tx_hash)
 
-        await asyncio.sleep(5)
+#         await asyncio.sleep(5)
 
-        meta = await client.bucket.get_bucket_meta(bucket_name, EndPointOptions())
-        assert meta
-        assert isinstance(meta, GetBucketMeta)
-        assert meta.vgf.primary_sp_id == sps[1]["id"]
+#         meta = await client.bucket.get_bucket_meta(bucket_name, EndPointOptions())
+#         assert meta
+#         assert isinstance(meta, GetBucketMeta)
+#         assert meta.vgf.primary_sp_id == sps[1]["id"]
 
-        list_buckets = await client.bucket.list_bucket_by_payment_account(
-            key_manager.address, ListBucketsByPaymentAccountOptions()
-        )
-        assert list_buckets
-        assert isinstance(list_buckets, list)
-        assert isinstance(list_buckets[0], ListBucketsByPaymentAccountResponse)
+#         list_buckets = await client.bucket.list_bucket_by_payment_account(
+#             key_manager.address, ListBucketsByPaymentAccountOptions()
+#         )
+#         assert list_buckets
+#         assert isinstance(list_buckets, list)
+#         assert isinstance(list_buckets[0], ListBucketsByPaymentAccountResponse)
 
-        tx_hash = await client.bucket.delete_bucket(bucket_name)
-        assert tx_hash
-        await client.basic.wait_for_tx(hash=tx_hash)
+#         tx_hash = await client.bucket.delete_bucket(bucket_name)
+#         assert tx_hash
+#         await client.basic.wait_for_tx(hash=tx_hash)

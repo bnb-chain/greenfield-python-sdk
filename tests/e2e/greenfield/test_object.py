@@ -14,10 +14,11 @@ from greenfield_python_sdk import (
     NetworkTestnet,
     get_account_configuration,
 )
-from greenfield_python_sdk.models.bucket import CreateBucketOptions, EndPointOptions
+from greenfield_python_sdk.models.bucket import CreateBucketOptions, EndPointOptions, ListBucketsByPaymentAccountOptions
 from greenfield_python_sdk.models.object import (
     CreateObjectOptions,
     GetObjectOption,
+    ListObjectPoliciesOptions,
     ListObjectsOptions,
     ObjectMeta,
     PutObjectOptions,
@@ -51,10 +52,12 @@ async def test_create_object():
         object_name = "".join(random.choices(string.ascii_lowercase + string.digits, k=random.randint(5, 11)))
 
         await client.async_init()
-        sp = await client.blockchain_client.sp.get_first_in_service_storage_provider()
+        sp = (await client.blockchain_client.get_active_sps())[0]
 
-        bucket_list = await client.bucket.list_buckets(sp["operator_address"])
-        buckets = [bucket.bucket_info.bucket_name for bucket in bucket_list]
+        list_buckets = await client.bucket.list_bucket_by_payment_account(
+            key_manager.address, ListBucketsByPaymentAccountOptions()
+        )
+        buckets = [bucket.bucket_info.bucket_name for bucket in list_buckets]
         for bucket_name in buckets:
             list_object = await client.object.list_objects(bucket_name, ListObjectsOptions())
             if list_object.key_count > 0:
@@ -174,10 +177,10 @@ async def test_update_object():
         object_name = "".join(random.choices(string.ascii_lowercase + string.digits, k=random.randint(5, 11)))
 
         await client.async_init()
-        sps = (await client.blockchain_client.sp.get_storage_providers(QueryStorageProvidersRequest())).sps
+        sp = (await client.blockchain_client.get_active_sps())[0]
         tx_hash = await client.bucket.create_bucket(
             bucket_name,
-            primary_sp_address=sps[0].operator_address,
+            primary_sp_address=sp["operator_address"],
             opts=CreateBucketOptions(charged_read_quota=100, visibility=VisibilityType.VISIBILITY_TYPE_PRIVATE),
         )
         assert tx_hash
@@ -205,7 +208,7 @@ async def test_update_object():
         )
         assert put_object == "Object added successfully"
 
-        await asyncio.sleep(5)
+        await asyncio.sleep(8)
         tx_hash = await client.object.update_object_visibility(
             bucket_name,
             object_name,
@@ -251,11 +254,11 @@ async def test_put_object_policy():
         bucket_name = "".join(random.choices(string.ascii_lowercase + string.digits, k=random.randint(5, 11)))
         object_name = "".join(random.choices(string.ascii_lowercase + string.digits, k=random.randint(5, 11)))
         await client.async_init()
-        sps = (await client.blockchain_client.sp.get_storage_providers(QueryStorageProvidersRequest())).sps
+        sp = (await client.blockchain_client.get_active_sps())[0]
 
         tx_hash = await client.bucket.create_bucket(
             bucket_name,
-            primary_sp_address=sps[0].operator_address,
+            primary_sp_address=sp["operator_address"],
             opts=CreateBucketOptions(charged_read_quota=100, visibility=VisibilityType.VISIBILITY_TYPE_PRIVATE),
         )
         assert tx_hash
@@ -283,12 +286,13 @@ async def test_put_object_policy():
         )
         assert put_object == "Object added successfully"
 
-        await asyncio.sleep(3)
+        await asyncio.sleep(8)
         statements = [
             Statement(
                 effect=Effect.EFFECT_ALLOW,
                 actions=[
                     ActionType.ACTION_CREATE_OBJECT,
+                    ActionType.ACTION_GET_OBJECT,
                     ActionType.ACTION_DELETE_OBJECT,
                 ],
             )
@@ -314,6 +318,13 @@ async def test_put_object_policy():
         assert policy
         assert policy.resource_id == head_object.id
         assert isinstance(policy, Policy)
+
+        list_object_policies = await client.object.list_object_policies(
+            bucket_name, object_name, ActionType.ACTION_GET_OBJECT, ListObjectPoliciesOptions()
+        )
+        assert list_object_policies
+        assert list_object_policies[0].principal_value == principal_key_manager.address
+        assert isinstance(list_object_policies, list)
 
         principal = Principal(type=PrincipalType.PRINCIPAL_TYPE_GNFD_ACCOUNT, value=principal_key_manager.address)
         tx_hash = await client.object.delete_object_policy(bucket_name, object_name, principal)
@@ -351,10 +362,10 @@ async def test_cancel_creation_object():
         bucket_name = "".join(random.choices(string.ascii_lowercase + string.digits, k=random.randint(5, 11)))
         object_name = "".join(random.choices(string.ascii_lowercase + string.digits, k=random.randint(5, 11)))
         await client.async_init()
-        sps = (await client.blockchain_client.sp.get_storage_providers(QueryStorageProvidersRequest())).sps
+        sp = (await client.blockchain_client.get_active_sps())[0]
         tx_hash = await client.bucket.create_bucket(
             bucket_name,
-            primary_sp_address=sps[0].operator_address,
+            primary_sp_address=sp["operator_address"],
             opts=CreateBucketOptions(charged_read_quota=100, visibility=VisibilityType.VISIBILITY_TYPE_PRIVATE),
         )
         assert tx_hash
@@ -402,11 +413,11 @@ async def test_create_folder():
         bucket_name = "".join(random.choices(string.ascii_lowercase + string.digits, k=random.randint(5, 11)))
         folder_name = "".join(random.choices(string.ascii_lowercase + string.digits, k=random.randint(5, 10))) + "/"
         await client.async_init()
-        sps = (await client.blockchain_client.sp.get_storage_providers(QueryStorageProvidersRequest())).sps
+        sp = (await client.blockchain_client.get_active_sps())[0]
 
         tx_hash = await client.bucket.create_bucket(
             bucket_name,
-            primary_sp_address=sps[0].operator_address,
+            primary_sp_address=sp["operator_address"],
             opts=CreateBucketOptions(charged_read_quota=100, visibility=VisibilityType.VISIBILITY_TYPE_PRIVATE),
         )
         assert tx_hash
@@ -460,11 +471,11 @@ async def test_upload_file():
         bucket_name = "".join(random.choices(string.ascii_lowercase + string.digits, k=random.randint(5, 11)))
         object_name = "".join(random.choices(string.ascii_lowercase + string.digits, k=random.randint(5, 11)))
         await client.async_init()
-        sps = (await client.blockchain_client.sp.get_storage_providers(QueryStorageProvidersRequest())).sps
+        sp = (await client.blockchain_client.get_active_sps())[0]
 
         tx_hash = await client.bucket.create_bucket(
             bucket_name,
-            primary_sp_address=sps[0].operator_address,
+            primary_sp_address=sp["operator_address"],
             opts=CreateBucketOptions(charged_read_quota=100, visibility=VisibilityType.VISIBILITY_TYPE_PRIVATE),
         )
         assert tx_hash

@@ -99,3 +99,13 @@ class ListObjectPoliciesOptions(BaseModel):
     start_after: Optional[str] = ""
     endpoint: Optional[str] = ""
     sp_address: Optional[str] = ""
+
+
+class ObjectPolicies(BaseModel):
+    principal_type: int
+    principal_value: str
+    resource_type: int
+    resource_id: str
+    create_timestamp: int
+    update_timestamp: int
+    expiration_time: int

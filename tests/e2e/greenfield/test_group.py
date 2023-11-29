@@ -46,9 +46,11 @@ async def test_create_group():
     config = get_account_configuration()
     key_manager = KeyManager(private_key=config.private_key)
     async with GreenfieldClient(network_configuration=network_configuration, key_manager=key_manager) as client:
+        await client.async_init()
+
         list_groups_by_account = await client.group.list_groups_by_owner(GroupsOwnerPaginationOptions())
-        if "group" in list_groups_by_account:
-            groups = [group.group.group_name for group in list_groups_by_account]
+        if list_groups_by_account.groups != None:
+            groups = [group.group.group_name for group in list_groups_by_account.groups]
             for group_name in groups:
                 tx_hash = await client.group.delete_group(
                     group_name,
@@ -73,9 +75,9 @@ async def test_create_group():
 
         list_groups_by_owner = await client.group.list_groups_by_owner(GroupsOwnerPaginationOptions())
         assert list_groups_by_owner
-        assert isinstance(list_groups_by_owner, list)
-        assert len(list_groups_by_owner) == 1
-        assert list_groups_by_owner[0].group.group_name == group_name
+        assert isinstance(list_groups_by_owner, GroupMembersResult)
+        assert len(list_groups_by_owner.groups) == 1
+        assert list_groups_by_owner.groups[0].group.group_name == group_name
 
         list_groups_by_group_id = await client.group.list_groups_by_group_id([group_head.id], EndPointOptions())
         assert list_groups_by_group_id
@@ -140,14 +142,14 @@ async def test_add_group_members():
 
         list_group_members = await client.group.list_group_members(group_head.id, GroupMembersPaginationOptions())
         assert list_group_members
-        assert isinstance(list_group_members, list)
-        assert isinstance(list_group_members[0], GroupsMembers)
-        assert list_group_members[0].group.group_name == group_name
+        assert isinstance(list_group_members, GroupMembersResult)
+        assert isinstance(list_group_members.groups[0], GroupsMembers)
+        assert list_group_members.groups[0].group.group_name == group_name
 
         group_by_account = await client.group.list_groups_by_account(GroupsPaginationOptions())
         assert group_by_account
-        assert isinstance(group_by_account, list)
-        assert group_by_account[0].group.group_name == group_name
+        assert isinstance(group_by_account, GroupMembersResult)
+        assert group_by_account.groups[0].group.group_name == group_name
 
         tx_hash = await client.group.leave_group(group_name=group_name, group_owner=key_manager.address)
         assert tx_hash
@@ -184,10 +186,10 @@ async def test_policy_group():
         assert isinstance(tx_hash, str)
         await client.basic.wait_for_tx(hash=tx_hash)
 
-        sps = (await client.blockchain_client.sp.get_storage_providers(QueryStorageProvidersRequest())).sps
+        sp = (await client.blockchain_client.get_active_sps())[0]
         tx_hash = await client.bucket.create_bucket(
             bucket_name,
-            primary_sp_address=sps[0].operator_address,
+            primary_sp_address=sp["operator_address"],
             opts=CreateBucketOptions(charged_read_quota=100, visibility=VisibilityType.VISIBILITY_TYPE_PRIVATE),
         )
         assert tx_hash
@@ -206,7 +208,6 @@ async def test_policy_group():
                     ActionType.ACTION_UPDATE_BUCKET_INFO,
                     ActionType.ACTION_DELETE_BUCKET,
                 ],
-                # resources=[f"grn:b::{bucket_name}"],
             )
         ]
         principal = Principal(type=PrincipalType.PRINCIPAL_TYPE_GNFD_GROUP, value=group_head.id)

@@ -15,6 +15,19 @@ if TYPE_CHECKING:
     from grpclib.metadata import Deadline
 
 
+class ClaimSrcChain(betterproto.Enum):
+    """ClaimSrcChain defines the src chain of a claim"""
+
+    CLAIM_SRC_CHAIN_UNSPECIFIED = 0
+    """CLAIM_SRC_CHAIN_UNSPECIFIED"""
+
+    CLAIM_SRC_CHAIN_BSC = 1
+    """CLAIM_SRC_CHAIN_BSC defines BSC source chain"""
+
+    CLAIM_SRC_CHAIN_OP_BNB = 2
+    """CLAIM_SRC_CHAIN_OP_BNB defines OPBNB source chain"""
+
+
 @dataclass(eq=False, repr=False)
 class EventPackageClaim(betterproto.Message):
     """EventPackageClaim is emitted when a cross chain package is processed"""
@@ -107,7 +120,8 @@ class QueryInturnRelayerRequest(betterproto.Message):
     method.
     """
 
-    pass
+    claim_src_chain: "ClaimSrcChain" = betterproto.enum_field(1)
+    """ClaimSrcChain defines the src chain of a claim"""
 
 
 @dataclass(eq=False, repr=False)

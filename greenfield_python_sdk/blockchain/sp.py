@@ -8,6 +8,8 @@ from greenfield_python_sdk.protos.greenfield.sp import (
     QueryParamsResponse,
     QuerySpStoragePriceRequest,
     QuerySpStoragePriceResponse,
+    QueryStorageProviderByOperatorAddressRequest,
+    QueryStorageProviderByOperatorAddressResponse,
     QueryStorageProviderRequest,
     QueryStorageProviderResponse,
     QueryStorageProvidersRequest,
@@ -55,4 +57,10 @@ class Sp:
         self, request: QueryGlobalSpStorePriceByTimeRequest
     ) -> QueryGlobalSpStorePriceByTimeResponse:
         response = await self.query_stub.query_global_sp_store_price_by_time(request)
+        return response
+
+    async def get_sp_by_operator_address(
+        self, request: QueryStorageProviderByOperatorAddressRequest
+    ) -> QueryStorageProviderByOperatorAddressResponse:
+        response = await self.query_stub.storage_provider_by_operator_address(request)
         return response

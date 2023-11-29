@@ -14,6 +14,7 @@ from greenfield_python_sdk.protos.cosmos.base.v1beta1 import Coin
 from greenfield_python_sdk.protos.greenfield.sp import (
     Description,
     GlobalSpStorePrice,
+    QueryStorageProviderByOperatorAddressRequest,
     QueryStorageProvidersRequest,
     SpStoragePrice,
     Status,
@@ -55,6 +56,18 @@ async def test_get_storage_provider_info():
         assert list_providers[0]["totalDeposit"] == storage_provider_info.total_deposit
         assert list_providers[0]["endpoint"] == storage_provider_info.endpoint
         assert isinstance(storage_provider_info, StorageProvider)
+
+
+async def test_get_sp_by_operator_address():
+    async with GreenfieldClient(network_configuration=network_configuration, key_manager=key_manager) as client:
+        list_providers = await client.storage_provider.list_storage_providers()
+        assert list_providers
+
+        storage_provider = await client.blockchain_client.sp.get_sp_by_operator_address(
+            QueryStorageProviderByOperatorAddressRequest(operator_address=list_providers[0]["operatorAddress"])
+        )
+        assert storage_provider
+        assert storage_provider.storage_provider.operator_address == list_providers[0]["operatorAddress"]
 
 
 async def test_get_storage_price():

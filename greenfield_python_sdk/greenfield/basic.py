@@ -41,7 +41,7 @@ class Basic:
             return (
                 self.response["result"]["response"]["version"]
                 if "version" in self.response["result"]["response"]
-                else "v1.0.0"
+                else "v1.1.0"
             )
 
     async def get_status(self) -> ResultStatus:

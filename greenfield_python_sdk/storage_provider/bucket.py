@@ -21,7 +21,7 @@ from greenfield_python_sdk.models.bucket import (
     ReadQuota,
 )
 from greenfield_python_sdk.models.const import CREATE_BUCKET_ACTION, MIGRATE_BUCKET_ACTION
-from greenfield_python_sdk.models.request import RequestMeta
+from greenfield_python_sdk.models.request import AminAPIInfo, RequestMeta
 from greenfield_python_sdk.protos.greenfield.common import Approval
 from greenfield_python_sdk.protos.greenfield.storage import MsgCreateBucket, MsgMigrateBucket
 from greenfield_python_sdk.storage_provider.request import Client
@@ -72,11 +72,11 @@ class Bucket:
             user_address=self.client.key_manager.address,
         ).model_dump()
         response = await self.client.prepare_request(base_url, request_metadata)
-        list_bucket_info = html_to_json.convert(await response.text())
+        list_bucket_info = html_to_json.convert(await response.text())["gfspgetuserbucketsresponse"]
 
         buckets = []
-        if "gfspgetuserbucketsresponse" in list_bucket_info:
-            list_bucket_info = list_bucket_info["gfspgetuserbucketsresponse"][0]["buckets"]
+        if "buckets" in list_bucket_info[0]:
+            list_bucket_info = list_bucket_info[0]["buckets"]
             for _, bucket_info in enumerate(list_bucket_info):
                 converted_data = {
                     convert_key(key): convert_value(key, value) if value[0] else ""
@@ -178,10 +178,10 @@ class Bucket:
         request_metadata = RequestMeta(
             query_parameters=query_parameters,
             txn_msg=binascii.hexlify(unsigned_bytes),
-            is_admin_api=True,
             base_url=base_url,
             endpoint=endpoint,
             expiry_timestamp=expiry,
+            admin_api_info=AminAPIInfo(is_admin_api=True, admin_version=1),
         ).model_dump()
 
         response = await self.client.prepare_request(
@@ -189,7 +189,6 @@ class Bucket:
             request_metadata,
             request_metadata["query_parameters"],
             request_metadata["endpoint"],
-            request_metadata["is_admin_api"],
         )
         signed_raw_msg = response.headers.get("X-Gnfd-Signed-Msg")
         signed_msg_bytes = binascii.unhexlify(signed_raw_msg)
@@ -244,11 +243,11 @@ class Bucket:
         request_metadata = RequestMeta(
             query_parameters=query_parameters,
             txn_msg=binascii.hexlify(unsigned_bytes),
-            is_admin_api=True,
             base_url=base_url,
             endpoint=endpoint,
             content_type="application/octet-stream",
             expiry_timestamp=expiry,
+            admin_api_info=AminAPIInfo(is_admin_api=True, admin_version=1),
         ).model_dump()
 
         response = await self.client.prepare_request(
@@ -256,7 +255,6 @@ class Bucket:
             request_metadata,
             request_metadata["query_parameters"],
             request_metadata["endpoint"],
-            request_metadata["is_admin_api"],
         )
         signed_raw_msg = response.headers.get("X-Gnfd-Signed-Msg")
         signed_msg_bytes = binascii.unhexlify(signed_raw_msg)
@@ -286,11 +284,11 @@ class Bucket:
             request_metadata,
             request_metadata["query_parameters"],
         )
-        list_bucket = html_to_json.convert(await response.text())["gfsplistpaymentaccountstreamsresponse"][0]["buckets"]
+        list_bucket = html_to_json.convert(await response.text())["gfsplistpaymentaccountstreamsresponse"]
         current_bucket = []
 
-        if "bucketinfo" in list_bucket[0]:
-            for _, bucket in enumerate(list_bucket):
+        if "buckets" in list_bucket[0]:
+            for _, bucket in enumerate(list_bucket[0]["buckets"]):
                 converted_data_list = {
                     convert_key(key): convert_value(key, value) if value[0] else "" for key, value in bucket.items()
                 }

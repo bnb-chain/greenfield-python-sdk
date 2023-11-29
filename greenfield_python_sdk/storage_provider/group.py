@@ -183,4 +183,4 @@ class Group:
                     convert_key(key): convert_value(key, value) if value[0] else "" for key, value in group.items()
                 }
                 group_members.append(GroupsMembers(**converted_data_list))
-        return group_members
+        return GroupMembersResult(groups=group_members)

@@ -10,7 +10,7 @@ from greenfield_python_sdk import (
     get_account_configuration,
 )
 from greenfield_python_sdk.greenfield.account import BaseAccount, Coin, PaymentAccount
-from greenfield_python_sdk.models.account import PaginationParams
+from greenfield_python_sdk.models.account import PaginationParams, TransferDetails
 from greenfield_python_sdk.protos.cosmos.crypto.secp256k1 import PubKey
 
 pytestmark = [pytest.mark.asyncio, pytest.mark.e2e]
@@ -134,10 +134,27 @@ async def test_transfer():
         await client.basic.wait_for_tx(tx_hash)
 
 
+@pytest.mark.requires_config
+@pytest.mark.tx
+@pytest.mark.slow
 async def test_multi_transfer():
+    config = get_account_configuration()
+    key_manager = KeyManager(private_key=config.private_key)
+
     async with GreenfieldClient(network_configuration=network_configuration, key_manager=key_manager) as client:
-        with pytest.raises(NotImplementedError):
-            await client.account.multi_transfer([], [])
+        await client.async_init()
+        secondary_key_manager = KeyManager(
+            private_key="7fbd2ec270bdbe03c280a55077850a7300b805824f7c92db3d8e6b3baa100b94"
+        )
+        third_key_manager = KeyManager(private_key="52c4dca5a23e98ded55aad551a69475e6d20d07bd261351d96ea07e0d20caa13")
+        details = [
+            TransferDetails(to_address=secondary_key_manager.address, amount="1"),
+            TransferDetails(to_address=third_key_manager.address, amount="1"),
+        ]
+        tx_hash = await client.account.multi_transfer(details)
+        assert tx_hash
+        assert isinstance(tx_hash, str)
+        await client.basic.wait_for_tx(tx_hash)
 
 
 @pytest.mark.requires_config

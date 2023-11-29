@@ -13,7 +13,7 @@
 
 ## Greenfield
 
-- [ ] Implement `multi_transfer`
+- [X] Implement `multi_transfer`
 - [ ] Add pagination to feegrant `get_allowances`
 - [ ] Add pagination to feegrant `get_allowances_by_granter`
 - [ ] Add `content_type` enums for `CreateObjectOptions` and `PutObjectOptions`

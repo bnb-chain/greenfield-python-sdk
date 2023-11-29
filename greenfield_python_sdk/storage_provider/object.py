@@ -17,9 +17,10 @@ from greenfield_python_sdk.models.object import (
     ListObjectsOptions,
     ListObjectsResult,
     ObjectMeta,
+    ObjectPolicies,
     PutObjectOptions,
 )
-from greenfield_python_sdk.models.request import RequestMeta, SendOptions
+from greenfield_python_sdk.models.request import AminAPIInfo, RequestMeta, SendOptions
 from greenfield_python_sdk.protos.greenfield.common import Approval
 from greenfield_python_sdk.protos.greenfield.permission import ActionType
 from greenfield_python_sdk.protos.greenfield.storage import MsgCreateObject, ObjectInfo, RedundancyType, VisibilityType
@@ -259,10 +260,10 @@ class Object:
         request_metadata = RequestMeta(
             query_parameters=query_parameters,
             txn_msg=binascii.hexlify(unsigned_bytes),
-            is_admin_api=True,
             base_url=base_url,
             endpoint=endpoint,
             expiry_timestamp=expiry,
+            admin_api_info=AminAPIInfo(is_admin_api=True, admin_version=1),
         ).model_dump()
 
         response = await self.client.prepare_request(
@@ -270,7 +271,6 @@ class Object:
             request_metadata,
             request_metadata["query_parameters"],
             request_metadata["endpoint"],
-            request_metadata["is_admin_api"],
         )
         signed_raw_msg = response.headers.get("X-Gnfd-Signed-Msg")
         return binascii.unhexlify(signed_raw_msg)
@@ -303,16 +303,20 @@ class Object:
         return current_object
 
     async def list_object_policies(
-        self, object_name: str, bucket_name: str, action_type: ActionType, opts: ListObjectPoliciesOptions
-    ):
-        # TODO: finish implementation
+        self,
+        bucket_name: str,
+        object_name: str,
+        sp_address: str,
+        action_type: ActionType,
+        opts: ListObjectPoliciesOptions,
+    ) -> List[ObjectPolicies]:
         query_parameters = {
             "object-policies": "",
             "start-after": opts.start_after,
             "limit": int(opts.limit),
             "action-type": action_type,
         }
-        base_url = await self.client.get_url(opts.endpoint, opts.sp_address)
+        base_url = await self.client._get_sp_url_by_addr(sp_address, bucket_name)
 
         request_metadata = RequestMeta(
             disable_close_body=True, query_parameters=query_parameters, bucket_name=bucket_name, object_name=object_name
@@ -322,5 +326,12 @@ class Object:
             request_metadata,
             request_metadata["query_parameters"],
         )
-        list_policies = html_to_json.convert(await response.text())
-        raise NotImplementedError
+        list_policies = html_to_json.convert(await response.text())["gfsplistobjectpoliciesresponse"][0]
+        policies = []
+        if "policies" in list_policies:
+            for _, object in enumerate(list_policies["policies"]):
+                converted_data_list = {
+                    convert_key(key): convert_value(key, value) if value[0] else "" for key, value in object.items()
+                }
+                policies.append(ObjectPolicies(**converted_data_list))
+        return policies

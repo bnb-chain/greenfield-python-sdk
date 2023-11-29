@@ -101,8 +101,8 @@ class Statement(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class Principal(betterproto.Message):
     """
-    Principal define the roles that can grant permissions. Currently, it can be account
-    or group.
+    Principal define the roles that can be grant permissions to. Currently, it can be
+    account or group.
     """
 
     type: "PrincipalType" = betterproto.enum_field(1)
