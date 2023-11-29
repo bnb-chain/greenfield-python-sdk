@@ -33,13 +33,16 @@ from greenfield_python_sdk.protos.greenfield.storage import (
     MsgDeleteBucket,
     MsgDeletePolicy,
     MsgPutPolicy,
+    MsgRejectMigrateBucket,
     MsgUpdateBucketInfo,
     QueryHeadBucketByIdRequest,
     QueryHeadBucketRequest,
     QueryPolicyForAccountRequest,
+    QueryQuoteUpdateTimeRequest,
     QueryVerifyPermissionRequest,
     VisibilityType,
 )
+from greenfield_python_sdk.protos.greenfield.virtualgroup import QueryGlobalVirtualGroupFamilyRequest
 from greenfield_python_sdk.storage_client import StorageClient
 from greenfield_python_sdk.storage_provider.utils import check_address, check_valid_bucket_name
 
@@ -217,9 +220,14 @@ class Bucket:
         return await self.storage_client.bucket.list_buckets(sp_address)
 
     async def list_bucket_records(self, bucket_name: str, opts: ListReadRecordOptions) -> ListBucketReadRecord:
-        sp = await self.blockchain_client.sp.get_first_in_service_storage_provider()
+        sp = await self.storage_provider_by_bucket(bucket_name)
+        if sp == None:
+            raise Exception("Storage provider not found")
+        return await self.storage_client.bucket.list_bucket_read_record(bucket_name, sp, opts)
 
-        return await self.storage_client.bucket.list_bucket_read_record(bucket_name, sp["operator_address"], opts)
+    async def get_quota_update_time(self, bucket_name: str) -> int:
+        res = await self.blockchain_client.storage.get_quota_update_time(QueryQuoteUpdateTimeRequest(bucket_name))
+        return res.update_at
 
     async def buy_quota_for_bucket(self, bucket_name: str, target_quota: int) -> str:
         bucket_info = await self.blockchain_client.storage.get_head_bucket(
@@ -240,8 +248,10 @@ class Bucket:
         return tx_hash
 
     async def get_bucket_read_quota(self, bucket_name: str) -> ReadQuota:
-        sp = await self.blockchain_client.sp.get_first_in_service_storage_provider()
-        return await self.storage_client.bucket.get_bucket_read_quota(bucket_name, sp["operator_address"])
+        sp = await self.storage_provider_by_bucket(bucket_name)
+        if sp == None:
+            raise Exception("Storage provider not found")
+        return await self.storage_client.bucket.get_bucket_read_quota(bucket_name, sp)
 
     async def list_buckets_by_bucket_id(
         self, bucket_id: List[int], opts: EndPointOptions
@@ -260,6 +270,10 @@ class Bucket:
     async def cancel_migrate_bucket(self, bucket_name: str, opts: CancelMigrateBucketOptions) -> Tuple[int, str]:
         raise NotImplementedError
 
+    async def reject_migrate_bucket(self, bucket_name: str, sp_addr: str) -> str:
+        reject_migration = MsgRejectMigrateBucket(operator=sp_addr, bucket_name=bucket_name)
+        raise NotImplementedError
+
     async def list_bucket_by_payment_account(
         self, payment_account: str, opts: ListBucketsByPaymentAccountOptions
     ) -> List[ListBucketsByPaymentAccountResponse]:
@@ -267,3 +281,14 @@ class Bucket:
 
     async def get_bucket_meta(self, bucket_name: str, opts: EndPointOptions) -> GetBucketMeta:
         return await self.storage_client.bucket.get_bucket_meta(bucket_name, opts)
+
+    async def storage_provider_by_bucket(self, bucket_name: str) -> str:
+        head_bucket = await self.get_bucket_head(bucket_name)
+        family_res = await self.blockchain_client.virtual_group.global_virtual_group_family(
+            QueryGlobalVirtualGroupFamilyRequest(family_id=head_bucket.global_virtual_group_family_id)
+        )
+        sps = await self.blockchain_client.sp.get_storage_providers()
+        return next(
+            (sp.operator_address for sp in sps.sps if sp.id == family_res.global_virtual_group_family.primary_sp_id),
+            None,
+        )

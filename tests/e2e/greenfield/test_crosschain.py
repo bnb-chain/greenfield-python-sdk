@@ -23,6 +23,7 @@ key_manager = KeyManager()
 @pytest.mark.requires_config
 @pytest.mark.tx
 @pytest.mark.slow
+@pytest.mark.funds
 async def test_transfer_out():
     config = get_account_configuration()
     key_manager = KeyManager(private_key=config.private_key)

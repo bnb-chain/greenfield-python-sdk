@@ -59,12 +59,11 @@ class GreenfieldClient:
         ).__aenter__()
 
         # Get the sp_endpoints for the storage client
-        response = await self.blockchain_client.sp.get_storage_providers()
-        sp_endpoints = {
-            sp["operatorAddress"]: sp for sp in response.to_pydict()["sps"]
-        }  # Transform the response to a dict with the operatorAddress as key
-
-        self.storage_client = await StorageClient(key_manager=self.key_manager, sp_endpoints=sp_endpoints).__aenter__()
+        active_sps = await self.blockchain_client.get_active_sps()
+        sp_endpoints = {sp["operator_address"]: sp for sp in active_sps}
+        self.storage_client = await StorageClient(
+            network_configuration=self.network_configuration, key_manager=self.key_manager, sp_endpoints=sp_endpoints
+        ).__aenter__()
 
         # Embeded clients
         self.basic = Basic(self.blockchain_client)
@@ -75,11 +74,11 @@ class GreenfieldClient:
         self.distribution = Distribution(self.blockchain_client, self.storage_client)
         self.feegrant = FeeGrant(self.blockchain_client, self.storage_client)
         self.group = Group(self.blockchain_client, self.storage_client)
-        self.object = Object(self.blockchain_client, self.key_manager, self.storage_client)
+        self.object = Object(self.blockchain_client, self.key_manager, self.storage_client, self.bucket)
         self.payment = Payment(self.blockchain_client, self.storage_client)
         self.proposal = Proposal(self.blockchain_client, self.storage_client)
         self.storage_provider = StorageProvider(self.blockchain_client, self.key_manager, self.storage_client)
-        self.validator = Validator(self.blockchain_client, self.storage_client, self.basic, self.account)
+        self.validator = Validator(self.account, self.basic, self.blockchain_client, self.storage_client)
         self.virtual_group = VirtualGroup(self.blockchain_client, self.key_manager)
 
         return self

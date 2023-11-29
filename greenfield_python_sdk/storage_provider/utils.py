@@ -16,7 +16,6 @@ from greenfield_python_sdk.models.const import ETH_ADDRESS_LENGTH, SIGN_ALGORITH
 from greenfield_python_sdk.models.object import ObjectStat
 from greenfield_python_sdk.protos.greenfield.storage import (
     BucketStatus,
-    ObjectStatus,
     RedundancyType,
     SourceType,
     VisibilityType,
@@ -118,14 +117,12 @@ def create_example_object() -> io.BytesIO:
 
 def generate_url(
     base_url: str,
+    endpoint: str = None,
+    query_parameters: Dict[str, str] = {},
+    prefix: str = "/",
     bucket_name: Optional[str] = None,
     object_name: Optional[str] = None,
-    endpoint: Optional[str] = None,
-    query_parameters: Optional[Dict[str, str]] = {},
-    is_admin_api: Optional[bool] = False,
 ) -> str:
-    prefix = "/greenfield/admin/v1/" if is_admin_api else "/"
-
     url = urljoin(base_url, prefix)
     if bucket_name:
         url = urljoin(url, bucket_name)
@@ -138,14 +135,12 @@ def generate_url(
 
 
 def generate_url_chunks(
+    endpoint: str = None,
+    query_parameters: Optional[Dict[str, str]] = {},
+    prefix: str = "/",
     bucket_name: Optional[str] = None,
     object_name: Optional[str] = None,
-    endpoint: Optional[str] = None,
-    query_parameters: Optional[Dict[str, str]] = {},
-    is_admin_api: Optional[bool] = False,
 ) -> str:
-    prefix = "/greenfield/admin/v1/" if is_admin_api else "/"
-
     relative_path = prefix
     if bucket_name:
         relative_path = urljoin(relative_path, bucket_name)

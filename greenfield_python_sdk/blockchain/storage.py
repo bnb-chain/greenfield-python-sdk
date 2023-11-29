@@ -27,6 +27,8 @@ from greenfield_python_sdk.protos.greenfield.storage import (
     QueryPolicyForAccountResponse,
     QueryPolicyForGroupRequest,
     QueryPolicyForGroupResponse,
+    QueryQuoteUpdateTimeRequest,
+    QueryQuoteUpdateTimeResponse,
     QueryStub,
     QueryVerifyPermissionRequest,
     QueryVerifyPermissionResponse,
@@ -102,4 +104,8 @@ class Storage:
 
     async def get_policy_for_group(self, request: QueryPolicyForGroupRequest) -> QueryPolicyForGroupResponse:
         response = await self.query_stub.query_policy_for_group(request)
+        return response
+
+    async def get_quota_update_time(self, request: QueryQuoteUpdateTimeRequest) -> QueryQuoteUpdateTimeResponse:
+        response = await self.query_stub.query_quota_update_time(request)
         return response

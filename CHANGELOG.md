@@ -1,6 +1,24 @@
 Changelog
 =========
 
+0.5.0 - 2023-11-29
+-------
+
+- Upgrade dependencies
+- Updated codebase to support Greenfield 1.1.0
+- Resolve issues
+- Add new functions:
+    - `Account`:
+        - `multi_transfer`
+    - `Bucket`:
+        - `get_quota_update_time`
+        - `storage_provider_by_bucket`
+    - `Object`:
+        - `list_object_policies`
+    - `SP`:
+        - `get_sp_by_operator_address`
+
+
 0.4.0 - 2023-11-13
 -------
 

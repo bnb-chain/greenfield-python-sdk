@@ -16,7 +16,7 @@ async def cleanup():
     key_manager = KeyManager(private_key=config.private_key)
     async with GreenfieldClient(network_configuration=network_configuration, key_manager=key_manager) as client:
         await client.async_init()
-        sp = await client.blockchain_client.sp.get_first_in_service_storage_provider()
+        sp = (await client.blockchain_client.get_active_sps())[0]
 
         bucket_list = await client.bucket.list_buckets(sp["operator_address"])
         buckets = [bucket.bucket_info.bucket_name for bucket in bucket_list]

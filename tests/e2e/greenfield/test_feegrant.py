@@ -27,6 +27,7 @@ key_manager = KeyManager()
 @pytest.mark.requires_config
 @pytest.mark.tx
 @pytest.mark.slow
+@pytest.mark.funds
 async def test_grant_basic_allowance():
     # Depends on account.transfer
     config = get_account_configuration()
@@ -158,6 +159,7 @@ async def test_grant_basic_allowance():
 @pytest.mark.requires_config
 @pytest.mark.tx
 @pytest.mark.slow
+@pytest.mark.funds
 async def test_grant_allowance():
     # Depends on account.transfer
     config = get_account_configuration()
@@ -219,6 +221,7 @@ async def test_grant_allowance():
 @pytest.mark.requires_config
 @pytest.mark.tx
 @pytest.mark.slow
+@pytest.mark.funds
 async def test_get_basic_allowance():
     config = get_account_configuration()
     key_manager = KeyManager(private_key=config.private_key)
@@ -286,6 +289,7 @@ async def test_get_basic_allowance():
 @pytest.mark.requires_config
 @pytest.mark.tx
 @pytest.mark.slow
+@pytest.mark.funds
 async def test_get_allowance():
     config = get_account_configuration()
     key_manager = KeyManager(private_key=config.private_key)
@@ -353,6 +357,7 @@ async def test_get_allowance():
 @pytest.mark.requires_config
 @pytest.mark.tx
 @pytest.mark.slow
+@pytest.mark.funds
 async def test_get_allowances():
     config = get_account_configuration()
     key_manager = KeyManager(private_key=config.private_key)
@@ -415,6 +420,7 @@ async def test_get_allowances():
 @pytest.mark.requires_config
 @pytest.mark.tx
 @pytest.mark.slow
+@pytest.mark.funds
 async def test_get_allowances_by_granter():
     config = get_account_configuration()
     key_manager = KeyManager(private_key=config.private_key)
@@ -482,6 +488,7 @@ async def test_get_allowances_by_granter():
 @pytest.mark.requires_config
 @pytest.mark.tx
 @pytest.mark.slow
+@pytest.mark.funds
 async def test_revoke_allowance():
     config = get_account_configuration()
     key_manager = KeyManager(private_key=config.private_key)

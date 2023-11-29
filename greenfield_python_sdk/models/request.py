@@ -9,12 +9,16 @@ from pydantic.dataclasses import dataclass
 from greenfield_python_sdk.protos.greenfield.permission import PrincipalType
 
 
+class AminAPIInfo(BaseModel):
+    is_admin_api: bool = False
+    admin_version: int = 1
+
+
 class RequestMeta(BaseModel):
     method: str = "GET"
     data: Optional[Any] = None
     disable_close_body: bool = False
     txn_hash: str = ""
-    is_admin_api: bool = False
     bucket_name: str = ""
     object_name: str = ""
     endpoint: str = ""
@@ -32,6 +36,7 @@ class RequestMeta(BaseModel):
     url: str = ""
     query_str: str = ""
     expiry_timestamp: str = ""
+    admin_api_info: AminAPIInfo = AminAPIInfo()
 
 
 class SendOptions(BaseModel):

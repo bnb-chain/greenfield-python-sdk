@@ -26,8 +26,12 @@ test-e2e-complete:
 .PHONY: test-e2e-extra-go
 test-e2e-extra-go: #Test the package with poetry.
 test-e2e-extra-go:
-	poetry run pytest tests -m "not unit and not localnet" --asyncio-mode=auto
+	poetry run pytest tests -m "not unit and not localnet and not funds" --asyncio-mode=auto
 
+.PHONY: test-e2e-extra-go-with-funds
+test-e2e-extra-go-complete: #Test the package with poetry.
+test-e2e-extra-go-complete:
+	poetry run pytest tests -m "not unit and not localnet" --asyncio-mode=auto
 
 .PHONY: test-e2e-local
 test-e2e-local: #Test the package with poetry.

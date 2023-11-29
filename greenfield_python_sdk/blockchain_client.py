@@ -2,6 +2,7 @@ import base64
 from typing import Optional
 
 import aiohttp
+from betterproto import Casing
 from betterproto.lib.google.protobuf import Any as AnyMessage
 from grpclib.client import Channel
 
@@ -204,6 +205,14 @@ class BlockchainClient:
 
         tx_hash = await self.broadcast_tx(tx)
         return tx_hash
+
+    async def get_active_sps(self):
+        response = await self.sp.get_storage_providers()
+        return (
+            [sp for sp in response.to_pydict(casing=Casing.SNAKE)["sps"] if "bnbchain.org" in sp["endpoint"]]
+            if "testnet" in self.host
+            else [sp for sp in response.to_pydict(casing=Casing.SNAKE)["sps"]]
+        )
 
     async def close(self):
         pass

@@ -6,14 +6,14 @@ from eth_utils import to_checksum_address
 from greenfield_python_sdk.blockchain.utils import parse_account, parse_module_account
 from greenfield_python_sdk.blockchain_client import BlockchainClient
 from greenfield_python_sdk.greenfield.basic import Basic
-from greenfield_python_sdk.models.account import PaginationParams
+from greenfield_python_sdk.models.account import PaginationParams, TransferDetails
 from greenfield_python_sdk.protos.cosmos.auth.v1beta1 import (
     BaseAccount,
     ModuleAccount,
     QueryAccountRequest,
     QueryModuleAccountByNameRequest,
 )
-from greenfield_python_sdk.protos.cosmos.bank.v1beta1 import MsgSend, QueryBalanceRequest
+from greenfield_python_sdk.protos.cosmos.bank.v1beta1 import Input, MsgMultiSend, MsgSend, Output, QueryBalanceRequest
 from greenfield_python_sdk.protos.cosmos.base.query.v1beta1 import PageResponse as PaginationResponse
 from greenfield_python_sdk.protos.cosmos.base.v1beta1 import Coin
 from greenfield_python_sdk.protos.greenfield.payment import (
@@ -78,9 +78,22 @@ class Account:
         )
         return response
 
-    async def multi_transfer(self, inputs: list, outputs: list) -> str:
-        # TODO: implement
-        raise NotImplementedError
+    async def multi_transfer(self, details: List[TransferDetails]) -> str:
+        outputs = []
+        sum = 0
+        for detail in details:
+            to_address = to_checksum_address(detail.to_address)
+            if int(detail.amount) < 0 or detail.amount is None:
+                raise ValueError("transfer amount is not valid")
+            outputs.append(Output(address=to_address, coins=[Coin(denom="BNB", amount=detail.amount)]))
+            sum += int(detail.amount)
+        from_address = to_checksum_address(self.blockchain_client.key_manager.address)
+        input = Input(address=from_address, coins=[Coin(denom="BNB", amount=str(sum))])
+        message = MsgMultiSend(inputs=[input], outputs=outputs)
+        response = await self.blockchain_client.broadcast_message(
+            message=message, type_url="/cosmos.bank.v1beta1.MsgMultiSend"
+        )
+        return response
 
     async def get_payment_account(self, address: str) -> PaymentAccount:
         addr = to_checksum_address(address)

@@ -40,16 +40,16 @@ from greenfield_python_sdk.storage_client import StorageClient
 
 
 class Validator:
+    account: Account
+    basic: Basic
     blockchain_client: BlockchainClient
     storage_client: StorageClient
-    basic: Basic
-    account: Account
 
-    def __init__(self, blockchain_client, storage_client, basic, account):
+    def __init__(self, account, basic, blockchain_client, storage_client):
+        self.account = account
+        self.basic = basic
         self.blockchain_client = blockchain_client
         self.storage_client = storage_client
-        self.basic = basic
-        self.account = account
 
     async def list_validators(self, status: Optional[str] = None) -> QueryValidatorsResponse:
         request = QueryValidatorsRequest(status=status)

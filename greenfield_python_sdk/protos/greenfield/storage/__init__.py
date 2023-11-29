@@ -483,7 +483,7 @@ class EventCreateObject(betterproto.Message):
     """object_name define the name of object"""
 
     bucket_id: str = betterproto.string_field(6)
-    """bucket_id define an u256 id for object"""
+    """bucket_id define an u256 id for bucket"""
 
     object_id: str = betterproto.string_field(7)
     """object_id define an u256 id for object"""
@@ -931,7 +931,7 @@ class EventMigrationBucket(betterproto.Message):
     """The name of the bucket to be migrated"""
 
     bucket_id: str = betterproto.string_field(3)
-    """bucket_id define an u256 id for object"""
+    """bucket_id define an u256 id for bucket"""
 
     dst_primary_sp_id: int = betterproto.uint32_field(4)
     """The id of the destination primary sp"""
@@ -949,7 +949,21 @@ class EventCancelMigrationBucket(betterproto.Message):
     """The name of the bucket to be migrated"""
 
     bucket_id: str = betterproto.string_field(3)
-    """bucket_id define an u256 id for object"""
+    """bucket_id define an u256 id for bucket"""
+
+
+@dataclass(eq=False, repr=False)
+class EventRejectMigrateBucket(betterproto.Message):
+    operator: str = betterproto.string_field(1)
+    """
+    The address of the operator that reject the bucket migration, must be the dest SP
+    """
+
+    bucket_name: str = betterproto.string_field(2)
+    """The name of the bucket to be migrated"""
+
+    bucket_id: str = betterproto.string_field(3)
+    """bucket_id define an u256 id for bucket"""
 
 
 @dataclass(eq=False, repr=False)
@@ -964,7 +978,7 @@ class EventCompleteMigrationBucket(betterproto.Message):
     """The name of the bucket to be migrated"""
 
     bucket_id: str = betterproto.string_field(3)
-    """bucket_id define an u256 id for object"""
+    """bucket_id define an u256 id for bucket"""
 
     global_virtual_group_family_id: int = betterproto.uint32_field(4)
     """The family id that the bucket to be migrated to"""
@@ -1543,7 +1557,7 @@ class MsgCopyObject(betterproto.Message):
     operator: str = betterproto.string_field(1)
     """
     operator defines the account address of the operator who has the CopyObject
-    permission of the object to be deleted.
+    permission.
     """
 
     src_bucket_name: str = betterproto.string_field(2)
@@ -1814,8 +1828,8 @@ class MsgPutPolicy(betterproto.Message):
 
     principal: "_permission__.Principal" = betterproto.message_field(2)
     """
-    Principal defines the roles that can grant permissions. Currently, it can be account
-    or group.
+    Principal defines the roles that can be grant permissions to. Currently, it can be
+    account or group.
     """
 
     resource: str = betterproto.string_field(3)
@@ -1868,10 +1882,7 @@ class MsgDeletePolicyResponse(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class MsgMirrorObject(betterproto.Message):
     operator: str = betterproto.string_field(1)
-    """
-    operator defines the account address of the operator who has the DeleteObject
-    permission of the object to be deleted.
-    """
+    """operator defines the account address of the object owner."""
 
     id: str = betterproto.string_field(2)
     """id defines the unique u256 for object."""
@@ -1894,10 +1905,7 @@ class MsgMirrorObjectResponse(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class MsgMirrorBucket(betterproto.Message):
     operator: str = betterproto.string_field(1)
-    """
-    creator defines the account address of the grantee who has the DeleteBucket
-    permission of the bucket to be deleted.
-    """
+    """operator defines the account address of the bucket owner."""
 
     id: str = betterproto.string_field(2)
     """id defines the unique u256 for bucket."""
@@ -1941,9 +1949,7 @@ class MsgMirrorBucketResponse(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class MsgMirrorGroup(betterproto.Message):
     operator: str = betterproto.string_field(1)
-    """
-    operator defines the account address of the operator who is the owner of the group
-    """
+    """operator defines the account address of the group owner."""
 
     id: str = betterproto.string_field(2)
     """id defines the unique u256 for group."""
@@ -2051,6 +2057,23 @@ class MsgCancelMigrateBucket(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class MsgCancelMigrateBucketResponse(betterproto.Message):
+    pass
+
+
+@dataclass(eq=False, repr=False)
+class MsgRejectMigrateBucket(betterproto.Message):
+    operator: str = betterproto.string_field(1)
+    """
+    operator defines the account address of the msg operator.
+    only the Dest SP can send this transaction to reject the bucket migration.
+    """
+
+    bucket_name: str = betterproto.string_field(2)
+    """bucket_name defines the name of the bucket that need to be migrated"""
+
+
+@dataclass(eq=False, repr=False)
+class MsgRejectMigrateBucketResponse(betterproto.Message):
     pass
 
 
@@ -2955,6 +2978,23 @@ class MsgStub(betterproto.ServiceStub):
             metadata=metadata,
         )
 
+    async def reject_migrate_bucket(
+        self,
+        msg_reject_migrate_bucket: "MsgRejectMigrateBucket",
+        *,
+        timeout: Optional[float] = None,
+        deadline: Optional["Deadline"] = None,
+        metadata: Optional["MetadataLike"] = None
+    ) -> "MsgRejectMigrateBucketResponse":
+        return await self._unary_unary(
+            "/greenfield.storage.Msg/RejectMigrateBucket",
+            msg_reject_migrate_bucket,
+            MsgRejectMigrateBucketResponse,
+            timeout=timeout,
+            deadline=deadline,
+            metadata=metadata,
+        )
+
 
 class QueryBase(ServiceBase):
     async def params(self, query_params_request: "QueryParamsRequest") -> "QueryParamsResponse":
@@ -3522,6 +3562,11 @@ class MsgBase(ServiceBase):
     ) -> "MsgCancelMigrateBucketResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
+    async def reject_migrate_bucket(
+        self, msg_reject_migrate_bucket: "MsgRejectMigrateBucket"
+    ) -> "MsgRejectMigrateBucketResponse":
+        raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
+
     async def __rpc_create_bucket(
         self, stream: "grpclib.server.Stream[MsgCreateBucket, MsgCreateBucketResponse]"
     ) -> None:
@@ -3709,6 +3754,14 @@ class MsgBase(ServiceBase):
         response = await self.cancel_migrate_bucket(request)
         await stream.send_message(response)
 
+    async def __rpc_reject_migrate_bucket(
+        self,
+        stream: "grpclib.server.Stream[MsgRejectMigrateBucket, MsgRejectMigrateBucketResponse]",
+    ) -> None:
+        request = await stream.recv_message()
+        response = await self.reject_migrate_bucket(request)
+        await stream.send_message(response)
+
     def __mapping__(self) -> Dict[str, grpclib.const.Handler]:
         return {
             "/greenfield.storage.Msg/CreateBucket": grpclib.const.Handler(
@@ -3872,5 +3925,11 @@ class MsgBase(ServiceBase):
                 grpclib.const.Cardinality.UNARY_UNARY,
                 MsgCancelMigrateBucket,
                 MsgCancelMigrateBucketResponse,
+            ),
+            "/greenfield.storage.Msg/RejectMigrateBucket": grpclib.const.Handler(
+                self.__rpc_reject_migrate_bucket,
+                grpclib.const.Cardinality.UNARY_UNARY,
+                MsgRejectMigrateBucket,
+                MsgRejectMigrateBucketResponse,
             ),
         }

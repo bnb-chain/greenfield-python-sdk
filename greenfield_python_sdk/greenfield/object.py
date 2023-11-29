@@ -3,6 +3,7 @@ import os
 from typing import Any, List, Tuple
 
 from greenfield_python_sdk.blockchain_client import BlockchainClient
+from greenfield_python_sdk.greenfield.bucket import Bucket
 from greenfield_python_sdk.key_manager import KeyManager
 from greenfield_python_sdk.models.bucket import EndPointOptions, VisibilityType
 from greenfield_python_sdk.models.eip712_messages.storage.object_url import (
@@ -19,6 +20,7 @@ from greenfield_python_sdk.models.object import (
     ListObjectsOptions,
     ListObjectsResult,
     ObjectMeta,
+    ObjectPolicies,
     PutObjectOptions,
 )
 from greenfield_python_sdk.models.request import Principal, PutPolicyOption, ResourceType
@@ -41,11 +43,13 @@ from greenfield_python_sdk.storage_provider.utils import check_valid_bucket_name
 
 
 class Object:
+    bucket: Bucket
     blockchain_client: BlockchainClient
     key_manager: KeyManager
     storage_client: StorageClient
 
-    def __init__(self, blockchain_client, key_manager, storage_client):
+    def __init__(self, blockchain_client, key_manager, storage_client, bucket):
+        self.bucket = bucket
         self.blockchain_client = blockchain_client
         self.key_manager = key_manager
         self.storage_client = storage_client
@@ -53,11 +57,11 @@ class Object:
     async def create_object(
         self, bucket_name: str, object_name: str, reader: io.BytesIO, opts: CreateObjectOptions
     ) -> str:
-        sp = await self.blockchain_client.sp.get_first_in_service_storage_provider()
+        sp = await self.bucket.storage_provider_by_bucket(bucket_name)
 
         storage_params = await self.blockchain_client.storage.get_params()
         get_approval, sp_signature, checksums = await self.storage_client.object.get_object_approval(
-            bucket_name, object_name, opts, sp["operator_address"], reader, storage_params, opts.is_serial_compute_mode
+            bucket_name, object_name, opts, sp, reader, storage_params, opts.is_serial_compute_mode
         )
         response = await self.blockchain_client.broadcast_message(
             message=get_approval,
@@ -74,10 +78,8 @@ class Object:
         reader: io.BytesIO,
         opts: PutObjectOptions,
     ) -> str:
-        sp = await self.blockchain_client.sp.get_first_in_service_storage_provider()
-        return await self.storage_client.object.put_object(
-            bucket_name, object_name, object_size, sp["operator_address"], reader, opts
-        )
+        sp = await self.bucket.storage_provider_by_bucket(bucket_name)
+        return await self.storage_client.object.put_object(bucket_name, object_name, object_size, sp, reader, opts)
 
     async def cancel_create_object(self, bucket_name: str, object_name: str) -> str:
         check_valid_bucket_name(bucket_name)
@@ -103,9 +105,8 @@ class Object:
         return response
 
     async def get_object(self, bucket_name: str, object_name: str, opts: GetObjectOption) -> Tuple[Any, ObjectInfo]:
-        sp = await self.blockchain_client.sp.get_first_in_service_storage_provider()
-
-        return await self.storage_client.object.get_object(bucket_name, object_name, sp["operator_address"], opts)
+        sp = await self.bucket.storage_provider_by_bucket(bucket_name)
+        return await self.storage_client.object.get_object(bucket_name, object_name, sp, opts)
 
     async def get_object_head(self, bucket_name: str, object_name: str) -> ObjectInfo:
         object_info = await self.blockchain_client.storage.get_head_object(
@@ -201,8 +202,8 @@ class Object:
         return Effect(effect.effect).name
 
     async def list_objects(self, bucket_name: str, opts: ListObjectsOptions) -> ListObjectsResult:
-        sp = await self.blockchain_client.sp.get_first_in_service_storage_provider()
-        return await self.storage_client.object.list_objects(bucket_name, sp["operator_address"], opts)
+        sp = await self.bucket.storage_provider_by_bucket(bucket_name)
+        return await self.storage_client.object.list_objects(bucket_name, sp, opts)
 
     async def create_folder(self, bucket_name: str, object_name: str, opts: CreateObjectOptions) -> str:
         if object_name.endswith("/") == False:
@@ -237,8 +238,7 @@ class Object:
         return await self.storage_client.object.list_object_by_object_id(object_ids, opts)
 
     async def list_object_policies(
-        self, object_name: str, bucket_name: str, action_type: ActionType, opts: ListObjectPoliciesOptions
-    ):
-        # TODO: finish implementation
-        await self.storage_client.object.list_object_policies(object_name, bucket_name, action_type, opts)
-        raise NotImplementedError
+        self, bucket_name: str, object_name: str, action_type: ActionType, opts: ListObjectPoliciesOptions
+    ) -> List[ObjectPolicies]:
+        sp = await self.bucket.storage_provider_by_bucket(bucket_name)
+        return await self.storage_client.object.list_object_policies(bucket_name, object_name, sp, action_type, opts)

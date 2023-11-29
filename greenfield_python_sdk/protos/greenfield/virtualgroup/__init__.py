@@ -677,8 +677,8 @@ class MsgSettle(betterproto.Message):
 
     storage_provider: str = betterproto.string_field(1)
     """
-    storage_provider defines the operator/funding account address of the storage
-    provider who initial settle request.
+    storage_provider defines the account address who initiates the settle request.
+    After Pampas upgrade, not only storage provider, anyone can submit this message.
     """
 
     global_virtual_group_family_id: int = betterproto.uint32_field(2)
