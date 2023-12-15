@@ -1,6 +1,12 @@
 Changelog
 =========
 
+0.5.1 - 2023-12-14
+-------
+
+- Upgrade dependencies
+- Add documentation
+
 0.5.0 - 2023-11-29
 -------
 

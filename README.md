@@ -15,6 +15,8 @@ It provides an asynchronous client that can be used to interact with the Greenfi
 
 This SDK support latest Greenfield Mainnet version (v1.1.0).
 
+For more information about the Greenfield Python SDK, please check the following website: [Greenfield Python SDK](https://bnb-chain.github.io/greenfield-python-sdk/)
+
 ## Installation
 
 First you will need to `generate a shared library` to be able to use the object module.
@@ -82,6 +84,7 @@ if __name__ == "__main__":
 - [x] Proposal
 - [x] Storage Provider
 - [x] Validator (Limited functionality)
+- [x] Virtual Group
 
 ## Prerequisites
 
@@ -103,7 +106,7 @@ make test-e2e
 If you want to create transactions and upload objects as part of the tests, you will need to export a private_key with funds as an environment variable:
 
 ```bash
-export PRIVATE_KEY=...
+export private_key=...
 ```
 
 

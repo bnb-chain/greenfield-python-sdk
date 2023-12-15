@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "greenfield-python-sdk"
-version = "0.5.0"
+version = "0.5.1"
 description = "A Greenfield python SDK"
 authors = ["BNB Chain"]
 readme = "README.md"
@@ -9,8 +9,8 @@ packages = [{include = "greenfield_python_sdk"}]
 [tool.poetry.dependencies]
 python = "^3.9"
 betterproto = {git = "https://github.com/danielgtaylor/python-betterproto", rev = "e7f07fa2a113bcaef42571b4a67b3ddfbe0ab935"}
-grpcio-tools = "1.59.2"
-httpx = "0.25.1"
+grpcio-tools = "1.60.0"
+httpx = "0.25.2"
 jinja2 = "3.1.2"
 pydantic = "2.5.2"
 grpclib = "0.4.6"
@@ -18,7 +18,7 @@ ecdsa = "0.18.0"
 bech32 = "1.2.0"
 mnemonic = "0.20"
 hdwallets = "0.1.2"
-aiohttp = "3.9"
+aiohttp = "3.9.1"
 safe-pysha3 = "1.0.4"
 pycryptodome = "3.19.0"
 coincurve = "18.0.0"
@@ -29,7 +29,7 @@ xmltodict = "0.13.0"
 reedsolo = "1.7.0"
 python-dotenv = "1.0.0"
 pytest-timeout = "2.2.0"
-pydantic-settings = "2.0.3"
+pydantic-settings = "2.1.0"
 py-ecc = "^6.0.0"
 html-to-json = "^2.0.0"
 
