@@ -30,7 +30,7 @@ reedsolo = "1.7.0"
 python-dotenv = "1.0.0"
 pytest-timeout = "2.2.0"
 pydantic-settings = "2.1.0"
-py-ecc = "^6.0.0"
+py-ecc = "^7.0.0"
 html-to-json = "^2.0.0"
 
 [tool.poetry.group.dev.dependencies]
