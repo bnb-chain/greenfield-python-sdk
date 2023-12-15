@@ -15,6 +15,8 @@ It provides an asynchronous client that can be used to interact with the Greenfi
 
 This SDK support latest Greenfield Mainnet version (v1.1.0).
 
+For more information about the Greenfield Python SDK, please check the following website: [Greenfield Python SDK](https://bnb-chain.github.io/greenfield-python-sdk/)
+
 ## Installation
 
 First you will need to `generate a shared library` to be able to use the object module.
@@ -178,12 +180,6 @@ make build
 ```
 
 And finally, update the `greenfield_python_sdk/config.py` file with the new Greenfield version. `GREENFIELD_VERSION`
-
-## Documentation
-
-If you want to know more about the Greenfield Python SDK, you can check the documentation:
-- [Getting started with Greenfield Python SDK](./docs/getting_started_with_the_greenfield_python_sdk.md)
-- [Under the hood of the Greenfield Python SDK](./docs/under_the_hood_of_the_greenfield_python_sdk.md)
 
 ## Reference
 
