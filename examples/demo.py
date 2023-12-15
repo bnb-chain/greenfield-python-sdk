@@ -14,7 +14,7 @@ config = get_account_configuration()
 async def main():
     network_configuration = NetworkConfiguration(**NetworkTestnet().model_dump())
     key_manager = KeyManager(private_key=config.private_key)
-    
+
     async with GreenfieldClient(network_configuration=network_configuration, key_manager=key_manager) as client:
         await client.async_init()
 
@@ -22,12 +22,12 @@ async def main():
         object_name = "demoimage.png"
 
         # Get a Storage Provider
-        sp = await client.blockchain_client.sp.get_first_in_service_storage_provider()
+        sp = await client.blockchain_client.get_active_sps()
 
         # Create Bucket
         tx_hash = await client.bucket.create_bucket(
             bucket_name,
-            primary_sp_address=sp["operator_address"],
+            primary_sp_address=sp[0]["operator_address"],
             opts=CreateBucketOptions(charged_read_quota=100, visibility=VisibilityType.VISIBILITY_TYPE_PRIVATE),
         )
         await client.basic.wait_for_tx(hash=tx_hash)
@@ -53,6 +53,8 @@ async def main():
             reader=content.getvalue(),
             opts=PutObjectOptions(content_type="image/png")
         )
+
+        await asyncio.sleep(5)
 
         breakpoint() # View the object in the explorer https://dcellar.io/
 
