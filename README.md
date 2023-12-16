@@ -15,7 +15,7 @@ It provides an asynchronous client that can be used to interact with the Greenfi
 
 This SDK support latest Greenfield Mainnet version (v1.1.0).
 
-For more information about the Greenfield Python SDK, please check the following website: [Greenfield Python SDK](https://bnb-chain.github.io/greenfield-python-sdk/)
+For more information about the Greenfield Python SDK, please check the following website: [Greenfield Python SDK](https://docs.bnbchain.org/greenfield-python-sdk/)
 
 ## Installation
 
