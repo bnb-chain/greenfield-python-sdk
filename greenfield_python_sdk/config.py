@@ -3,7 +3,7 @@ from functools import lru_cache
 from pydantic import BaseModel
 from pydantic_settings import BaseSettings
 
-GREENFIELD_VERSION = "v1.1.0"
+GREENFIELD_VERSION = "v1.2.0"
 
 
 class NetworkMainnet(BaseModel):

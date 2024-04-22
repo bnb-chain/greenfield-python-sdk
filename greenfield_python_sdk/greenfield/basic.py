@@ -7,7 +7,9 @@ import aiohttp
 
 from greenfield_python_sdk.__version__ import __version__
 from greenfield_python_sdk.blockchain_client import BlockchainClient
+from greenfield_python_sdk.key_manager import KeyManager
 from greenfield_python_sdk.models.basic import ResultBlockResults, ResultCommit, ResultStatus
+from greenfield_python_sdk.models.eip712_messages.storage.msg_set_tag import TYPE_URL
 from greenfield_python_sdk.protos.cosmos.base.tendermint.v1beta1 import (
     GetBlockByHeightRequest,
     GetBlockByHeightResponse,
@@ -18,14 +20,17 @@ from greenfield_python_sdk.protos.cosmos.base.tendermint.v1beta1 import (
     Validator,
 )
 from greenfield_python_sdk.protos.cosmos.tx.v1beta1 import GetTxRequest, SimulateResponse
+from greenfield_python_sdk.protos.greenfield.storage import MsgSetTag, ResourceTags
 from greenfield_python_sdk.protos.tendermint.services.block_results.v1 import GetBlockResultsRequest
 
 
 class Basic:
     blockchain_client: BlockchainClient
+    key_manager: KeyManager
 
-    def __init__(self, blockchain_client):
+    def __init__(self, blockchain_client, key_manager):
         self.blockchain_client = blockchain_client
+        self.key_manager = key_manager
 
     async def get_node_info(self) -> GetNodeInfoResponse:
         response = await self.blockchain_client.tendermint.get_node_info()
@@ -41,7 +46,7 @@ class Basic:
             return (
                 self.response["result"]["response"]["version"]
                 if "version" in self.response["result"]["response"]
-                else "v1.1.0"
+                else "v1.2.0"
             )
 
     async def get_status(self) -> ResultStatus:
@@ -172,3 +177,8 @@ class Basic:
                 self.blockchain_client.channel.base_url, data=json.dumps(data), headers=headers
             )
             return (await self._resp.json())["result"]
+
+    async def set_tag(self, resource_grn: str, tags: ResourceTags):
+        msg_set_tag = MsgSetTag(operator=self.key_manager.address, resource=resource_grn, tags=tags)
+        tx_hash = await self.blockchain_client.broadcast_message(message=msg_set_tag, type_url=TYPE_URL)
+        return tx_hash

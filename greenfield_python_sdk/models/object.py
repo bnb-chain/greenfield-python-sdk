@@ -2,7 +2,7 @@ from typing import List, Optional
 
 from pydantic import BaseModel
 
-from greenfield_python_sdk.protos.greenfield.storage import ObjectInfo, VisibilityType
+from greenfield_python_sdk.protos.greenfield.storage import ObjectInfo, ResourceTags, ResourceTagsTag, VisibilityType
 
 
 class CreateObjectOptions(BaseModel):
@@ -12,6 +12,7 @@ class CreateObjectOptions(BaseModel):
     is_replica_type: Optional[bool] = None
     is_async_mode: Optional[bool] = None
     is_serial_compute_mode: Optional[str] = "true"
+    tags: Optional[ResourceTags] = None
 
 
 class PutObjectOptions(BaseModel):

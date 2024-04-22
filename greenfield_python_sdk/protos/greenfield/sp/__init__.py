@@ -433,8 +433,6 @@ class QueryParamsResponse(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class QueryStorageProvidersRequest(betterproto.Message):
-    """this line is used by starport scaffolding # 3"""
-
     pagination: "__cosmos_base_query_v1_beta1__.PageRequest" = betterproto.message_field(1)
     """pagination defines an optional pagination for the request."""
 

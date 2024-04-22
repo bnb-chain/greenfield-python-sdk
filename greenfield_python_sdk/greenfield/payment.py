@@ -74,7 +74,9 @@ class Payment:
 
         return tx
 
-    async def list_user_payment_accounts(self, opts: ListUserPaymentAccountsOptions) -> ListUserPaymentAccountsResult:
+    async def list_user_payment_accounts(
+        self, opts: ListUserPaymentAccountsOptions
+    ) -> List[ListUserPaymentAccountsResult]:
         query_parameters = {
             "user-payments": "",
         }
@@ -98,16 +100,18 @@ class Payment:
         )
         list_payment_accounts = html_to_json.convert(await response.text())["gfsplistuserpaymentaccountsresponse"][0]
 
+        list_user_payment_accounts = []
         if "paymentaccounts" in list_payment_accounts:
-            converted_data_list = {
-                convert_key(key): convert_value(key, value) if value[0] else ""
-                for key, value in list_payment_accounts["paymentaccounts"][0].items()
-            }
-            fields = ["netflow_rate", "static_balance", "buffer_balance", "lock_balance", "frozen_netflow_rate"]
-            for field in fields:
-                converted_data_list["stream_record"][field] = str(converted_data_list["stream_record"][field])
-            return ListUserPaymentAccountsResult(**converted_data_list)
-        return ListUserPaymentAccountsResult()
+            test = list_payment_accounts["paymentaccounts"]
+            for test in list_payment_accounts["paymentaccounts"]:
+                converted_data_list = {
+                    convert_key(key): convert_value(key, value) if value[0] else "" for key, value in test.items()
+                }
+                fields = ["netflow_rate", "static_balance", "buffer_balance", "lock_balance", "frozen_netflow_rate"]
+                for field in fields:
+                    converted_data_list["stream_record"][field] = str(converted_data_list["stream_record"][field])
+                list_user_payment_accounts.append(ListUserPaymentAccountsResult(**converted_data_list))
+        return list_user_payment_accounts
 
     async def get_all_payment_accounts(self, pagination: PaginationResponse = None) -> List["PaymentAccount"]:
         request = QueryPaymentAccountsRequest(pagination)

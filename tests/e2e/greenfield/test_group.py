@@ -26,10 +26,10 @@ from greenfield_python_sdk.models.group import (
     UpdateGroupMemberOption,
 )
 from greenfield_python_sdk.models.object import CreateObjectOptions, PutObjectOptions
-from greenfield_python_sdk.models.request import Principal, PutPolicyOption
+from greenfield_python_sdk.models.request import Principal, PutPolicyOption, ResourceType
 from greenfield_python_sdk.protos.greenfield.permission import ActionType, Effect, PrincipalType, Statement
 from greenfield_python_sdk.protos.greenfield.sp import QueryStorageProvidersRequest
-from greenfield_python_sdk.protos.greenfield.storage import VisibilityType
+from greenfield_python_sdk.protos.greenfield.storage import ResourceTags, ResourceTagsTag, VisibilityType
 from greenfield_python_sdk.storage_provider.utils import create_example_object
 
 pytestmark = [pytest.mark.asyncio, pytest.mark.e2e]
@@ -394,6 +394,57 @@ async def test_list_group():
         await client.basic.wait_for_tx(hash=tx_hash)
 
         tx_hash = await client.group.delete_group(group_name=group_name3)
+        assert tx_hash
+        assert len(tx_hash) == 64
+        assert isinstance(tx_hash, str)
+        await client.basic.wait_for_tx(hash=tx_hash)
+
+
+@pytest.mark.requires_config
+@pytest.mark.tx
+@pytest.mark.slow
+async def test_create_group_and_set_tag():
+    config = get_account_configuration()
+    key_manager = KeyManager(private_key=config.private_key)
+    async with GreenfieldClient(network_configuration=network_configuration, key_manager=key_manager) as client:
+        await client.async_init()
+
+        list_groups_by_account = await client.group.list_groups_by_owner(GroupsOwnerPaginationOptions())
+        if list_groups_by_account.groups != None:
+            groups = [group.group.group_name for group in list_groups_by_account.groups]
+            for group_name in groups:
+                tx_hash = await client.group.delete_group(
+                    group_name,
+                )
+                assert tx_hash
+                await client.basic.wait_for_tx(hash=tx_hash)
+
+        group_name = "".join(random.choices(string.ascii_lowercase + string.digits, k=random.randint(5, 11)))
+        await client.async_init()
+
+        tx_hash = await client.group.create_group(
+            group_name=group_name, opts=CreateGroupOptions(init_group_members=[key_manager.address])
+        )
+        assert tx_hash
+        assert len(tx_hash) == 64
+        assert isinstance(tx_hash, str)
+        await client.basic.wait_for_tx(hash=tx_hash)
+
+        tags = ResourceTags(tags=[ResourceTagsTag(key="tag1", value="first_tag")])
+        res = await client.basic.set_tag(
+            f"grn:{ResourceType.RESOURCE_TYPE_GROUP.value}:{key_manager.address}:{group_name}", tags
+        )
+        assert tx_hash
+        assert len(tx_hash) == 64
+        assert isinstance(tx_hash, str)
+        await client.basic.wait_for_tx(hash=res)
+
+        group_head = await client.group.get_group_head(group_name, group_owner=key_manager.address)
+        assert group_head.group_name == group_name
+        assert group_head.owner == key_manager.address
+        assert group_head.tags == tags
+
+        tx_hash = await client.group.delete_group(group_name=group_name)
         assert tx_hash
         assert len(tx_hash) == 64
         assert isinstance(tx_hash, str)
