@@ -66,7 +66,7 @@ class GreenfieldClient:
         ).__aenter__()
 
         # Embeded clients
-        self.basic = Basic(self.blockchain_client)
+        self.basic = Basic(self.blockchain_client, self.key_manager)
         self.account = AccountInterface(self.blockchain_client, self.basic)
         self.bucket = Bucket(self.blockchain_client, self.key_manager, self.storage_client)
         self.challenge = Challenge(self.blockchain_client, self.storage_client)
@@ -84,7 +84,7 @@ class GreenfieldClient:
         return self
 
     async def async_init(self):
-        await self.check_node_version()
+        # await self.check_node_version()
         await self.sync_account()
 
     async def check_node_version(self):

@@ -6,7 +6,7 @@ from pydantic.dataclasses import dataclass
 
 from greenfield_python_sdk.models.transaction import TxOption
 from greenfield_python_sdk.protos.greenfield.common import Approval
-from greenfield_python_sdk.protos.greenfield.storage import BucketInfo
+from greenfield_python_sdk.protos.greenfield.storage import BucketInfo, ResourceTags, ResourceTagsTag
 from greenfield_python_sdk.protos.greenfield.storage import VisibilityType
 from greenfield_python_sdk.protos.greenfield.storage import VisibilityType as Visibility
 from greenfield_python_sdk.protos.greenfield.virtualgroup import GlobalVirtualGroupFamily
@@ -126,6 +126,7 @@ class CreateBucketOptions(BaseModel):
     creator_address: Optional[str] = ""
     payment_address: Optional[str] = ""
     primary_sp_approval: Optional[Approval] = Approval(expired_height=0)
+    tags: Optional[ResourceTags] = None
     visibility: Optional[VisibilityType] = VisibilityType.VISIBILITY_TYPE_UNSPECIFIED
 
 

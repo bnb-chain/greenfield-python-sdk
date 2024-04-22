@@ -38,9 +38,6 @@ message Request {
     RequestPrepareProposal    prepare_proposal     = 16;
     RequestProcessProposal    process_proposal     = 17;
     RequestEthQuery           eth_query            = 18;
-    RequestPreBeginBlock      pre_begin_block      = 19;
-    RequestPreDeliverTx       pre_deliver_tx       = 20;
-    RequestPreCommit          pre_commit           = 21;
   }
   reserved 4;
 }
@@ -158,21 +155,6 @@ message RequestEthQuery {
   bytes request = 1;
 }
 
-message RequestPreBeginBlock {
-  int64                   state_number         = 1;
-  bytes                   hash                 = 2;
-  tendermint.types.Header header               = 3 [(gogoproto.nullable) = false];
-}
-
-message RequestPreDeliverTx {
-  int64 state_index = 1;
-  bytes tx          = 2;
-}
-
-message RequestPreCommit {
-  int64 state_index = 1;
-}
-
 //----------------------------------------
 // Response types
 
@@ -196,7 +178,6 @@ message Response {
     ResponsePrepareProposal    prepare_proposal     = 17;
     ResponseProcessProposal    process_proposal     = 18;
     ResponseEthQuery           eth_query            = 19;
-    ResponsePrefetch            prefetch            = 20;
   }
   reserved 5;
 }
@@ -244,7 +225,6 @@ message ResponseQuery {
 message ResponseBeginBlock {
   repeated Event events = 1
       [(gogoproto.nullable) = false, (gogoproto.jsontag) = "events,omitempty"];
-  bytes      extra_data = 2;
 }
 
 message ResponseCheckTx {
@@ -284,7 +264,6 @@ message ResponseEndBlock {
   tendermint.types.ConsensusParams consensus_param_updates = 2;
   repeated Event                   events                  = 3
       [(gogoproto.nullable) = false, (gogoproto.jsontag) = "events,omitempty"];
-  bytes                                          extra_data = 4;
 }
 
 message ResponseCommit {
@@ -350,11 +329,6 @@ message ResponseEthQuery{
   bytes  response   = 4;
 }
 
-message ResponsePrefetch{
-  uint32 code  = 1;
-  string error = 2;
-}
-
 //----------------------------------------
 // Misc.
 
@@ -411,10 +385,8 @@ message Validator {
 
 // ValidatorUpdate
 message ValidatorUpdate {
-  tendermint.crypto.PublicKey pub_key            = 1 [(gogoproto.nullable) = false];
-  int64                       power              = 2;
-  bytes                       bls_key            = 3;
-  bytes                       relayer_address    = 4;
+  tendermint.crypto.PublicKey pub_key = 1 [(gogoproto.nullable) = false];
+  int64                       power   = 2;
 }
 
 // VoteInfo
@@ -485,8 +457,4 @@ service ABCIApplication {
   rpc ProcessProposal(RequestProcessProposal) returns (ResponseProcessProposal);
 
   rpc EthQuery(RequestEthQuery) returns (ResponseEthQuery);
-
-  rpc PreBeginBlock(RequestPreBeginBlock) returns (ResponsePrefetch);
-  rpc PreDeliverTx(RequestPreDeliverTx) returns (ResponsePrefetch);
-  rpc PreCommit(RequestPreCommit) returns (ResponsePrefetch);
 }

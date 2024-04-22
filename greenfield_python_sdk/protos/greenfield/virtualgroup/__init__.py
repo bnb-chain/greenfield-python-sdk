@@ -430,8 +430,6 @@ class QueryGlobalVirtualGroupFamilyResponse(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class QueryGlobalVirtualGroupFamiliesRequest(betterproto.Message):
-    """this line is used by starport scaffolding # 3"""
-
     pagination: "__cosmos_base_query_v1_beta1__.PageRequest" = betterproto.message_field(1)
 
 
@@ -697,8 +695,6 @@ class MsgSettleResponse(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class MsgStorageProviderExit(betterproto.Message):
-    """this line is used by starport scaffolding # proto/tx/message"""
-
     storage_provider: str = betterproto.string_field(1)
     """
     storage_provider defines the operator account address of the storage provider who

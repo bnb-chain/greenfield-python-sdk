@@ -10,6 +10,7 @@ from greenfield_python_sdk.models.eip712_messages.storage import (
     msg_mirror_group,
     msg_mirror_object,
     msg_put_policy,
+    msg_set_tag,
     msg_update_bucket_info,
     msg_update_object_info,
 )
@@ -38,6 +39,7 @@ TYPES_MAP = {
     UPDATE_BUCKET_INFO: msg_update_bucket_info.TYPES,
     PUT_POLICY: msg_put_policy.TYPES,
     DELETE_POLICY: msg_delete_policy.TYPES,
+    msg_set_tag.TYPE_URL: msg_set_tag.TYPES,
     msg_mirror_group.TYPE_URL: msg_mirror_group.TYPES,
     msg_mirror_bucket.TYPE_URL: msg_mirror_bucket.TYPES,
     msg_mirror_object.TYPE_URL: msg_mirror_object.TYPES,

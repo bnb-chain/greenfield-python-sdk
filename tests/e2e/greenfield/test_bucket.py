@@ -27,7 +27,7 @@ from greenfield_python_sdk.models.bucket import (
     UpdateBucketOptions,
     VisibilityType,
 )
-from greenfield_python_sdk.models.request import PutPolicyOption
+from greenfield_python_sdk.models.request import PutPolicyOption, ResourceType
 from greenfield_python_sdk.protos.greenfield.permission import (
     ActionType,
     Effect,
@@ -37,7 +37,7 @@ from greenfield_python_sdk.protos.greenfield.permission import (
     Statement,
 )
 from greenfield_python_sdk.protos.greenfield.sp import StorageProvider as SpStorageProvider
-from greenfield_python_sdk.protos.greenfield.storage import BucketInfo
+from greenfield_python_sdk.protos.greenfield.storage import BucketInfo, ResourceTags, ResourceTagsTag, VisibilityType
 
 pytestmark = [pytest.mark.asyncio, pytest.mark.e2e]
 
@@ -299,6 +299,44 @@ async def test_buy_quota_for_bucket():
         assert bucket_read_quota.bucket_name == bucket_name
         assert str(bucket_read_quota.bucket_id) == head_bucket.id
         assert isinstance(bucket_read_quota, ReadQuota)
+
+        tx_hash = await client.bucket.delete_bucket(bucket_name)
+        assert tx_hash
+        await client.basic.wait_for_tx(hash=tx_hash)
+
+
+@pytest.mark.requires_config
+@pytest.mark.tx
+@pytest.mark.slow
+async def test_create_bucket_and_set_tag():
+    config = get_account_configuration()
+    key_manager = KeyManager(private_key=config.private_key)
+    async with GreenfieldClient(network_configuration=network_configuration, key_manager=key_manager) as client:
+        await client.async_init()
+
+        bucket_name = "".join(random.choices(string.ascii_lowercase + string.digits, k=random.randint(5, 11)))
+        sp = (await client.blockchain_client.get_active_sps())[0]
+        tx_hash = await client.bucket.create_bucket(
+            bucket_name,
+            primary_sp_address=sp["operator_address"],
+            opts=CreateBucketOptions(charged_read_quota=100, visibility=VisibilityType.VISIBILITY_TYPE_PRIVATE),
+        )
+        assert tx_hash
+        assert len(tx_hash) == 64
+        assert isinstance(tx_hash, str)
+        await client.basic.wait_for_tx(hash=tx_hash)
+
+        tags = ResourceTags(tags=[ResourceTagsTag(key="tag1", value="first_tag")])
+        res = await client.basic.set_tag(f"grn:{ResourceType.RESOURCE_TYPE_BUCKET.value}::{bucket_name}", tags)
+        assert tx_hash
+        assert len(tx_hash) == 64
+        assert isinstance(tx_hash, str)
+        await client.basic.wait_for_tx(hash=res)
+
+        head_bucket = await client.bucket.get_bucket_head(bucket_name)
+        assert head_bucket
+        assert head_bucket.bucket_name == bucket_name
+        assert head_bucket.tags == tags
 
         tx_hash = await client.bucket.delete_bucket(bucket_name)
         assert tx_hash

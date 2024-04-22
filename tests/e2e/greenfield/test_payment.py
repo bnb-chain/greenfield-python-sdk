@@ -1,3 +1,5 @@
+from typing import List
+
 import pytest
 
 from greenfield_python_sdk import (
@@ -29,10 +31,20 @@ async def test_get_payments_account():
         list_user_payment_accounts = await client.payment.list_user_payment_accounts(
             ListUserPaymentAccountsOptions(account=all_payment_accounts[0].owner)
         )
+        payment_account_addresses = [test3.payment_account.address for test3 in list_user_payment_accounts]
+        payment_account_owner = ""
+        payment_account_owner = next(
+            (
+                test3.payment_account.owner
+                for test3 in list_user_payment_accounts
+                if payment_account_owner != test3.payment_account.owner and payment_account_owner == ""
+            ),
+            payment_account_owner,
+        )
         assert list_user_payment_accounts
-        assert isinstance(list_user_payment_accounts, ListUserPaymentAccountsResult)
-        assert all_payment_accounts[0].addr == list_user_payment_accounts.payment_account.address
-        assert all_payment_accounts[0].owner == list_user_payment_accounts.payment_account.owner
+        assert isinstance(list_user_payment_accounts, List)
+        assert all_payment_accounts[0].addr in payment_account_addresses
+        assert all_payment_accounts[0].owner == payment_account_owner
 
 
 @pytest.mark.requires_config

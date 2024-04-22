@@ -1,7 +1,17 @@
 Changelog
 =========
 
-0.5.1 - 2023-12-15
+0.6.0 - 2024-04-**
+-------
+
+- Upgrade dependencies
+- Updated codebase to support Greenfield 1.2.0
+- Resolve issues
+- Add new functions:
+    - `Basic`:
+        - `set_tag`
+
+0.5.1 - 2023-12-14
 -------
 
 - Upgrade dependencies

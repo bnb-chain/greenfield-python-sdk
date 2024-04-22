@@ -3,12 +3,13 @@ from typing import List
 
 from pydantic import BaseModel
 
-from greenfield_python_sdk.protos.greenfield.storage import GroupInfo
+from greenfield_python_sdk.protos.greenfield.storage import GroupInfo, ResourceTags, ResourceTagsTag
 
 
 class CreateGroupOptions(BaseModel):
     init_group_members: List[str] = None
     extra: str = ""
+    tags: ResourceTags = None
 
 
 class ListGroupsOptions(BaseModel):

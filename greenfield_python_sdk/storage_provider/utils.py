@@ -17,6 +17,8 @@ from greenfield_python_sdk.models.object import ObjectStat
 from greenfield_python_sdk.protos.greenfield.storage import (
     BucketStatus,
     RedundancyType,
+    ResourceTags,
+    ResourceTagsTag,
     SourceType,
     VisibilityType,
 )
@@ -245,11 +247,17 @@ def convert_key(key):
 def convert_value(key, data):
     if isinstance(data, list) and len(data) == 1 and isinstance(data[0], dict) and "_value" in data[0]:
         return safe_literal_eval(key, data[0]["_value"]) if "0x" not in data[0]["_value"] else data[0]["_value"]
-    elif len(data) > 1:
+    elif len(data) > 1 and "_value" in data[0]:
         return [checksum["_value"] for checksum in data]
     else:
         if data[0] == {}:
-            return ""
+            return ResourceTags() if key == "tags" else ""
+        if key == "tags" and "key" in data[0]["tags"][0]:
+            arr = [
+                ResourceTagsTag(key=test2["key"][0]["_value"], value=test2["value"][0]["_value"])
+                for test2 in data[0]["tags"]
+            ]
+            return ResourceTags(tags=arr)
         return {convert_key(key): convert_value(key, value) for key, value in data[0].items()}
 
 
