@@ -1,7 +1,7 @@
 Changelog
 =========
 
-0.6.1 - 2024-4-25
+0.6.1 - 2024-5-13
 -------
 
 - Upgrade dependencies
