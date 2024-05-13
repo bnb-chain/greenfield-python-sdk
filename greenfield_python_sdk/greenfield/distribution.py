@@ -26,7 +26,7 @@ class Distribution:
         message = MsgSetWithdrawAddress(delegator_address=delegator_address, withdraw_address=withdraw_address)
 
         response = await self.blockchain_client.broadcast_message(
-            message=message, type_url="/cosmos.distribution.v1beta1.MsgSetWithdrawAddress"
+            messages=[message], type_url=["/cosmos.distribution.v1beta1.MsgSetWithdrawAddress"]
         )
         return response
 
@@ -36,7 +36,7 @@ class Distribution:
         message = MsgWithdrawValidatorCommission(validator_address=validator_address)
 
         response = await self.blockchain_client.broadcast_message(
-            message=message, type_url="/cosmos.distribution.v1beta1.MsgWithdrawValidatorCommission"
+            messages=[message], type_url=["/cosmos.distribution.v1beta1.MsgWithdrawValidatorCommission"]
         )
         return response
 
@@ -48,7 +48,7 @@ class Distribution:
         message = MsgWithdrawDelegatorReward(delegator_address=delegator_address, validator_address=validator_address)
 
         response = await self.blockchain_client.broadcast_message(
-            message=message, type_url="/cosmos.distribution.v1beta1.MsgWithdrawDelegatorReward"
+            messages=[message], type_url=["/cosmos.distribution.v1beta1.MsgWithdrawDelegatorReward"]
         )
         return response
 
@@ -59,6 +59,6 @@ class Distribution:
         message = MsgFundCommunityPool(depositor=depositor, amount=amount)
 
         response = await self.blockchain_client.broadcast_message(
-            message=message, type_url="/cosmos.distribution.v1beta1.MsgFundCommunityPool"
+            messages=[message], type_url=["/cosmos.distribution.v1beta1.MsgFundCommunityPool"]
         )
         return response

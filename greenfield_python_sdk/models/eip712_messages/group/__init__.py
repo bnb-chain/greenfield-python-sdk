@@ -9,7 +9,7 @@ from greenfield_python_sdk.models.eip712_messages.group.group_url import (
     CREATE_GROUP,
     DELETE_GROUP,
     LEAVE_GROUP,
-    RENEW_GROUP_MEMEBER,
+    RENEW_GROUP_MEMBER,
     UPDATE_GROUP_MEMBER,
 )
 
@@ -18,5 +18,5 @@ TYPES_MAP = {
     DELETE_GROUP: msg_delete_group.TYPES,
     UPDATE_GROUP_MEMBER: msg_update_group_member.TYPES,
     LEAVE_GROUP: msg_leave_group.TYPES,
-    RENEW_GROUP_MEMEBER: msg_renew_group_member.TYPES,
+    RENEW_GROUP_MEMBER: msg_renew_group_member.TYPES,
 }

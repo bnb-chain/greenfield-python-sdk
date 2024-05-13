@@ -180,5 +180,5 @@ class Basic:
 
     async def set_tag(self, resource_grn: str, tags: ResourceTags):
         msg_set_tag = MsgSetTag(operator=self.key_manager.address, resource=resource_grn, tags=tags)
-        tx_hash = await self.blockchain_client.broadcast_message(message=msg_set_tag, type_url=TYPE_URL)
+        tx_hash = await self.blockchain_client.broadcast_message(messages=[msg_set_tag], type_url=[TYPE_URL])
         return tx_hash

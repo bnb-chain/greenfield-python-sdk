@@ -23,6 +23,7 @@ from greenfield_python_sdk.models.eip712_messages.storage.bucket_url import (
     MIGRATE_BUCKET,
     UPDATE_BUCKET_INFO,
 )
+from greenfield_python_sdk.models.eip712_messages.storage.msg_set_tag import TYPE_URL
 from greenfield_python_sdk.models.eip712_messages.storage.policy_url import DELETE_POLICY, PUT_POLICY
 from greenfield_python_sdk.models.request import Principal, PutPolicyOption, ResourceType
 from greenfield_python_sdk.models.transaction import BroadcastOption
@@ -34,6 +35,7 @@ from greenfield_python_sdk.protos.greenfield.storage import (
     MsgDeletePolicy,
     MsgPutPolicy,
     MsgRejectMigrateBucket,
+    MsgSetTag,
     MsgUpdateBucketInfo,
     QueryHeadBucketByIdRequest,
     QueryHeadBucketRequest,
@@ -61,8 +63,20 @@ class Bucket:
         get_approval, sp_signature = await self.storage_client.bucket.get_bucket_approval(
             bucket_name, primary_sp_address, opts
         )
+        messages = [get_approval]
+        type_url = [CREATE_BUCKET]
+
+        if opts.tags:
+            msg_set_tag = MsgSetTag(
+                operator=self.key_manager.address,
+                resource=f"grn:{ResourceType.RESOURCE_TYPE_BUCKET.value}::{bucket_name}",
+                tags=opts.tags,
+            )
+            messages.append(msg_set_tag)
+            type_url.append(TYPE_URL)
+
         tx_hash = await self.blockchain_client.broadcast_message(
-            message=get_approval, type_url=CREATE_BUCKET, broadcast_option=BroadcastOption(sp_signature=sp_signature)
+            messages, type_url, broadcast_option=BroadcastOption(sp_signature=sp_signature)
         )
         return tx_hash
 
@@ -70,7 +84,7 @@ class Bucket:
         check_valid_bucket_name(bucket_name)
 
         delete_bucket_msg = MsgDeleteBucket(operator=self.key_manager.address, bucket_name=bucket_name)
-        tx_hash = await self.blockchain_client.broadcast_message(message=delete_bucket_msg, type_url=DELETE_BUCKET)
+        tx_hash = await self.blockchain_client.broadcast_message(messages=[delete_bucket_msg], type_url=[DELETE_BUCKET])
         return tx_hash
 
     async def update_bucket_visibility(
@@ -94,7 +108,7 @@ class Bucket:
             visibility=visibility,
         )
         tx_hash = await self.blockchain_client.broadcast_message(
-            message=update_bucket_visibility_msg, type_url=UPDATE_BUCKET_INFO
+            messages=[update_bucket_visibility_msg], type_url=[UPDATE_BUCKET_INFO]
         )
         return tx_hash
 
@@ -129,7 +143,9 @@ class Bucket:
             payment_address=payment_address,
             visibility=visibility,
         )
-        tx_hash = await self.blockchain_client.broadcast_message(message=update_bucket_msg, type_url=UPDATE_BUCKET_INFO)
+        tx_hash = await self.blockchain_client.broadcast_message(
+            messages=[update_bucket_msg], type_url=[UPDATE_BUCKET_INFO]
+        )
         return tx_hash
 
     async def update_bucket_payment_addr(self, bucket_name: str, payment_addr: str) -> str:
@@ -144,7 +160,7 @@ class Bucket:
             visibility=bucket_info.bucket_info.visibility,
         )
         tx_hash = await self.blockchain_client.broadcast_message(
-            message=update_bucket_payment_address_msg, type_url=UPDATE_BUCKET_INFO
+            messages=[update_bucket_payment_address_msg], type_url=[UPDATE_BUCKET_INFO]
         )
         return tx_hash
 
@@ -182,7 +198,7 @@ class Bucket:
         if opts and opts.policy_expire_time:
             put_policy_msg.expiration_time = opts.policy_expire_time
 
-        tx_hash = await self.blockchain_client.broadcast_message(message=put_policy_msg, type_url=PUT_POLICY)
+        tx_hash = await self.blockchain_client.broadcast_message(messages=[put_policy_msg], type_url=[PUT_POLICY])
         return tx_hash
 
     async def delete_bucket_policy(self, bucket_name: str, principal: Principal) -> str:
@@ -193,7 +209,7 @@ class Bucket:
             resource=str(resource),
             principal=principal,
         )
-        tx_hash = await self.blockchain_client.broadcast_message(message=delete_policy_msg, type_url=DELETE_POLICY)
+        tx_hash = await self.blockchain_client.broadcast_message(messages=[delete_policy_msg], type_url=[DELETE_POLICY])
         return tx_hash
 
     async def get_bucket_policy(self, bucket_name: str, principal_addr: str) -> Policy:
@@ -243,7 +259,7 @@ class Bucket:
             visibility=bucket_info.bucket_info.visibility,
         )
         tx_hash = await self.blockchain_client.broadcast_message(
-            message=update_quota_bucket_msg, type_url=UPDATE_BUCKET_INFO
+            messages=[update_quota_bucket_msg], type_url=[UPDATE_BUCKET_INFO]
         )
         return tx_hash
 
@@ -263,7 +279,9 @@ class Bucket:
             bucket_name, dst_primary_sp_id, opts
         )
         tx_hash = await self.blockchain_client.broadcast_message(
-            message=get_approval, type_url=MIGRATE_BUCKET, broadcast_option=BroadcastOption(sp_signature=sp_signature)
+            messages=[get_approval],
+            type_url=[MIGRATE_BUCKET],
+            broadcast_option=BroadcastOption(sp_signature=sp_signature),
         )
         return tx_hash
 

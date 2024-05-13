@@ -43,7 +43,7 @@ class Payment:
             to=to_address,
             amount=str(amount),
         )
-        tx = await self.blockchain_client.broadcast_message(msg_deposit, type_url="/greenfield.payment.MsgDeposit")
+        tx = await self.blockchain_client.broadcast_message([msg_deposit], type_url=["/greenfield.payment.MsgDeposit"])
         return tx
 
     async def withdraw(self, from_address: str, amount: int) -> str:
@@ -55,7 +55,7 @@ class Payment:
             from_=from_address,
             amount=str(amount),
         )
-        tx = await self.blockchain_client.broadcast_message(msg_deposit, type_url="/greenfield.payment.MsgWithdraw")
+        tx = await self.blockchain_client.broadcast_message([msg_deposit], type_url=["/greenfield.payment.MsgWithdraw"])
 
         return tx
 
@@ -69,7 +69,7 @@ class Payment:
         )
 
         tx = await self.blockchain_client.broadcast_message(
-            msg_disable_refund, type_url="/greenfield.payment.MsgDisableRefund"
+            [msg_disable_refund], type_url=["/greenfield.payment.MsgDisableRefund"]
         )
 
         return tx

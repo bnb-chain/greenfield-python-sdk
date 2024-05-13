@@ -6,6 +6,7 @@ from greenfield_python_sdk.blockchain_client import BlockchainClient
 from greenfield_python_sdk.greenfield.bucket import Bucket
 from greenfield_python_sdk.key_manager import KeyManager
 from greenfield_python_sdk.models.bucket import EndPointOptions, VisibilityType
+from greenfield_python_sdk.models.eip712_messages.storage.msg_set_tag import TYPE_URL
 from greenfield_python_sdk.models.eip712_messages.storage.object_url import (
     CANCEL_CREATE_OBJECT,
     CREATE_OBJECT,
@@ -31,6 +32,7 @@ from greenfield_python_sdk.protos.greenfield.storage import (
     MsgDeleteObject,
     MsgDeletePolicy,
     MsgPutPolicy,
+    MsgSetTag,
     MsgUpdateObjectInfo,
     ObjectInfo,
     QueryHeadObjectByIdRequest,
@@ -63,9 +65,21 @@ class Object:
         get_approval, sp_signature, checksums = await self.storage_client.object.get_object_approval(
             bucket_name, object_name, opts, sp, reader, storage_params, opts.is_serial_compute_mode
         )
+        messages = [get_approval]
+        type_url = [CREATE_OBJECT]
+
+        if opts.tags:
+            msg_set_tag = MsgSetTag(
+                operator=self.key_manager.address,
+                resource=f"grn:{ResourceType.RESOURCE_TYPE_OBJECT.value}::{bucket_name}/{object_name}",
+                tags=opts.tags,
+            )
+            messages.append(msg_set_tag)
+            type_url.append(TYPE_URL)
+
         response = await self.blockchain_client.broadcast_message(
-            message=get_approval,
-            type_url=CREATE_OBJECT,
+            messages,
+            type_url,
             broadcast_option=BroadcastOption(sp_signature=sp_signature, checksums=checksums),
         )
         return response
@@ -90,7 +104,7 @@ class Object:
             object_name=object_name,
         )
         response = await self.blockchain_client.broadcast_message(
-            message=cancel_create_object, type_url=CANCEL_CREATE_OBJECT
+            messages=[cancel_create_object], type_url=[CANCEL_CREATE_OBJECT]
         )
         return response
 
@@ -101,7 +115,9 @@ class Object:
         delete_object_msg = MsgDeleteObject(
             operator=self.key_manager.address, bucket_name=bucket_name, object_name=object_name
         )
-        response = await self.blockchain_client.broadcast_message(message=delete_object_msg, type_url=DELETE_OBJECT)
+        response = await self.blockchain_client.broadcast_message(
+            messages=[delete_object_msg], type_url=[DELETE_OBJECT]
+        )
         return response
 
     async def get_object(self, bucket_name: str, object_name: str, opts: GetObjectOption) -> Tuple[Any, ObjectInfo]:
@@ -142,7 +158,7 @@ class Object:
             visibility=visibility,
         )
         response = await self.blockchain_client.broadcast_message(
-            message=update_object_visibility_msg, type_url=UPDATE_OBJECT_INFO
+            messages=[update_object_visibility_msg], type_url=[UPDATE_OBJECT_INFO]
         )
         return response
 
@@ -164,7 +180,7 @@ class Object:
         )
         if opts and opts.policy_expire_time:
             put_policy_msg.expiration_time = opts.policy_expire_time
-        response = await self.blockchain_client.broadcast_message(message=put_policy_msg, type_url=PUT_POLICY)
+        response = await self.blockchain_client.broadcast_message(messages=[put_policy_msg], type_url=[PUT_POLICY])
         return response
 
     async def delete_object_policy(self, bucket_name: str, object_name: str, principal: Principal) -> str:
@@ -175,7 +191,9 @@ class Object:
             resource=str(resource),
             principal=principal,
         )
-        response = await self.blockchain_client.broadcast_message(message=delete_policy_msg, type_url=DELETE_POLICY)
+        response = await self.blockchain_client.broadcast_message(
+            messages=[delete_policy_msg], type_url=[DELETE_POLICY]
+        )
         return response
 
     async def get_object_policy(self, bucket_name: str, object_name: str, principal_addr: str) -> Policy:

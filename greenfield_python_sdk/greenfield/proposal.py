@@ -33,7 +33,7 @@ class Proposal:
             messages=msgs,
         )
 
-        tx_resp = await self.blockchain_client.broadcast_message(message=msg_submit_proposal, type_url=PROPOSAL)
+        tx_resp = await self.blockchain_client.broadcast_message(messages=[msg_submit_proposal], type_url=[PROPOSAL])
 
         await asyncio.sleep(10)
         request = GetTxRequest(hash=tx_resp)
@@ -54,7 +54,7 @@ class Proposal:
             option=vote_option,
             metadata=opts.metadata,
         )
-        resp = await self.blockchain_client.broadcast_message(message=msg_vote, type_url=VOTE)
+        resp = await self.blockchain_client.broadcast_message(messages=[msg_vote], type_url=[VOTE])
         return resp
 
     async def get_proposal(self, proposal_id: int) -> Proposal:

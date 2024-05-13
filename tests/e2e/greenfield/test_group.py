@@ -420,6 +420,49 @@ async def test_create_group_and_set_tag():
                 await client.basic.wait_for_tx(hash=tx_hash)
 
         group_name = "".join(random.choices(string.ascii_lowercase + string.digits, k=random.randint(5, 11)))
+        tags = ResourceTags(tags=[ResourceTagsTag(key="tag1", value="first_tag")])
+        await client.async_init()
+
+        tx_hash = await client.group.create_group(
+            group_name=group_name, opts=CreateGroupOptions(init_group_members=[key_manager.address], tags=tags)
+        )
+        assert tx_hash
+        assert len(tx_hash) == 64
+        assert isinstance(tx_hash, str)
+        await client.basic.wait_for_tx(hash=tx_hash)
+
+        group_head = await client.group.get_group_head(group_name, group_owner=key_manager.address)
+        assert group_head.group_name == group_name
+        assert group_head.owner == key_manager.address
+        assert group_head.tags == tags
+
+        tx_hash = await client.group.delete_group(group_name=group_name)
+        assert tx_hash
+        assert len(tx_hash) == 64
+        assert isinstance(tx_hash, str)
+        await client.basic.wait_for_tx(hash=tx_hash)
+
+
+@pytest.mark.requires_config
+@pytest.mark.tx
+@pytest.mark.slow
+async def test_create_group_and_set_tag():
+    config = get_account_configuration()
+    key_manager = KeyManager(private_key=config.private_key)
+    async with GreenfieldClient(network_configuration=network_configuration, key_manager=key_manager) as client:
+        await client.async_init()
+
+        list_groups_by_account = await client.group.list_groups_by_owner(GroupsOwnerPaginationOptions())
+        if list_groups_by_account.groups != None:
+            groups = [group.group.group_name for group in list_groups_by_account.groups]
+            for group_name in groups:
+                tx_hash = await client.group.delete_group(
+                    group_name,
+                )
+                assert tx_hash
+                await client.basic.wait_for_tx(hash=tx_hash)
+
+        group_name = "".join(random.choices(string.ascii_lowercase + string.digits, k=random.randint(5, 11)))
         await client.async_init()
 
         tx_hash = await client.group.create_group(

@@ -108,7 +108,7 @@ class StorageProvider:
             ),
         )
 
-        response = await self.blockchain_client.broadcast_message(message=msg_grant, type_url=COSMOS_GRANT)
+        response = await self.blockchain_client.broadcast_message(messages=[msg_grant], type_url=[COSMOS_GRANT])
         return response
 
     async def create_storage_provider(
@@ -167,8 +167,8 @@ class StorageProvider:
             messages=[msg_create_sp],
         )
         hash = await self.blockchain_client.broadcast_message(
-            message=msg_submit_proposal,
-            type_url=SUBMIT_PROPOSAL,
+            messages=[msg_submit_proposal],
+            type_url=[SUBMIT_PROPOSAL],
         )
         await asyncio.sleep(10)
         request = GetTxRequest(hash=hash)
@@ -192,8 +192,8 @@ class StorageProvider:
             store_price=str(store_price * 10**18),
         )
         hash = await self.blockchain_client.broadcast_message(
-            message=msg_update_sp_storage_price,
-            type_url=UPDATE_SP_STORAGE_PRICE,
+            messages=[msg_update_sp_storage_price],
+            type_url=[UPDATE_SP_STORAGE_PRICE],
         )
 
         return hash
@@ -202,7 +202,7 @@ class StorageProvider:
         sp_addr = check_address(sp_addr)
         msg_update_sp_status = MsgUpdateStorageProviderStatus(sp_address=sp_addr, status=status, duration=duration)
         hash = await self.blockchain_client.broadcast_message(
-            message=msg_update_sp_status,
-            type_url=UPDATE_SP_STATUS,
+            messages=[msg_update_sp_status],
+            type_url=[UPDATE_SP_STATUS],
         )
         return hash

@@ -101,8 +101,8 @@ class Validator:
         )
 
         hash = await self.blockchain_client.broadcast_message(
-            message=msg_submit_proposal,
-            type_url=PROPOSAL,
+            messages=[msg_submit_proposal],
+            type_url=[PROPOSAL],
         )
         await self.basic.wait_for_tx(hash)
 
@@ -139,8 +139,8 @@ class Validator:
             del message.commission_rate
 
         hash = await self.blockchain_client.broadcast_message(
-            message=message,
-            type_url=EDIT_VALIDATOR,
+            messages=[message],
+            type_url=[EDIT_VALIDATOR],
         )
 
         return hash
@@ -152,8 +152,8 @@ class Validator:
             amount=Coin(denom="BNB", amount=amount),
         )
         hash = await self.blockchain_client.broadcast_message(
-            message=message,
-            type_url=DELEGATE,
+            messages=[message],
+            type_url=[DELEGATE],
         )
 
         return hash
@@ -166,8 +166,8 @@ class Validator:
             amount=Coin(denom="BNB", amount=amount),
         )
         hash = await self.blockchain_client.broadcast_message(
-            message=message,
-            type_url=BEGIN_REDELEGATE,
+            messages=[message],
+            type_url=[BEGIN_REDELEGATE],
         )
 
         return hash
@@ -179,8 +179,8 @@ class Validator:
             amount=Coin(denom="BNB", amount=amount),
         )
         hash = await self.blockchain_client.broadcast_message(
-            message=message,
-            type_url=UNDELEGATE,
+            messages=[message],
+            type_url=[UNDELEGATE],
         )
 
         return hash
@@ -204,8 +204,8 @@ class Validator:
         )
 
         hash = await self.blockchain_client.broadcast_message(
-            message=message,
-            type_url=COSMOS_GRANT,
+            messages=[message],
+            type_url=[COSMOS_GRANT],
         )
 
         return hash
@@ -215,8 +215,8 @@ class Validator:
             validator_addr=self.storage_client.key_manager.address,
         )
         hash = await self.blockchain_client.broadcast_message(
-            message=message,
-            type_url="/cosmos.slashing.v1beta1.MsgUnjail",
+            messages=[message],
+            type_url=["/cosmos.slashing.v1beta1.MsgUnjail"],
         )
 
         return hash
@@ -227,8 +227,8 @@ class Validator:
             validator_address=validator_address,
         )
         hash = await self.blockchain_client.broadcast_message(
-            message=message,
-            type_url="/cosmos.slashing.v1beta1.MsgImpeach",
+            messages=[message],
+            type_url=["/cosmos.slashing.v1beta1.MsgImpeach"],
         )
 
         return hash

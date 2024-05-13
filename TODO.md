@@ -2,10 +2,10 @@
 
 ## Blockchain
 
-- [ ] Build_tx move custom type_url messages editions to other file (sp_approval)
+- [X] `Build_tx` move custom type_url messages editions to other file (sp_approval)
 - [ ] Add broadcast mode to `blockchain_client.broadcast_raw_tx`
-- [ ] `convert_value_to_json` move custom type_url messages editions to other file
-- [ ] `get_signature` move custom type_url messages editions to other file
+- [X] `convert_value_to_json` move custom type_url messages editions to other file
+- [X] `get_signatures` move custom type_url messages editions to other file
 
 ## Storage Provider
 

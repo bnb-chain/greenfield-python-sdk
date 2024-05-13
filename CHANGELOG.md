@@ -1,6 +1,14 @@
 Changelog
 =========
 
+0.6.1 - 2024-4-25
+-------
+
+- Upgrade dependencies
+- Remove ecdsa dependency
+- Update transaction signature format
+- Add multi message transaction support
+
 0.6.0 - 2024-04-22
 -------
 

@@ -1,9 +1,6 @@
 import base64
-import binascii
 import json
 import re
-from datetime import datetime, timedelta
-from decimal import Decimal
 from logging import getLogger
 from typing import Any, Dict, List, Optional, Union
 
@@ -12,40 +9,24 @@ from eth_abi import encode as encode_abi
 from eth_account import Account
 from eth_typing import Hash32, HexStr
 from hexbytes import HexBytes
-from pydantic import BaseModel
 from sha3 import keccak_256
 
 from greenfield_python_sdk.__version__ import __version__
 from greenfield_python_sdk.key_manager import KeyManager
 from greenfield_python_sdk.models.eip712_messages import TYPES_MAP, URL_TO_PROTOS_TYPE_MAP
 from greenfield_python_sdk.models.eip712_messages.base import BASE_TYPES
-from greenfield_python_sdk.models.eip712_messages.group.group_url import (
-    CREATE_GROUP,
-    RENEW_GROUP_MEMEBER,
-    UPDATE_GROUP_MEMBER,
-)
-from greenfield_python_sdk.models.eip712_messages.proposal.proposal_url import VOTE
-from greenfield_python_sdk.models.eip712_messages.sp.sp_url import (
-    COSMOS_GRANT,
-    CREATE_STORAGE_PROVIDER,
-    UPDATE_SP_STATUS,
-    UPDATE_SP_STORAGE_PRICE,
-)
-from greenfield_python_sdk.models.eip712_messages.staking.staking_url import (
-    CREATE_VALIDATOR,
-    EDIT_VALIDATOR,
-    STAKE_AUTHORIZATION,
-)
-from greenfield_python_sdk.models.eip712_messages.storage.bucket_url import CREATE_BUCKET, MIGRATE_BUCKET
-from greenfield_python_sdk.models.eip712_messages.storage.object_url import CREATE_OBJECT
-from greenfield_python_sdk.models.eip712_messages.storage.policy_url import DELETE_POLICY, PUT_POLICY
+from greenfield_python_sdk.models.eip712_messages.sp.sp_url import CREATE_STORAGE_PROVIDER
+from greenfield_python_sdk.models.eip712_messages.staking.staking_url import CREATE_VALIDATOR
 from greenfield_python_sdk.models.storage_provider import Any
 from greenfield_python_sdk.models.transaction import BroadcastOption
-from greenfield_python_sdk.protos.cosmos.gov.v1 import VoteOption
 from greenfield_python_sdk.protos.cosmos.tx.v1beta1 import Tx
-from greenfield_python_sdk.protos.greenfield.permission import ActionType, Effect, PrincipalType
-from greenfield_python_sdk.protos.greenfield.sp import Status
-from greenfield_python_sdk.protos.greenfield.storage import RedundancyType, VisibilityType
+from greenfield_python_sdk.utils.type_url_exception_utils import (
+    decode_sp_approval,
+    rmv_unneeded_groups_type_index,
+    set_group_index_timestamp,
+    set_message,
+    set_value,
+)
 
 IGNORED_TYPES = [
     "PRINCIPAL_TYPE_UNSPECIFIED",
@@ -241,26 +222,7 @@ def convert_value_to_json(obj) -> bytes:
     except KeyError:
         raise Exception(f"Unknown type: {obj['type']} - {obj}, add it to URL_TO_PROTOS_TYPE_MAP")
 
-    # Deserialize the raw value into the appropriate protobuf message
-    instance = base_type.FromString(obj["value"])
-
-    if obj["type"] == CREATE_VALIDATOR:
-        instance.pubkey.value = binascii.unhexlify((instance.pubkey.value).hex()[4:])
-
-    # Convert the protobuf message to its JSON representation
-    if obj["type"] == STAKE_AUTHORIZATION:
-        value = {
-            "@type": obj["type"],
-            **json.loads(instance.to_json(casing=Casing.SNAKE, include_default_values=False)),
-        }
-    else:
-        value = {
-            "@type": obj["type"],
-            **json.loads(instance.to_json(casing=Casing.SNAKE, include_default_values=True)),
-        }
-
-    value = set_value(obj, value)  # Assuming set_value is another function you've defined elsewhere
-
+    value = set_value(base_type, obj, value)
     # Convert the resulting value into a JSON string and then base64 encode it
     json_str = json.dumps(value, sort_keys=True).replace(": ", ":").replace(", ", ",")
 
@@ -268,22 +230,6 @@ def convert_value_to_json(obj) -> bytes:
         return json_str.encode()
     result = base64.b64encode(json_str.encode())
     return result
-
-
-def set_value(obj, value):
-    if obj["type"] == CREATE_STORAGE_PROVIDER:
-        value["read_price"] = str(format(Decimal(value["read_price"]) / 10**18, ".18f"))
-        value["store_price"] = str(format(Decimal(value["store_price"]) / 10**18, ".18f"))
-
-    if obj["type"] == CREATE_VALIDATOR:
-        pubkey = {"@type": value["pubkey"]["type_url"], "key": value["pubkey"]["value"]}
-        value["pubkey"] = pubkey
-        value["commission"]["max_rate"] = str(format(int(value["commission"]["max_rate"]) / 10**18, ".18f"))
-        value["commission"]["max_change_rate"] = str(
-            format(Decimal(value["commission"]["max_change_rate"]) / 10**18, ".18f")
-        )
-        value["commission"]["rate"] = str(format(Decimal(value["commission"]["rate"]), ".18f"))
-    return value
 
 
 def swap_any_value_to_json(obj):
@@ -311,84 +257,38 @@ def swap_type_url_key(obj):
         return obj
 
 
-class SignDocEip712(BaseModel):
-    account_number: int
-    chain_id: int
-    fee: dict
-    memo: str = ""
-    msg1: dict
-    sequence: int
-    timeout_height: int
-
-
-async def get_signature(
+async def get_signatures(
     key_manager: KeyManager, tx: Tx, message, chain_id: int, broadcast_option: Optional[BroadcastOption] = None
 ):
-    tx_types = TYPES_MAP[tx.body.messages[0].type_url]
-
-    if tx.body.messages[0].type_url == CREATE_GROUP and tx_types["Msg1"][3]["name"] == "members":
-        del tx_types["Msg1"][3]
-
-    if tx.body.messages[0].type_url == UPDATE_GROUP_MEMBER:
-        if len(message.members_to_delete) == 0 and len(tx_types["Msg1"]) == 6:
-            del tx_types["Msg1"][5]
-        if len(message.members_to_add) == 0 and tx_types["Msg1"][4]["name"] == "members_to_add":
-            del tx_types["Msg1"][4]
-
-    full_types = {**BASE_TYPES, **tx_types}
-    full_types = sorted_dict(full_types)
-    message = set_message(tx.body.messages[0].type_url, message, broadcast_option)
-
-    msg1 = {
-        "type": tx.body.messages[0].type_url,  # Swaps the type_url key for the type key
-        **message.to_pydict(casing=Casing.SNAKE, include_default_values=True),
+    tx_type = {
+        "Tx": [
+            {"name": "account_number", "type": "uint256"},
+            {"name": "chain_id", "type": "uint256"},
+            {"name": "fee", "type": "Fee"},
+            {"name": "memo", "type": "string"},
+            {"name": "sequence", "type": "uint256"},
+            {"name": "timeout_height", "type": "uint256"},
+        ],
     }
-    # When a message has a "type_url" key, it needs to be swapped for a "type" key, this comes form "Any"/"AnyMessage" in the proto files
-    msg1 = swap_type_url_key(msg1)
+    for i in range(0, len(message)):
+        tx_type["Tx"].append({"name": f"msg{i+1}", "type": f"Msg{i+1}"})
 
-    # When a message has a "type_url" key, the "value" must be base64 encoded, not bytes. This comes from "Any"/"AnyMessage" in the proto files
-    msg1 = swap_any_value_to_json(msg1)
+    full_types = {**BASE_TYPES, **tx_type}
+    tx_message = {
+        "account_number": key_manager.account.account_number,
+        "chain_id": str(chain_id),
+        "fee": tx.auth_info.fee.to_pydict(casing=Casing.SNAKE, include_default_values=True),
+        "memo": "",
+        "sequence": key_manager.account.next_sequence,
+        "timeout_height": "0",
+    }
 
-    # Sorts the keys alphabetically in msg1
-    msg1 = deep_sort(msg1)
+    all_messages, full_types = set_messages(tx.body.messages, message, full_types, broadcast_option)
 
-    tx_message = SignDocEip712(
-        **{
-            "account_number": key_manager.account.account_number,
-            "chain_id": str(chain_id),
-            "fee": tx.auth_info.fee.to_pydict(casing=Casing.SNAKE, include_default_values=True),
-            "memo": "",
-            "msg1": msg1,
-            "sequence": key_manager.account.next_sequence,
-            "timeout_height": "0",
-        }
-    )
-    if hasattr(message, "grant") and tx_message.msg1["grant"]["expiration"]:
-        tx_message.msg1["grant"]["expiration"] = (
-            message.grant.expiration.strftime("%Y-%m-%dT%H:%M:%S.%fZ") if message.grant.expiration.year > 2000 else ""
-        )
+    tx_message = tx_message | all_messages
+    tx_message = deep_sort(tx_message)
 
-    if tx.body.messages[0].type_url == UPDATE_GROUP_MEMBER:
-        if hasattr(message, "members_to_add"):
-            for i, members in enumerate(tx_message.msg1["members_to_add"]):
-                members["expiration_time"] = message.members_to_add[i].expiration_time.strftime("%Y-%m-%dT%H:%M:%SZ")
-        if len(message.members_to_delete) == 0:
-            tx_message.msg1.pop("members_to_delete")
-        if len(message.members_to_add) == 0:
-            tx_message.msg1.pop("members_to_add")
-
-    if tx.body.messages[0].type_url == RENEW_GROUP_MEMEBER:
-        for i, members in enumerate(tx_message.msg1["members"]):
-            members["expiration_time"] = message.members[i].expiration_time.strftime("%Y-%m-%dT%H:%M:%SZ")
-
-    if hasattr(message, "statements"):
-        del tx_message.msg1["statements"][0]["limit_size"]
-        if not tx_message.msg1["statements"][0]["resources"]:
-            del tx_message.msg1["statements"][0]["resources"]
-        tx_message.msg1["statements"][0]["expiration_time"] = ""
-        tx_message.msg1["expiration_time"] = (
-            message.expiration_time.strftime("%Y-%m-%dT%H:%M:%S.%fZ") if message.expiration_time.year != 1969 else ""
-        )
+    full_types = sorted_dict(full_types)
 
     payload = {
         "types": full_types,
@@ -400,7 +300,7 @@ async def get_signature(
             "verifyingContract": "greenfield",
             "salt": "0",
         },
-        "message": tx_message.model_dump(),
+        "message": tx_message,
     }
 
     # Sort fees
@@ -414,6 +314,63 @@ async def get_signature(
     return signature
 
 
+def set_messages(tx, message, full_types, broadcast_option: Optional[BroadcastOption] = None):
+    all_messages = {}
+
+    for i, message_url in enumerate(tx):
+        tx_types = TYPES_MAP[message_url.type_url]
+        tx_types = rmv_unneeded_groups_type_index(message_url.type_url, message[i], tx_types)
+
+        if len(message) > 1 and i > 0:
+            tx_types = {
+                key.replace("Msg1", f"Msg{i+1}"): [
+                    {**item, "type": item["type"].replace("Msg1", f"Msg{i+1}")} if "Msg1" in item["type"] else item
+                    for item in value
+                ]
+                for key, value in tx_types.items()
+                if "Msg1" in key
+            }
+
+        full_types = full_types | {**tx_types}
+
+        message[i] = set_message(message_url.type_url, message[i], broadcast_option)
+        msg = {
+            "type": message_url.type_url,  # Swaps the type_url key for the type key
+            **message[i].to_pydict(casing=Casing.SNAKE, include_default_values=True),
+        }
+        # When a message has a "type_url" key, it needs to be swapped for a "type" key, this comes form "Any"/"AnyMessage" in the proto files
+        msg = swap_type_url_key(msg)
+
+        # When a message has a "type_url" key, the "value" must be base64 encoded, not bytes. This comes from "Any"/"AnyMessage" in the proto files
+        msg = swap_any_value_to_json(msg)
+
+        # Sorts the keys alphabetically in msg1
+        msg = deep_sort(msg)
+
+        if hasattr(message[i], "grant") and msg["grant"]["expiration"]:
+            msg["grant"]["expiration"] = (
+                message[i].grant.expiration.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+                if message[i].grant.expiration.year > 2000
+                else ""
+            )
+
+        msg = set_group_index_timestamp(message[i], msg, message_url.type_url)
+
+        if hasattr(message[i], "statements"):
+            del msg["statements"][0]["limit_size"]
+            if not msg["statements"][0]["resources"]:
+                del msg["statements"][0]["resources"]
+            msg["statements"][0]["expiration_time"] = ""
+            msg["expiration_time"] = (
+                message[i].expiration_time.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+                if message[i].expiration_time.year != 1969
+                else ""
+            )
+
+        all_messages = all_messages | {f"msg{i+1}": msg}
+    return all_messages, full_types
+
+
 def sorted_dict(full_types):
     # First, sort the main dictionary by its keys
     sorted_d = dict(sorted(full_types.items()))
@@ -425,61 +382,9 @@ def sorted_dict(full_types):
     return sorted_d
 
 
-def set_message(url, message, broadcast_option: Optional[BroadcastOption] = None):
-    if url == PUT_POLICY:
-        if isinstance(message.statements[0].actions[0], int) == True:
-            actions = []
-            for i in message.statements[0].actions:
-                actions.append(ActionType(i).name)
-            message.statements[0].actions = actions
-            message.statements[0].effect = Effect(message.statements[0].effect).name
-            message.principal.type = PrincipalType(message.principal.type).name
-            if message.expiration_time != None:
-                message.expiration_time = message.expiration_time - timedelta(hours=9)
-
-    if url == DELETE_POLICY:
-        if isinstance(message.principal.type, int) == True:
-            message.principal.type = PrincipalType(message.principal.type).name
-
-    if url == CREATE_OBJECT:
-        message.primary_sp_approval.sig = bytes(broadcast_option.sp_signature, "utf-8")
-        message.expect_checksums = [bytes(checksum, "utf-8") for checksum in broadcast_option.checksums]
-
-    if url == CREATE_BUCKET:
-        message.primary_sp_approval.sig = bytes(broadcast_option.sp_signature, "utf-8")
-
-    if url == MIGRATE_BUCKET:
-        message.dst_primary_sp_approval.sig = bytes(broadcast_option.sp_signature, "utf-8")
-
-    if url == VOTE:
-        if isinstance(message.option, VoteOption) == True:
-            message.option = VoteOption(message.option).name
-
-    if url == UPDATE_SP_STATUS:
-        if isinstance(message.status, Status) == True:
-            message.status = Status(message.status).name
-            message.duration = str(message.duration)
-
-    if hasattr(message, "visibility"):
-        if isinstance(message.visibility, VisibilityType) == True:
-            message.visibility = message.visibility.name
-        if isinstance(message.visibility, int) == True:
-            message.visibility = VisibilityType(message.visibility).name
-
-    if hasattr(message, "redundancy_type"):
-        if isinstance(message.redundancy_type, RedundancyType) == True:
-            message.redundancy_type = message.redundancy_type.name
-        if isinstance(message.redundancy_type, int) == True:
-            message.redundancy_type = RedundancyType(message.redundancy_type).name
-
-    if url == COSMOS_GRANT:
-        if message.grant.expiration and message.grant.expiration.hour == datetime.now().hour:
-            message.grant.expiration = message.grant.expiration - timedelta(hours=9)
-
-    if url == UPDATE_SP_STORAGE_PRICE and "." not in message.read_price:
-        message.read_price = str(format(Decimal(message.read_price) / 10**18, ".18f"))
-        message.store_price = str(format(Decimal(message.store_price) / 10**18, ".18f"))
-
-    if url == EDIT_VALIDATOR and "." not in message.commission_rate and message.commission_rate != "":
-        message.commission_rate = str(format(Decimal(message.commission_rate) / 10**18, ".18f"))
-    return message
+def encode_sp_approval_message(messages, type_urls):
+    encoded_messages = []
+    for message, type_url in zip(messages, type_urls):
+        encoded_message = decode_sp_approval(message, type_url)
+        encoded_messages.append(encoded_message)
+    return encoded_messages

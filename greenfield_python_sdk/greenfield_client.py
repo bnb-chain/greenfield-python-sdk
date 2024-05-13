@@ -73,7 +73,7 @@ class GreenfieldClient:
         self.crosschain = CrossChain(self.blockchain_client, self.storage_client)
         self.distribution = Distribution(self.blockchain_client, self.storage_client)
         self.feegrant = FeeGrant(self.blockchain_client, self.storage_client)
-        self.group = Group(self.blockchain_client, self.storage_client)
+        self.group = Group(self.blockchain_client, self.key_manager, self.storage_client)
         self.object = Object(self.blockchain_client, self.key_manager, self.storage_client, self.bucket)
         self.payment = Payment(self.blockchain_client, self.storage_client)
         self.proposal = Proposal(self.blockchain_client, self.storage_client)

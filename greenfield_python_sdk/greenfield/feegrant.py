@@ -65,7 +65,7 @@ class FeeGrant:
         )
 
         hash = await self.blockchain_client.broadcast_message(
-            message=message, type_url="/cosmos.feegrant.v1beta1.MsgGrantAllowance"
+            messages=[message], type_url=["/cosmos.feegrant.v1beta1.MsgGrantAllowance"]
         )
 
         return hash
@@ -106,7 +106,7 @@ class FeeGrant:
         message = MsgRevokeAllowance(granter=self.storage_client.key_manager.address, grantee=grantee_address)
 
         hash = await self.blockchain_client.broadcast_message(
-            message=message, type_url="/cosmos.feegrant.v1beta1.MsgRevokeAllowance"
+            messages=[message], type_url=["/cosmos.feegrant.v1beta1.MsgRevokeAllowance"]
         )
 
         return hash

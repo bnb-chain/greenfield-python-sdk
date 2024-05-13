@@ -48,7 +48,7 @@ async def main():
         sp = await blockchain_client.sp.get_first_in_service_storage_provider()
         primary_sp_address = sp["operator_address"]
         
-        async with StorageClient(key_manager=key_manager, sp_endpoints=sp_endpoints) as client:
+        async with StorageClient(network_configuration=network_configuration, key_manager=key_manager, sp_endpoints=sp_endpoints) as client:
             bucket_name = "".join(random.choices(string.ascii_lowercase + string.digits, k=random.randint(5, 11)))
             object_name = "".join(random.choices(string.ascii_lowercase + string.digits, k=random.randint(5, 11)))
 
@@ -62,13 +62,13 @@ async def main():
             
             ## Create the Bucket
             await blockchain_client.broadcast_message(
-                message=bucket_approval, type_url=CREATE_BUCKET, broadcast_option=BroadcastOption(sp_signature=sp_signature)
+                messages=[bucket_approval], type_url=[CREATE_BUCKET], broadcast_option=BroadcastOption(sp_signature=sp_signature)
             )
             await asyncio.sleep(5)
 
             # logger.info(f"---> List Buckets <---")
-            # list_bucket = await client.bucket.list_buckets(sp_address=sp_address)
-            # logger.info(f"Response: {list_bucket}\n\n")
+            list_bucket = await client.bucket.list_buckets(sp_address=primary_sp_address)
+            logger.info(f"Response: {list_bucket}\n\n")
 
             logger.info(f"---> Bucket Read Quota <---")
 
@@ -99,13 +99,14 @@ async def main():
                 primary_sp_address=primary_sp_address,
                 reader=content,
                 storage_params=storage_params,
+                is_serial_compute_mode="False"
             )
             logger.info(f"Response:\n - Object Approval: {object_approval}\n - Storage Provider signature: {sp_signature}\n - Checksums: {checksums} \n\n")
 
             ## Create the Object
             await blockchain_client.broadcast_message(
-                message=object_approval,
-                type_url=CREATE_OBJECT,
+                messages=[object_approval],
+                type_url=[CREATE_OBJECT],
                 broadcast_option=BroadcastOption(sp_signature=sp_signature, checksums=checksums),
             )
             await asyncio.sleep(5)
@@ -148,12 +149,12 @@ async def main():
             delete_object_msg = MsgDeleteObject(
                 operator=key_manager.address, bucket_name=bucket_name, object_name=object_name
             )
-            await blockchain_client.broadcast_message(message=delete_object_msg, type_url=DELETE_OBJECT)
+            await blockchain_client.broadcast_message(messages=[delete_object_msg], type_url=[DELETE_OBJECT])
             await asyncio.sleep(5)
 
             ## Delete the Bucket
             delete_bucket_msg = MsgDeleteBucket(operator=key_manager.address, bucket_name=bucket_name)
-            await blockchain_client.broadcast_message(message=delete_bucket_msg, type_url=DELETE_BUCKET)
+            await blockchain_client.broadcast_message(messages=[delete_bucket_msg], type_url=[DELETE_BUCKET])
             await asyncio.sleep(5)
 
 
