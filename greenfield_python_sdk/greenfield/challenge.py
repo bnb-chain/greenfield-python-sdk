@@ -31,7 +31,7 @@ class Challenge:
             segment_index=segment_index,
         )
         tx_response = await self.blockchain_client.broadcast_message(
-            message=message, type_url="/greenfield.challenge.MsgSubmit"
+            messages=[message], type_url=["/greenfield.challenge.MsgSubmit"]
         )
 
         return tx_response

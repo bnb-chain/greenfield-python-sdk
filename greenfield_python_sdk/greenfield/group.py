@@ -2,14 +2,16 @@ from datetime import datetime, timezone
 from typing import List, Optional
 
 from greenfield_python_sdk.blockchain_client import BlockchainClient
+from greenfield_python_sdk.key_manager import KeyManager
 from greenfield_python_sdk.models.bucket import EndPointOptions
 from greenfield_python_sdk.models.eip712_messages.group.group_url import (
     CREATE_GROUP,
     DELETE_GROUP,
     LEAVE_GROUP,
-    RENEW_GROUP_MEMEBER,
+    RENEW_GROUP_MEMBER,
     UPDATE_GROUP_MEMBER,
 )
+from greenfield_python_sdk.models.eip712_messages.storage.msg_set_tag import TYPE_URL
 from greenfield_python_sdk.models.eip712_messages.storage.policy_url import DELETE_POLICY, PUT_POLICY
 from greenfield_python_sdk.models.group import (
     CreateGroupOptions,
@@ -35,6 +37,7 @@ from greenfield_python_sdk.protos.greenfield.storage import (
     MsgLeaveGroup,
     MsgPutPolicy,
     MsgRenewGroupMember,
+    MsgSetTag,
     MsgUpdateGroupMember,
     QueryHeadGroupMemberRequest,
     QueryHeadGroupRequest,
@@ -47,10 +50,12 @@ from greenfield_python_sdk.storage_provider.utils import check_address
 
 class Group:
     blockchain_client: BlockchainClient
+    key_manager: KeyManager
     storage_client: StorageClient
 
-    def __init__(self, blockchain_client, storage_client):
+    def __init__(self, blockchain_client, key_manager, storage_client):
         self.blockchain_client = blockchain_client
+        self.key_manager = key_manager
         self.storage_client = storage_client
 
     async def create_group(self, group_name: str, opts: CreateGroupOptions) -> str:
@@ -59,7 +64,19 @@ class Group:
             group_name=group_name,
             extra=opts.extra,
         )
-        tx_hash = await self.blockchain_client.broadcast_message(message=msg_create_group, type_url=CREATE_GROUP)
+        messages = [msg_create_group]
+        type_url = [CREATE_GROUP]
+
+        if opts.tags:
+            msg_set_tag = MsgSetTag(
+                operator=self.key_manager.address,
+                resource=f"grn:{ResourceType.RESOURCE_TYPE_GROUP.value}:{self.key_manager.address}:{group_name}",
+                tags=opts.tags,
+            )
+            messages.append(msg_set_tag)
+            type_url.append(TYPE_URL)
+
+        tx_hash = await self.blockchain_client.broadcast_message(messages, type_url)
         return tx_hash
 
     async def delete_group(self, group_name: str) -> str:
@@ -67,7 +84,7 @@ class Group:
             operator=self.storage_client.key_manager.address,
             group_name=group_name,
         )
-        tx_hash = await self.blockchain_client.broadcast_message(message=msg_delete_group, type_url=DELETE_GROUP)
+        tx_hash = await self.blockchain_client.broadcast_message(messages=[msg_delete_group], type_url=[DELETE_GROUP])
         return tx_hash
 
     async def update_group_member(
@@ -112,7 +129,7 @@ class Group:
             msg_update_group_member.members_to_delete = remove_addresses
 
         tx_hash = await self.blockchain_client.broadcast_message(
-            message=msg_update_group_member, type_url=UPDATE_GROUP_MEMBER
+            messages=[msg_update_group_member], type_url=[UPDATE_GROUP_MEMBER]
         )
         return tx_hash
 
@@ -122,7 +139,7 @@ class Group:
             group_owner=check_address(group_owner),
             group_name=group_name,
         )
-        tx_hash = await self.blockchain_client.broadcast_message(message=msg_leave_group, type_url=LEAVE_GROUP)
+        tx_hash = await self.blockchain_client.broadcast_message(messages=[msg_leave_group], type_url=[LEAVE_GROUP])
         return tx_hash
 
     async def get_group_head(self, group_name: str, group_owner: str) -> GroupInfo:
@@ -153,7 +170,7 @@ class Group:
         if opts and opts.policy_expire_time:
             put_policy_msg.expiration_time = opts.policy_expire_time
 
-        tx_hash = await self.blockchain_client.broadcast_message(message=put_policy_msg, type_url=PUT_POLICY)
+        tx_hash = await self.blockchain_client.broadcast_message(messages=[put_policy_msg], type_url=[PUT_POLICY])
         return tx_hash
 
     async def delete_group_policy(self, group_name: str, principal_addr: str) -> str:
@@ -167,7 +184,7 @@ class Group:
             resource=str(resource),
             principal=principal,
         )
-        tx_hash = await self.blockchain_client.broadcast_message(message=delete_policy_msg, type_url=DELETE_POLICY)
+        tx_hash = await self.blockchain_client.broadcast_message(messages=[delete_policy_msg], type_url=[DELETE_POLICY])
         return tx_hash
 
     async def get_bucket_policy_of_group(self, bucket_name: str, group_id: str) -> Policy:
@@ -228,7 +245,7 @@ class Group:
             members=members,
         )
         tx_hash = await self.blockchain_client.broadcast_message(
-            message=msg_renew_group_member, type_url=RENEW_GROUP_MEMEBER
+            messages=[msg_renew_group_member], type_url=[RENEW_GROUP_MEMBER]
         )
         return tx_hash
 

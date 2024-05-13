@@ -21,7 +21,7 @@ class CrossChain:
     ):
         msg_transfer_out = MsgTransferOut(from_=self.storage_client.key_manager.address, to=to_address, amount=amount)
         tx = await self.blockchain_client.broadcast_message(
-            msg_transfer_out, type_url="/greenfield.bridge.MsgTransferOut"
+            [msg_transfer_out], type_url=["/greenfield.bridge.MsgTransferOut"]
         )
         return tx
 
@@ -45,7 +45,7 @@ class CrossChain:
             vote_addr_set=vote_addr_set,
             agg_signature=agg_signature,
         )
-        tx = await self.blockchain_client.broadcast_message(msg_claim, type_url="/cosmos.oracle.v1.MsgClaim")
+        tx = await self.blockchain_client.broadcast_message([msg_claim], type_url=["/cosmos.oracle.v1.MsgClaim"])
 
         return tx
 
@@ -78,7 +78,7 @@ class CrossChain:
         )
 
         tx = await self.blockchain_client.broadcast_message(
-            msg_mirror_group, type_url="/greenfield.storage.MsgMirrorGroup"
+            [msg_mirror_group], type_url=["/greenfield.storage.MsgMirrorGroup"]
         )
 
         return tx
@@ -95,7 +95,7 @@ class CrossChain:
         )
 
         tx = await self.blockchain_client.broadcast_message(
-            msg_mirror_bucket, type_url="/greenfield.storage.MsgMirrorBucket"
+            [msg_mirror_bucket], type_url=["/greenfield.storage.MsgMirrorBucket"]
         )
 
         return tx
@@ -114,7 +114,7 @@ class CrossChain:
         )
 
         tx = await self.blockchain_client.broadcast_message(
-            msg_mirror_object, type_url="/greenfield.storage.MsgMirrorObject"
+            [msg_mirror_object], type_url=["/greenfield.storage.MsgMirrorObject"]
         )
 
         return tx

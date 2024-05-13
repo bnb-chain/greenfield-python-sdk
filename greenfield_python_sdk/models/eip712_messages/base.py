@@ -13,13 +13,4 @@ BASE_TYPES = {
         {"name": "granter", "type": "string"},
         {"name": "payer", "type": "string"},
     ],
-    "Tx": [
-        {"name": "account_number", "type": "uint256"},
-        {"name": "chain_id", "type": "uint256"},
-        {"name": "fee", "type": "Fee"},
-        {"name": "memo", "type": "string"},
-        {"name": "msg1", "type": "Msg1"},
-        {"name": "sequence", "type": "uint256"},
-        {"name": "timeout_height", "type": "uint256"},
-    ],
 }

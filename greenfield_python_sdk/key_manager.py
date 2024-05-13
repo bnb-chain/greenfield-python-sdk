@@ -3,12 +3,12 @@ import hashlib
 import os
 from typing import Optional
 
-import ecdsa
 import hdwallets
 from Crypto.PublicKey import ECC
 from eth_utils import keccak, to_checksum_address
 from mnemonic import Mnemonic
 from py_ecc.bls import G2ProofOfPossession as bls_pop
+from secp256k1 import PrivateKey, PublicKey
 
 
 def seed_to_private_key(seed, derivation_path, passphrase: str = ""):
@@ -20,9 +20,9 @@ def seed_to_private_key(seed, derivation_path, passphrase: str = ""):
 
 
 def privkey_to_pubkey(privkey: bytes, raw: bool = False) -> bytes:
-    privkey_obj = ecdsa.SigningKey.from_string(privkey, curve=ecdsa.SECP256k1)
-    pubkey_obj = privkey_obj.get_verifying_key()
-    return pubkey_obj.to_string("raw") if raw else pubkey_obj.to_string("compressed")
+    privkey_obj = PrivateKey(privkey, raw=True)
+
+    return privkey_obj.pubkey.serialize(compressed=False)[1:] if raw else privkey_obj.pubkey.serialize()
 
 
 def pubkey_to_eth_address(pubkey: bytes) -> str:
@@ -149,7 +149,7 @@ class Account:
         """
         pubkey_bytes = privkey_to_pubkey(self.private_key)
 
-        pubkey = ecdsa.VerifyingKey.from_string(pubkey_bytes, curve=ecdsa.SECP256k1).to_string(encoding="compressed")
+        pubkey = PublicKey(pubkey_bytes, raw=True).serialize()
         return pubkey
 
     @property
@@ -235,9 +235,9 @@ class KeyManager:
             self._init_from_nothing()
 
     def _init_from_private_key(self):
-        self.private_key_instance = ecdsa.SigningKey.from_string(bytes.fromhex(self.private_key), curve=ecdsa.SECP256k1)
+        self.private_key_instance = PrivateKey(bytes.fromhex(self.private_key), raw=True)
 
-        self.eth_private_key = self.private_key_instance.to_string().hex()
+        self.eth_private_key = self.private_key_instance.serialize()
         self.account = Account(private_key=self.eth_private_key)
 
         self.address = self.account.address
@@ -246,7 +246,7 @@ class KeyManager:
         raise NotImplementedError
 
     def _init_from_nothing(self):
-        self.private_key = ecdsa.SigningKey.generate(curve=ecdsa.SECP256k1).to_string().hex()
+        self.private_key = PrivateKey().serialize()
         self._init_from_private_key()
 
     @property

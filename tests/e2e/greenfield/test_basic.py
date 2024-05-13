@@ -178,7 +178,7 @@ async def test_simulate_tx():
         )
 
         tx = await client.blockchain_client.build_tx_from_message(
-            message=message, type_url="/cosmos.bank.v1beta1.MsgSend"
+            messages=[message], type_url=["/cosmos.bank.v1beta1.MsgSend"]
         )
 
         response = await client.basic.simulate_tx(tx=tx)
@@ -205,7 +205,7 @@ async def test_simulate_raw_tx():
         )
 
         tx = await client.blockchain_client.build_tx_from_message(
-            message=message, type_url="/cosmos.bank.v1beta1.MsgSend"
+            messages=[message], type_url=["/cosmos.bank.v1beta1.MsgSend"]
         )
 
         response = await client.basic.simulate_raw_tx(tx_bytes=bytes(tx))
@@ -232,7 +232,7 @@ async def test_broadcast_tx():
         )
 
         tx = await client.blockchain_client.build_tx_from_message(
-            message=message, type_url="/cosmos.bank.v1beta1.MsgSend"
+            messages=[message], type_url=["/cosmos.bank.v1beta1.MsgSend"]
         )
 
         response = await client.basic.broadcast_tx(tx=tx)
@@ -261,7 +261,7 @@ async def test_broadcast_raw_tx():
         )
 
         tx = await client.blockchain_client.build_tx_from_message(
-            message=message, type_url="/cosmos.bank.v1beta1.MsgSend"
+            messages=[message], type_url=["/cosmos.bank.v1beta1.MsgSend"]
         )
 
         response = await client.basic.broadcast_raw_tx(tx_bytes=bytes(tx))

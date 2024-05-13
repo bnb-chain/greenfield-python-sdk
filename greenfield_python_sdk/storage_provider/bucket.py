@@ -1,7 +1,7 @@
 import binascii
 import json
 import re
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import List, Tuple
 
 import html_to_json
@@ -115,7 +115,7 @@ class Bucket:
         query_parameters["start-timestamp"] = str(start_time_stamp)
 
         base_url = await self.client._get_sp_url_by_addr(primary_sp_address, bucket_name)
-        expiry = (datetime.utcnow() + timedelta(seconds=1000)).strftime("%Y-%m-%dT%H:%M:%SZ")
+        expiry = (datetime.now(timezone.utc) + timedelta(seconds=1000)).strftime("%Y-%m-%dT%H:%M:%SZ")
         request_metadata = RequestMeta(
             query_parameters=query_parameters,
             disable_close_body=True,
@@ -147,7 +147,7 @@ class Bucket:
         query_parameters = {"read-quota": "", "year-month": date}
 
         base_url = await self.client._get_sp_url_by_addr(primary_sp_address, bucket_name)
-        expiry = (datetime.utcnow() + timedelta(seconds=1000)).strftime("%Y-%m-%dT%H:%M:%SZ")
+        expiry = (datetime.now(timezone.utc) + timedelta(seconds=1000)).strftime("%Y-%m-%dT%H:%M:%SZ")
         request_metadata = RequestMeta(
             query_parameters=query_parameters,
             disable_close_body=True,
@@ -174,7 +174,7 @@ class Bucket:
         query_parameters = {"action": CREATE_BUCKET_ACTION}
         endpoint = "get-approval"
 
-        expiry = (datetime.utcnow() + timedelta(seconds=1000)).strftime("%Y-%m-%dT%H:%M:%SZ")
+        expiry = (datetime.now(timezone.utc) + timedelta(seconds=1000)).strftime("%Y-%m-%dT%H:%M:%SZ")
         request_metadata = RequestMeta(
             query_parameters=query_parameters,
             txn_msg=binascii.hexlify(unsigned_bytes),
@@ -239,7 +239,7 @@ class Bucket:
         endpoint = "get-approval"
 
         base_url = await self.client._get_sp_url_by_id(dst_primary_sp_id)
-        expiry = (datetime.utcnow() + timedelta(seconds=1000)).strftime("%Y-%m-%dT%H:%M:%SZ")
+        expiry = (datetime.now(timezone.utc) + timedelta(seconds=1000)).strftime("%Y-%m-%dT%H:%M:%SZ")
         request_metadata = RequestMeta(
             query_parameters=query_parameters,
             txn_msg=binascii.hexlify(unsigned_bytes),

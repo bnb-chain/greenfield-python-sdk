@@ -3,7 +3,7 @@ import binascii
 import io
 import json
 import re
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Any, List, Tuple
 
 import html_to_json
@@ -132,7 +132,7 @@ class Object:
             send_opt = SendOptions(method="PUT", body=reader)
 
         base_url = await self.client._get_sp_url_by_addr(primary_sp_address, bucket_name)
-        expiry = (datetime.utcnow() + timedelta(seconds=1000)).strftime("%Y-%m-%dT%H:%M:%SZ")
+        expiry = (datetime.now(timezone.utc) + timedelta(seconds=1000)).strftime("%Y-%m-%dT%H:%M:%SZ")
         request_metadata = RequestMeta(
             method="PUT",
             bucket_name=bucket_name,
@@ -163,7 +163,7 @@ class Object:
         check_valid_object_name(object_name)
 
         base_url = await self.client._get_sp_url_by_addr(primary_sp_address, bucket_name)
-        expiry = (datetime.utcnow() + timedelta(seconds=1000)).strftime("%Y-%m-%dT%H:%M:%SZ")
+        expiry = (datetime.now(timezone.utc) + timedelta(seconds=1000)).strftime("%Y-%m-%dT%H:%M:%SZ")
         request_metadata = RequestMeta(
             bucket_name=bucket_name,
             object_name=object_name,
@@ -256,7 +256,7 @@ class Object:
         endpoint = "get-approval"
         base_url = await self.client._get_sp_url_by_addr(primary_sp_address)
 
-        expiry = (datetime.utcnow() + timedelta(seconds=1000)).strftime("%Y-%m-%dT%H:%M:%SZ")
+        expiry = (datetime.now(timezone.utc) + timedelta(seconds=1000)).strftime("%Y-%m-%dT%H:%M:%SZ")
         request_metadata = RequestMeta(
             query_parameters=query_parameters,
             txn_msg=binascii.hexlify(unsigned_bytes),

@@ -43,7 +43,7 @@ class Account:
         address = to_checksum_address(address)
         message = MsgCreatePaymentAccount(creator=address)
         tx_hash = await self.blockchain_client.broadcast_message(
-            message=message, type_url="/greenfield.payment.MsgCreatePaymentAccount", fee=fee
+            messages=[message], type_url=["/greenfield.payment.MsgCreatePaymentAccount"], fee=fee
         )
 
         return tx_hash
@@ -74,7 +74,7 @@ class Account:
         message = MsgSend(from_address=from_address, to_address=to_address, amount=amounts)
 
         response = await self.blockchain_client.broadcast_message(
-            message=message, type_url="/cosmos.bank.v1beta1.MsgSend"
+            messages=[message], type_url=["/cosmos.bank.v1beta1.MsgSend"]
         )
         return response
 
@@ -91,7 +91,7 @@ class Account:
         input = Input(address=from_address, coins=[Coin(denom="BNB", amount=str(sum))])
         message = MsgMultiSend(inputs=[input], outputs=outputs)
         response = await self.blockchain_client.broadcast_message(
-            message=message, type_url="/cosmos.bank.v1beta1.MsgMultiSend"
+            messages=[message], type_url=["/cosmos.bank.v1beta1.MsgMultiSend"]
         )
         return response
 
