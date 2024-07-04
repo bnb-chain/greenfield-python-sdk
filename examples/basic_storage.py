@@ -84,7 +84,7 @@ async def main():
                 bucket_name=bucket_name,
                 primary_sp_address=primary_sp_address,
                 opts=ListReadRecordOptions(
-                    max_records=10
+                    max_records=8
                 )
             )
             logger.info(f"Response: {bucket_read_record}\n\n")
